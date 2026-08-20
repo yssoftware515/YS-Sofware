@@ -62,9 +62,7 @@ class AuthServiceProvider extends ServiceProvider
         Gate::define('manage_homepage', fn (User $u) => $u->hasPermission('manage_homepage'));
         Gate::define('manage_timeline', fn (User $u) => $u->hasPermission('manage_timeline'));
         Gate::define('manage_feature_flags', fn (User $u) => $u->hasPermission('manage_feature_flags'));
-        Gate::define('manage_roles', fn (User $u) => $u->hasPermission('manage_roles'));
         Gate::define('manage_admins', fn (User $u) => $u->hasPermission('manage_admins'));
-        Gate::define('view_admin_activity', fn (User $u) => $u->hasPermission('view_admin_activity'));
         Gate::define('manage_subscriptions', fn (User $u) => $u->hasPermission('manage_subscriptions'));
         Gate::define('view_financials', fn (User $u) => $u->hasPermission('view_financials'));
 

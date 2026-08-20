@@ -25,9 +25,8 @@
 | `view_audit_logs` | audit-logs |
 | `manage_users` | users CRUD, roles index |
 | `manage_admins` | roles create/update/delete, users/{id}/products |
-| `view_admin_activity` | ⚠️ defined, **unused** in any route/controller |
 | `manage_subscriptions` | subscriptions |
-| `view_financials` | ⚠️ defined, **unused** |
+| `view_financials` | dashboard value-by-currency, customer value-by-currency, project quoted_value/currency (`ProjectController` payload) |
 | `view_customers` | customers index/show, dashboard customer counts |
 | `manage_customers` | customers create/update/status/delete, contact-request link/convert/unlink |
 | `view_projects` | projects index/show, dashboard project counts |
@@ -51,7 +50,7 @@ Notes (✅ verified):
 
 ## 3. How permissions are enforced
 
-- **Gate definitions** (`AuthServiceProvider`): every `Permission` enum value has a `Gate::define` — `manage_products`, `manage_documentation`, `manage_roadmap`, `manage_updates`, `manage_careers`, `manage_contact_requests`, `manage_media`, `manage_users`, `manage_settings`, `manage_timeline`, `manage_feature_flags`, `manage_faqs`, `manage_static_pages`, `manage_menus`, `manage_homepage`, `manage_roles`, `manage_admins`, `manage_subscriptions`, `view_audit_logs`, `view_admin_activity`, `view_financials`, `view_products`/`manage_products`, `view_services`/`manage_services`, `view_customers`/`manage_customers`, `view_projects`/`manage_projects` (view-variants via `hasAnyPermission`) + `Gate::before` super-admin bypass.
+- **Gate definitions** (`AuthServiceProvider`): every `Permission` enum value has a `Gate::define` — `manage_products`, `manage_documentation`, `manage_roadmap`, `manage_updates`, `manage_careers`, `manage_contact_requests`, `manage_media`, `manage_users`, `manage_settings`, `manage_timeline`, `manage_feature_flags`, `manage_faqs`, `manage_static_pages`, `manage_menus`, `manage_homepage`, `manage_admins`, `manage_subscriptions`, `view_audit_logs`, `view_financials`, `view_products`/`manage_products`, `view_services`/`manage_services`, `view_customers`/`manage_customers`, `view_projects`/`manage_projects` (view-variants via `hasAnyPermission`) + `Gate::before` super-admin bypass.
 - **Direct `authorize()`** in every admin controller method with the enum string.
 - **Role validation**: `CreateRoleRequest`/`UpdateRoleRequest` validate `permissions.*` ∈ `Permission::values()` (typo-proof; `*` deliberately excluded from the pickable list).
 - **Frontend mirror**: `modules/core/permissions.ts` (verified against backend) drives nav filtering and `PermissionGate`.
@@ -64,8 +63,8 @@ Notes (✅ verified):
 
 | # | Issue | Verification |
 |---|---|---|
-| 1 | `manage_admins` and `view_admin_activity` are in the enum but **no seeded role** has them (only super_admin via `*`) | ✅ seeder |
-| 2 | `view_financials` unused anywhere | ✅ grep |
+| 1 | `manage_admins` is in the enum but **no seeded role** has it (only super_admin via `*`) | ✅ seeder |
+| 2 | ~~`view_financials` unused anywhere~~ — now wired: dashboard, customer value-by-currency and project payload; **VULN-10 resolved** | ✅ grep + tests |
 | 3 | Frontend widget `manage_releases` (modules/core/widgets.ts) — **not a real permission**; backend gates releases with `manage_products` | ✅ |
 | 4 | Frontend `modules/core/navigation.ts` permission labels — **cross-checked vs backend controllers 2026-08-18** (Phase 2A): every nav permission is a real gate; `timeline` → `manage_timeline`, `feature-flags` → `manage_feature_flags` fixed | ✅ |
 | 5 | `admin` role description in `ys-api/README.md` says "All except manage_users" — ✅ accurate today (role has all except manage_users/manage_admins) | ✅ |

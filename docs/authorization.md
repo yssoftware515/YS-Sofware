@@ -17,7 +17,7 @@ Role-based access control (RBAC) with a **wildcard super-admin bypass** and an a
 
 ### Layer 2 — Gates (`AuthServiceProvider`, ✅ verified)
 - `Gate::before`: super admin (`hasPermission('*')`) bypasses **all** gates.
-- Explicit gates defined for **every** `Permission` enum value — `manage_products`, `manage_documentation`, `manage_roadmap`, `manage_updates`, `manage_careers`, `manage_contact_requests`, `manage_media`, `manage_users`, `manage_settings`, `manage_timeline`, `manage_feature_flags`, `manage_faqs`, `manage_menus`, `manage_homepage`, `manage_static_pages`, `manage_roles`, `manage_admins`, `manage_subscriptions`, `view_audit_logs`, `view_admin_activity`, `view_financials`, `view_services`, `manage_services`, `view_customers`, `manage_customers`, `view_projects`, `manage_projects`, `view_products` — with view-variants via `hasAnyPermission`. ✅ Verified 2026-08-18: every enum value has a registered gate.
+- Explicit gates defined for **every** `Permission` enum value — `manage_products`, `manage_documentation`, `manage_roadmap`, `manage_updates`, `manage_careers`, `manage_contact_requests`, `manage_media`, `manage_users`, `manage_settings`, `manage_timeline`, `manage_feature_flags`, `manage_faqs`, `manage_menus`, `manage_homepage`, `manage_static_pages`, `manage_admins`, `manage_subscriptions`, `view_audit_logs`, `view_financials`, `view_services`, `manage_services`, `view_customers`, `manage_customers`, `view_projects`, `manage_projects`, `view_products` — with view-variants via `hasAnyPermission`. ✅ Verified 2026-08-18: every enum value has a registered gate.
 - Controllers call `$this->authorize('<permission>')` on every admin route where the permission string matches a `Permission` enum value. ✅ Verified.
 
 ### Layer 3 — Product-scoped access (✅ verified, fail-closed)
@@ -66,9 +66,9 @@ All `/admin/*` routes require `auth:sanctum` + `active`. Permission per controll
 
 | Item | Status | Detail |
 |---|---|---|
-| `view_financials` permission | ⚠️ defined but unused | `Permission` enum has it; no controller checks it; subscriptions/customers are gated by `manage_subscriptions` only |
+| `view_financials` permission | ✅ used | dashboard value-by-currency, customer value-by-currency, and project quoted_value/currency (`ProjectController` payload) — **VULN-10 fixed**: the keys are omitted entirely unless the caller holds `view_financials` (or super-admin bypass) |
 | `manage_admins` | ✅ used | roles CRUD + product sync |
-| `view_admin_activity` | ⚠️ defined but unused | no route/controller references it |
+| `view_admin_activity` | ✅ removed | was defined but unused; removed from enum, gate and frontend picker — no capability ever relied on it |
 | `view_products` | ✅ used | gate + ProductPolicy viewAny/view (allows read-only product access) |
 | Role self-edit protection | ❓ unverified | `RoleController` — see known-issues (super_admin role mutation not guarded in code read) |
 | Deleting the last super admin | ❓ unverified | no guard found in `UserController@destroy` |

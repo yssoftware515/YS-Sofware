@@ -34,6 +34,6 @@ export const corePermissionGroups: CorePermissionGroup[] = [
   { group: 'Projects',          permissions: ['view_projects', 'manage_projects'] },
   { group: 'Settings',          permissions: ['manage_settings'] },
   { group: 'Audit Logs',        permissions: ['view_audit_logs'] },
-  { group: 'Users & Admins',    permissions: ['manage_users', 'manage_admins', 'view_admin_activity'] },
+  { group: 'Users & Admins',    permissions: ['manage_users', 'manage_admins'] },
   { group: 'Subscriptions & Billing', permissions: ['manage_subscriptions', 'view_financials'] },
 ]

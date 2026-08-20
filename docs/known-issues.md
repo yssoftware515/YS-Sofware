@@ -24,7 +24,7 @@ Every item below was confirmed by reading code (no speculation).
 
 | # | Issue | Detail |
 |---|---|---|
-| K-08 | `manage_admins`, `view_admin_activity`, `view_financials` unused | in enum; no seeded role has them; last two have zero enforcement |
+| K-08 | `manage_admins` unused in seeded roles; `view_admin_activity` **removed** (had zero enforcement); `view_financials` **wired** (dashboard, customer value-by-currency, project payload) | ✅ grep + tests |
 | K-09 | `view_products` gate exists but no route uses it (only ProductPolicy viewAny/view) | harmless |
 | K-10 | Admin `role` read permission | `RoleController@index` requires `manage_users`; create/update/delete require `manage_admins` — frontend nav may mislabel (❓ verify UI) |
 

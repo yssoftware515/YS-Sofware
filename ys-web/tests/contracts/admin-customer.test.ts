@@ -99,4 +99,11 @@ describe('adminProjectListItemSchema', () => {
     const { status: _status, ...incomplete } = realProjectListItem
     expect(() => adminProjectListItemSchema.parse(incomplete)).toThrow()
   })
+
+  it('accepts a row without financial fields (view_projects holder without view_financials)', () => {
+    const { quoted_value: _quoted_value, currency: _currency, ...nonFinancial } = realProjectListItem
+    const parsed = adminProjectListItemSchema.parse(nonFinancial)
+    expect(parsed.quoted_value).toBeUndefined()
+    expect(parsed.currency).toBeUndefined()
+  })
 })

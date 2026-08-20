@@ -101,7 +101,7 @@ Must be solved before any feature development that touches these areas - and all
 |---|---|---|---|
 | LO-01 | Stray files/brace-dir committed; dead i18n JSON | K-25/26/28 | Repo hygiene |
 | LO-02 | Scheduler container idle (no tasks) | K-34 | Wasted container; misleading ops |
-| LO-03 | `view_financials`/`view_admin_activity` dead permissions | K-08 | Confusing role design |
+| LO-03 | ~~`view_financials`/`view_admin_activity` dead permissions~~ | K-08 | RESOLVED: `view_admin_activity` removed (never had a capability); `view_financials` wired + regression-tested |
 | LO-04 | Last-super-admin deletion / role self-edit unverified | known-issues 5 (?) | Potential lockout path |
 
 ---

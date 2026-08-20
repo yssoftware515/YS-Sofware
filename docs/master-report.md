@@ -70,7 +70,7 @@ Old docs: 4/6 files outdated or misleading (JWT, MFA, health endpoints, auto-rol
 
 ## 9. Technical Debt
 
-Top items ([technical-debt.md](technical-debt.md)): duplicated admin nav + permission lists; dead `i18n/messages/*.json`; `PermissionRepository` unused; unused permissions (`view_financials`, `view_admin_activity`); stray files/dirs committed (`replied`, `cls`, `id`, brace-named dir, test-command artifacts); mixed validation/write idioms; un-published `filesystems.php` config; dormant 191-file platform framework; frontend tests unreachable (no vitest dep/script); CI placeholder jobs; 2 git repos inside one monorepo.
+Top items ([technical-debt.md](technical-debt.md)): duplicated admin nav + permission lists; dead `i18n/messages/*.json`; `PermissionRepository` unused; ~~unused permissions (`view_financials`, `view_admin_activity`)~~ — resolved (`view_admin_activity` removed, `view_financials` wired + regression-tested); stray files/dirs committed (`replied`, `cls`, `id`, brace-named dir, test-command artifacts); mixed validation/write idioms; un-published `filesystems.php` config; dormant 191-file platform framework; frontend tests unreachable (no vitest dep/script); CI placeholder jobs; 2 git repos inside one monorepo.
 
 ## 10. Code Quality
 
@@ -88,7 +88,7 @@ Top items ([technical-debt.md](technical-debt.md)): duplicated admin nav + permi
 | Route mismatches | `/api/` nginx strip vs `NEXT_PUBLIC_API_URL` with `/api/v1` (K-20); CI health `/health/ready|live` vs backend `/api/v1/health` (K-19) |
 | Data mismatches | README credentials/migration counts (K-11/K-12); health response shape (K-13) |
 | Validations | Backend min:12 user creation vs min:8 login; frontend zod mirrors most shapes but no shared contract | ⚠️ |
-| Unused APIs | `view_financials`, `view_admin_activity`; `GET /up` used by nothing in app code | ✅ |
+| Unused APIs | ~~`view_financials`, `view_admin_activity`~~ — resolved (`view_admin_activity` removed, `view_financials` wired); `GET /up` used by nothing in app code | ✅ |
 
 ## 12. Performance Observations
 

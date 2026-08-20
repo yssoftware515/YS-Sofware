@@ -105,6 +105,7 @@ export default function ProjectDetailPage() {
 
       <ProjectForm
         projectId={id}
+        canViewFinancials={hasPermission('view_financials')}
         initialData={{
           name: data.name,
           customer_id: data.customer_id ?? '',

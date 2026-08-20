@@ -50,7 +50,6 @@ enum Permission: string
     // People & access
     case ManageUsers = 'manage_users';
     case ManageAdmins = 'manage_admins';      // new — grant/revoke other admins, see docblock below
-    case ViewAdminActivity = 'view_admin_activity'; // new
 
     // Business — new in this phase
     case ManageSubscriptions = 'manage_subscriptions';

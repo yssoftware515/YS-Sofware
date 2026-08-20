@@ -361,6 +361,7 @@ Gate::define('manage_timeline', fn (User $user) => $user->hasPermission('manage_
 - **Impact:** Privilege escalation-by-misdesign (settings admin → feature-flag/timeline control), financial data visible to non-finance roles.
 - **Remediation:** Wire `TimelineController` → `manage_timeline`, `FeatureFlagController` → `manage_feature_flags`; gate `quoted_value`/`value_by_currency` behind `view_financials`; update `RoleSeeder` accordingly; add a CI grep asserting every `Gate::define` has ≥1 call site.
 - **Verification:** Grep each permission name; after fix, a `manage_timeline`-only role gains timeline access, `manage_settings`-only loses it.
+- **Follow-up (FIX-10 complete):** the project payload (`ProjectController::payload()`) now omits `quoted_value`/`currency` keys entirely unless the caller holds `view_financials` (or super-admin bypass) — pinned by `ProjectFinancialVisibilityTest`; `view_admin_activity` was removed from the enum, gate and frontend picker (no capability ever used it); the `manage_roles` gate was removed (it never corresponded to an enum value).
 - **References:** OWASP A01:2021; least-privilege principle.
 
 ---

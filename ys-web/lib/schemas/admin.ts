@@ -82,8 +82,8 @@ export const adminProjectListItemSchema = z.object({
   id: z.string(),
   name: z.string(),
   status: z.enum(['draft', 'active', 'on_hold', 'completed', 'cancelled']),
-  quoted_value: z.string().nullable(),
-  currency: z.string().nullable(),
+  quoted_value: z.string().nullable().optional(),
+  currency: z.string().nullable().optional(),
   is_overdue: z.boolean(),
   expected_completion_date: z.string().nullable(),
 })
@@ -117,8 +117,8 @@ export const adminProjectDetailSchema = z.object({
   start_date: z.string().nullable(),
   expected_completion_date: z.string().nullable(),
   completed_at: z.string().nullable(),
-  quoted_value: z.string().nullable(),
-  currency: z.string().nullable(),
+  quoted_value: z.string().nullable().optional(),
+  currency: z.string().nullable().optional(),
   internal_notes: z.string().nullable(),
   services: z.array(z.object({
     id: z.string(),

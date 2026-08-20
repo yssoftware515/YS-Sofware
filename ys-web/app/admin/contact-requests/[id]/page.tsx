@@ -438,7 +438,7 @@ export default function ContactRequestDetailPage() {
                         {p.name}
                       </Link>
                       <span style={{ fontSize: '0.75rem', color: 'var(--color-foreground-muted)' }}>
-                        {p.quoted_value !== null ? formatMoney(p.quoted_value, p.currency) : 'No recorded value'}
+                        {p.quoted_value != null ? formatMoney(p.quoted_value, p.currency) : 'No recorded value'}
                       </span>
                     </div>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexShrink: 0 }}>

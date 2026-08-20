@@ -87,4 +87,13 @@ describe('adminProjectDetailSchema', () => {
     const { delivery: _delivery, ...incomplete } = realProjectDetail
     expect(() => adminProjectDetailSchema.parse(incomplete)).toThrow()
   })
+
+  it('accepts a detail payload without financial fields (view_projects holder without view_financials)', () => {
+    // VULN-10: the API omits quoted_value/currency keys entirely unless the
+    // caller holds view_financials — the schema must tolerate their absence.
+    const { quoted_value: _quoted_value, currency: _currency, ...nonFinancial } = realProjectDetail
+    const parsed = adminProjectDetailSchema.parse(nonFinancial)
+    expect(parsed.quoted_value).toBeUndefined()
+    expect(parsed.currency).toBeUndefined()
+  })
 })

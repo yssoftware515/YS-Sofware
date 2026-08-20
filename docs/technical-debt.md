@@ -21,7 +21,7 @@
 | TD-06 | `i18n/messages/{en,ar}.json` | ys-web | no imports anywhere |
 | TD-07 | `public/branding/illustrations/` | ys-web | doc says "unused illustrations" (⚠️ per FRONTEND_STRUCTURE.md, now deleted; ❓ re-verify) |
 | TD-08 | `PermissionRepository` | ys-api `app/Domains/Auth/Repositories/` | "future-swap abstraction" per README; no callers found ⚠️ |
-| TD-09 | `view_admin_activity`, `view_financials` permissions | Permission.php | unused by any gate/controller |
+| TD-09 | ~~`view_admin_activity`, `view_financials` permissions~~ | Permission.php | RESOLVED: `view_admin_activity` removed from enum/gate/picker; `view_financials` wired to dashboard/customer/project payload + regression-tested |
 | TD-10 | `media.mediable_type/mediable_id` polymorphic columns | migration 000006 | no MorphTo in code |
 | TD-11 | `users.password_reset_token/expires_at`, `email_verified_at` | migration 000002 | no flow uses them |
 | TD-12 | `SettingsSeeder_ADDITIONS.php` | seeders | removed in Sprint 1.1 (dead merge-fragment with parse error; not called by `DatabaseSeeder`) |

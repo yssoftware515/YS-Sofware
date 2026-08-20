@@ -51,7 +51,7 @@ The platform has a strong baseline: defense-in-depth headers, rate limiting, san
 | S-17 | `robots.txt` in backend public dir + `sitemap.ts` — fine; admin disallowed in `robots.ts`. | ✅ |
 | S-18 | Old docs claim "SecretsManager with Environment/Docker/Vault providers" — the vault/docker providers exist only as **type literals** in frontend `lib/platform/secrets/types.ts`; no real provider implementations verified. Overstating security posture is a risk. | ✅ |
 | S-19 | Login response includes token in JSON body (`data.token`) — also set as HttpOnly cookie. Token-in-body increases exposure (logs/proxies) though it enables non-browser clients. | ✅ AuthController |
-| S-20 | `view_admin_activity`, `view_financials` permissions defined but unused — dead permission strings can mislead role design. | ✅ grep |
+| S-20 | ~~`view_admin_activity`, `view_financials` permissions defined but unused~~ — dead permission strings can mislead role design. | ✅ grep | + RESOLVED: `view_admin_activity` removed (never had a capability); `view_financials` wired (dashboard, customer value-by-currency, project payload) and covered by `ProjectFinancialVisibilityTest` |
 | S-21 | **Storage disk not "private"**: default disk `local` (`storage/app/private`, `serve => true`) serves files unauthenticated via `GET /storage/{path}`; signed PUT route exists (needs valid signature + `upload=1`). APP_KEY exposure would allow arbitrary disk writes. | ✅ verified (see Upload risks above) | + RESOLVED Sprint 1 (`config/filesystems.php` published; `local` private serve=false, `public` disk serve opt-in via env) |
 | S-22 | **Product-scope gap**: `canAccessProduct` is enforced only in Product/Release/Documentation controllers. Roadmap, Updates, and Timeline controllers accept `product_id` without scope checks — an admin with `manage_roadmap` but no access to a product can still attach items to it. | ✅ grep (no canAccessProduct in those controllers) | + RESOLVED Sprint 1 (`canAccessProduct` enforced on store/update/show/publish/unpublish/destroy in Roadmap/Update/Timeline) |
 
@@ -75,7 +75,7 @@ The platform has a strong baseline: defense-in-depth headers, rate limiting, san
 
 ## Authorization weaknesses (summary)
 
-1. `view_admin_activity`, `view_financials` unused — dead permissions may confuse role design (S-20 low).
+1. ~~`view_admin_activity`, `view_financials` unused — dead permissions may confuse role design (S-20 low).~~ — RESOLVED: `view_admin_activity` removed; `view_financials` wired + regression-tested.
 2. No guard found preventing deletion of the last super admin, or a user removing their own `manage_users`/role while active (❓ unverified — needs code-level audit of `UserController@destroy`, `RoleController`).
 3. Product scoping enforced only on products/releases/docs — other product-optional resources (roadmap, updates, timeline) accept `product_id` without scope checks (⚠️ verified: no canAccessProduct calls in Roadmap/Update/Timeline controllers). ❗ This is a real **access-control gap**: an admin with `manage_roadmap` but no product access can still create roadmap items for any product.
 

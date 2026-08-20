@@ -167,7 +167,7 @@ class ProjectController extends Controller
 
     private function payload(Project $project): array
     {
-        return [
+        $payload = [
             'id' => $project->id,
             'name' => $project->name,
             'customer_id' => $project->customer_id,
@@ -197,9 +197,6 @@ class ProjectController extends Controller
             'start_date' => $project->start_date?->toDateString(),
             'expected_completion_date' => $project->expected_completion_date?->toDateString(),
             'completed_at' => $project->completed_at?->toIso8601String(),
-            // decimal(12,2) stays a string â€” never emit money as a float.
-            'quoted_value' => $project->quoted_value,
-            'currency' => $project->currency,
             'internal_notes' => $project->internal_notes,
             // Canonical creator contract — an object, not a bare name; the
             // relation is loaded on detail responses, null on list rows.
@@ -220,5 +217,17 @@ class ProjectController extends Controller
                 ? (int) $project->expected_completion_date->diffInDays(Carbon::today())
                 : null,
         ];
+
+        // Financial fields are view_financials-only: a user who can manage
+        // projects without seeing financials must not receive them. The
+        // keys are omitted entirely (never nulled) so the contract fails
+        // loudly if a client assumes they exist.
+        if (Auth::user()?->can('view_financials')) {
+            // decimal(12,2) stays a string — never emit money as a float.
+            $payload['quoted_value'] = $project->quoted_value;
+            $payload['currency'] = $project->currency;
+        }
+
+        return $payload;
     }
 }

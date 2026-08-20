@@ -82,9 +82,10 @@ function toDateInput(iso?: string | null): string {
 interface ProjectFormProps {
   projectId?: string
   initialData?: Omit<Partial<ProjectFormData>, 'quoted_value'> & { quoted_value?: unknown }
+  canViewFinancials?: boolean
 }
 
-export function ProjectForm({ projectId, initialData }: ProjectFormProps) {
+export function ProjectForm({ projectId, initialData, canViewFinancials = true }: ProjectFormProps) {
   const router = useRouter()
   const { show } = useToast()
   const queryClient = useQueryClient()
@@ -118,7 +119,16 @@ export function ProjectForm({ projectId, initialData }: ProjectFormProps) {
   }
 
   const saveMutation = useMutation({
-    mutationFn: () => isEdit ? adminUpdate(`${RESOURCE}/${projectId}`, form) : adminCreate(RESOURCE, form),
+    mutationFn: () => {
+      // A user without view_financials must never write quoted_value/currency —
+      // the API omits them from reads, so this form must not send stale/blank
+      // values that would clobber the stored record (or fail validation).
+      // JSON.stringify drops undefined keys, so the payload omits them.
+      const payload = canViewFinancials
+        ? form
+        : { ...form, quoted_value: undefined, currency: undefined }
+      return isEdit ? adminUpdate(`${RESOURCE}/${projectId}`, payload) : adminCreate(RESOURCE, payload)
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [RESOURCE] })
       show('success', isEdit ? 'Project updated.' : 'Project created.')
@@ -190,16 +200,8 @@ export function ProjectForm({ projectId, initialData }: ProjectFormProps) {
         </div>
       </FormSection>
 
-      <FormSection title="Commercial record" description="Recorded value of the engagement for business review — not an invoice.">
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 6rem', gap: '1rem' }}>
-          <Field label="Quoted value" error={errors.quoted_value}>
-            <Input type="number" min="0" step="0.01" value={form.quoted_value} onChange={e => update('quoted_value', e.target.value)} error={!!errors.quoted_value} />
-          </Field>
-          <Field label="Currency">
-            <Input maxLength={3} value={form.currency} onChange={e => update('currency', e.target.value.toUpperCase())} />
-          </Field>
-        </div>
-        {form.status !== 'completed' && (
+      {form.status !== 'completed' && (
+        <FormSection title="Status" description="Where the engagement stands right now.">
           <Field label="Status">
             <Select value={form.status} onChange={e => update('status', e.target.value as ProjectStatus)}>
               {PROJECT_STATUSES.map(s => (
@@ -207,8 +209,21 @@ export function ProjectForm({ projectId, initialData }: ProjectFormProps) {
               ))}
             </Select>
           </Field>
-        )}
-      </FormSection>
+        </FormSection>
+      )}
+
+      {canViewFinancials && (
+        <FormSection title="Commercial record" description="Recorded value of the engagement for business review — not an invoice.">
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 6rem', gap: '1rem' }}>
+            <Field label="Quoted value" error={errors.quoted_value}>
+              <Input type="number" min="0" step="0.01" value={form.quoted_value} onChange={e => update('quoted_value', e.target.value)} error={!!errors.quoted_value} />
+            </Field>
+            <Field label="Currency">
+              <Input maxLength={3} value={form.currency} onChange={e => update('currency', e.target.value.toUpperCase())} />
+            </Field>
+          </div>
+        </FormSection>
+      )}
 
       <FormSection title="Services involved" description="Which of your service lines this project draws on.">
         {services.length === 0 ? (
