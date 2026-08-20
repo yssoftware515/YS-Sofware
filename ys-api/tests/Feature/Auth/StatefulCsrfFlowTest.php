@@ -43,7 +43,8 @@ class StatefulCsrfFlowTest extends TestCase
         parent::setUp();
 
         $this->app->bind(ValidateCsrfToken::class, function ($app) {
-            return new class ($app, $app->make(Encrypter::class)) extends ValidateCsrfToken {
+            return new class($app, $app->make(Encrypter::class)) extends ValidateCsrfToken
+            {
                 protected function runningUnitTests(): bool
                 {
                     return false;

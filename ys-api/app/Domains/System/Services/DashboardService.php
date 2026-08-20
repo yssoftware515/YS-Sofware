@@ -85,11 +85,11 @@ final class DashboardService
             // exact metric survives without scanning a growing table on
             // every dashboard visit. The audit LIST endpoint remains
             // paginated and orders by the new created_at index.
-$counts['audit_logs'] = Cache::remember(
-'ys:dashboard:audit_logs_count:'.($user->isSuperAdmin() ? 'all' : $user->getAuthIdentifier()),
-60,
-fn () => AuditLog::accessibleBy($user)->count(),
-);
+            $counts['audit_logs'] = Cache::remember(
+                'ys:dashboard:audit_logs_count:'.($user->isSuperAdmin() ? 'all' : $user->getAuthIdentifier()),
+                60,
+                fn () => AuditLog::accessibleBy($user)->count(),
+            );
         }
         if ($user->hasPermission('manage_static_pages')) {
             $counts['static_pages'] = StaticPage::count();
@@ -171,9 +171,9 @@ fn () => AuditLog::accessibleBy($user)->count(),
             $data['recent_contact_requests'] = $this->recentContactRequests($user);
         }
 
-if ($user->hasPermission('view_audit_logs')) {
-$data['recent_audit_logs'] = $this->recentAuditLogs($user);
-}
+        if ($user->hasPermission('view_audit_logs')) {
+            $data['recent_audit_logs'] = $this->recentAuditLogs($user);
+        }
 
         return $data;
     }
@@ -351,13 +351,13 @@ $data['recent_audit_logs'] = $this->recentAuditLogs($user);
             ->all();
     }
 
-private function recentAuditLogs(User $user): array
-{
-return AuditLog::accessibleBy($user)
-->with('user:id,name,email')
-->latest()
-->limit(6)
-->get()
+    private function recentAuditLogs(User $user): array
+    {
+        return AuditLog::accessibleBy($user)
+            ->with('user:id,name,email')
+            ->latest()
+            ->limit(6)
+            ->get()
             ->map(fn (AuditLog $log) => [
                 'id' => $log->id,
                 'action' => $log->action,

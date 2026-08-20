@@ -2,6 +2,8 @@
 
 namespace Tests\Unit;
 
+use Illuminate\Container\Container;
+use Illuminate\Foundation\Application;
 use PHPUnit\Framework\TestCase;
 
 /**
@@ -137,8 +139,8 @@ class DeploymentConfigConsistencyTest extends TestCase
      */
     private function configFromFile(string $path): array
     {
-        $app = \Illuminate\Foundation\Application::configure(__DIR__.'/../../')->create();
-        \Illuminate\Container\Container::setInstance($app);
+        $app = Application::configure(__DIR__.'/../../')->create();
+        Container::setInstance($app);
 
         return require $path;
     }

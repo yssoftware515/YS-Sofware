@@ -8,7 +8,11 @@ on:
   workflow_dispatch:
 
 env:
-  NODE_VERSION: '20'
+  # jsdom 30 (transitive via isomorphic-dompurify) requires Node ^22.22.2
+  # || ^24.15.0 || >=26 — Node 20 lacks worker_threads.markAsUncloneable,
+  # which undici 8 calls at load time (Turbopack build fails). 24 matches
+  # the local development toolchain.
+  NODE_VERSION: '24'
   PHP_VERSION: '8.4'
 
 jobs:
@@ -172,6 +176,9 @@ jobs:
   security-scan:
     name: Security Scan
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      security-events: write
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -188,6 +195,6 @@ jobs:
           output: 'trivy-results.sarif'
           severity: 'HIGH,CRITICAL'
       - name: Upload Trivy results
-        uses: github/codeql-action/upload-sarif@v3
+        uses: github/codeql-action/upload-sarif@v4
         with:
           sarif_file: 'trivy-results.sarif'

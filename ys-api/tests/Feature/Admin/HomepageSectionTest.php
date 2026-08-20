@@ -39,8 +39,8 @@ class HomepageSectionTest extends TestCase
         foreach (['hero', 'stats', 'why_choose', 'capabilities', 'services', 'products', 'process', 'cta'] as $type) {
             $response = $this->postJson('/api/v1/admin/homepage-sections', [
                 'type' => $type,
-                'title_en' => 'Section ' . $type,
-                'title_ar' => 'قسم ' . $type,
+                'title_en' => 'Section '.$type,
+                'title_ar' => 'قسم '.$type,
                 'is_enabled' => true,
             ]);
 
