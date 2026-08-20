@@ -160,6 +160,7 @@ class MilestoneTest extends TestCase
         $this->assertNull($milestone->fresh()->completed_at);
 
         // edit form
+        $milestone->refresh();
         $milestone->update(['status' => 'completed', 'completed_at' => now()]);
         $this->putJson("/api/v1/admin/milestones/{$milestone->id}", [
             'project_id' => $milestone->project_id,

@@ -142,7 +142,10 @@ return [
     */
     'cookies' => [
         'name' => env('AUTH_COOKIE_NAME', 'ys_admin_token'),
-        'domain' => env('AUTH_COOKIE_DOMAIN'),
+        // Host-only unless explicitly set: an empty AUTH_COOKIE_DOMAIN in
+        // an env file must behave exactly like an unset one (an empty
+        // Domain attribute would produce a malformed Set-Cookie).
+        'domain' => env('AUTH_COOKIE_DOMAIN') ?: null,
         'secure' => env('AUTH_COOKIE_SECURE'),
         // CHIPS (Cookies Having Independent Partitioned State): only
         // meaningful with Secure cookies. Config files cannot call
