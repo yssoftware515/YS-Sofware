@@ -1,0 +1,1230 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>YS-MATRIX — Showroom Management Platform | YS-SOFTWARE</title>
+<meta name="description" content="YS-MATRIX centralizes your showroom's sales, inventory, customers, expenses, and daily operations into one organized platform. A continuously maintained business system by YS-SOFTWARE. Start your 5-day free trial.">
+<meta name="theme-color" content="#060a14">
+
+<!-- Open Graph -->
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="YS-SOFTWARE">
+<meta property="og:title" content="YS-MATRIX — Showroom Management Platform">
+<meta property="og:description" content="Run your showroom with clarity. One organized system for sales, inventory, customers, expenses and operations — built and continuously maintained by YS-SOFTWARE.">
+<meta property="og:locale" content="en_US">
+<meta property="og:locale:alternate" content="ar_EG">
+
+<!-- Twitter -->
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="YS-MATRIX — Showroom Management Platform">
+<meta name="twitter:description" content="Run your showroom with clarity. One organized system by YS-SOFTWARE.">
+
+<!-- NOTE: replace with production domain before deploying -->
+<!-- <link rel="canonical" href="https://your-domain.com/ys-matrix"> -->
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "SoftwareApplication",
+  "name": "YS-MATRIX",
+  "applicationCategory": "BusinessApplication",
+  "operatingSystem": "Web",
+  "publisher": { "@type": "Organization", "name": "YS-SOFTWARE" },
+  "offers": [
+    { "@type": "Offer", "price": "350", "priceCurrency": "EGP", "name": "Monthly — Egypt" },
+    { "@type": "Offer", "price": "65", "priceCurrency": "SAR", "name": "Monthly — Saudi Arabia" },
+    { "@type": "Offer", "price": "65", "priceCurrency": "AED", "name": "Monthly — UAE" },
+    { "@type": "Offer", "price": "19", "priceCurrency": "USD", "name": "Monthly — Global" }
+  ]
+}
+</script>
+
+<style>
+:root{
+  --bg:#060a14;
+  --bg-alt:#080e1c;
+  --surface:#0d1526;
+  --surface-2:#111c31;
+  --border:rgba(255,255,255,.08);
+  --border-strong:rgba(255,255,255,.16);
+  --text:#f1f4fa;
+  --text-dim:#a6afc4;
+  --text-faint:#69718a;
+  --accent:#0a4fe7;
+  --accent-bright:#4c7dff;
+  --accent-soft:rgba(10,79,231,.14);
+  --gold:#e8a33d;
+  --green:#22c55e;
+  --radius-sm:8px;
+  --radius-md:14px;
+  --radius-lg:24px;
+  --container:1220px;
+  --font-display:'Space Grotesk',sans-serif;
+  --font-body:'Inter',sans-serif;
+  --font-mono:'JetBrains Mono',monospace;
+  --font-ar:'IBM Plex Sans Arabic',sans-serif;
+  --ease:cubic-bezier(.22,.68,0,1);
+}
+
+*{box-sizing:border-box; margin:0; padding:0}
+html{scroll-behavior:smooth}
+@media (prefers-reduced-motion: reduce){ html{scroll-behavior:auto} }
+
+body{
+  background:var(--bg);
+  color:var(--text);
+  font-family:var(--font-body);
+  line-height:1.6;
+  -webkit-font-smoothing:antialiased;
+  overflow-x:hidden;
+}
+
+html[lang="ar"] body{ font-family:var(--font-ar); }
+html[lang="ar"] .mono{ font-family:var(--font-mono); direction:ltr; unicode-bidi:isolate; }
+html[lang="ar"] h1, html[lang="ar"] h2, html[lang="ar"] h3, html[lang="ar"] .display{ font-family:var(--font-ar); letter-spacing:0; }
+
+img,svg{display:block; max-width:100%}
+a{color:inherit; text-decoration:none}
+button{font:inherit; cursor:pointer; background:none; border:none; color:inherit}
+ul{list-style:none}
+
+.container{max-width:var(--container); margin:0 auto; padding:0 24px}
+@media(max-width:640px){ .container{padding:0 20px} }
+
+.eyebrow{
+  display:inline-flex; align-items:center; gap:10px;
+  font-family:var(--font-mono); font-size:12px; letter-spacing:.14em; text-transform:uppercase;
+  color:var(--accent-bright); font-weight:500; margin-bottom:16px;
+}
+html[lang="ar"] .eyebrow{ font-family:var(--font-ar); letter-spacing:0; font-weight:600; font-size:13px;}
+.eyebrow::before{content:""; width:16px; height:1px; background:var(--accent-bright); display:inline-block}
+html[lang="ar"] .eyebrow::before{ display:none }
+html[lang="ar"] .eyebrow::after{content:""; width:16px; height:1px; background:var(--accent-bright); display:inline-block}
+
+.display{font-family:var(--font-display); font-weight:600; letter-spacing:-.02em}
+h1{font-size:clamp(2.4rem,5.4vw,4.4rem); line-height:1.06; font-weight:700}
+h2{font-size:clamp(1.9rem,3.4vw,2.9rem); line-height:1.12; font-weight:600}
+h3{font-size:1.28rem; font-weight:600}
+.section-head{max-width:640px; margin-bottom:56px}
+.section-head p{color:var(--text-dim); font-size:1.06rem; margin-top:16px}
+.center{text-align:center; margin-left:auto; margin-right:auto}
+
+section{padding:120px 0; position:relative}
+@media(max-width:768px){ section{padding:80px 0} }
+.section-alt{background:var(--bg-alt)}
+.divider{height:1px; background:linear-gradient(90deg,transparent,var(--border-strong),transparent)}
+
+/* Buttons */
+.btn{
+  display:inline-flex; align-items:center; justify-content:center; gap:8px;
+  padding:14px 26px; border-radius:10px; font-weight:600; font-size:.96rem;
+  transition:transform .25s var(--ease), box-shadow .25s var(--ease), background .25s var(--ease), border-color .25s var(--ease);
+  white-space:nowrap;
+}
+.btn-primary{background:var(--accent); color:#fff; box-shadow:0 8px 30px -8px rgba(10,79,231,.55)}
+.btn-primary:hover{background:var(--accent-bright); transform:translateY(-2px); box-shadow:0 12px 36px -6px rgba(76,125,255,.6)}
+.btn-ghost{border:1px solid var(--border-strong); color:var(--text)}
+.btn-ghost:hover{border-color:var(--accent-bright); background:var(--accent-soft); transform:translateY(-2px)}
+.btn:focus-visible{outline:2px solid var(--accent-bright); outline-offset:3px}
+.btn-sm{padding:10px 18px; font-size:.88rem}
+
+/* Nav */
+header{
+  position:fixed; top:0; left:0; right:0; z-index:100;
+  background:rgba(6,10,20,.72); backdrop-filter:blur(14px);
+  border-bottom:1px solid var(--border);
+}
+.nav{display:flex; align-items:center; justify-content:space-between; height:76px}
+.logo{display:flex; align-items:center; gap:10px; font-family:var(--font-display); font-weight:700; font-size:1.15rem}
+.logo-badge{
+  width:34px; height:34px; border-radius:9px; background:linear-gradient(145deg,var(--accent),#0838a8);
+  display:flex; align-items:center; justify-content:center; font-size:.9rem; font-weight:700; color:#fff;
+  box-shadow:0 4px 16px -4px rgba(10,79,231,.7);
+}
+.logo-sep{color:var(--text-faint); font-weight:400}
+.nav-links{display:flex; align-items:center; gap:34px; font-size:.94rem; font-weight:500; color:var(--text-dim)}
+.nav-links a{transition:color .2s}
+.nav-links a:hover{color:var(--text)}
+.nav-actions{display:flex; align-items:center; gap:14px}
+.lang-toggle{
+  border:1px solid var(--border-strong); border-radius:8px; padding:8px 14px; font-size:.85rem; font-weight:600;
+  font-family:var(--font-mono); color:var(--text-dim); transition:all .2s;
+}
+.lang-toggle:hover{color:var(--text); border-color:var(--accent-bright)}
+.nav-burger{display:none; flex-direction:column; gap:5px; width:22px}
+.nav-burger span{height:2px; background:var(--text); border-radius:2px; transition:all .25s}
+.mobile-menu{
+  display:none; position:fixed; inset:76px 0 0 0; background:var(--bg); z-index:99;
+  padding:32px 24px; flex-direction:column; gap:28px; overflow-y:auto;
+}
+.mobile-menu.open{display:flex}
+.mobile-menu a{font-size:1.3rem; font-weight:600; font-family:var(--font-display)}
+html[lang="ar"] .mobile-menu a{font-family:var(--font-ar)}
+
+@media(max-width:900px){
+  .nav-links{display:none}
+  .nav-actions .btn-ghost{display:none}
+  .nav-burger{display:flex}
+}
+
+/* Hero */
+.hero{padding:168px 0 100px; position:relative; overflow:hidden}
+.hero::before{
+  content:""; position:absolute; top:-200px; inset-inline-start:50%; width:1100px; height:700px;
+  transform:translateX(-50%); background:radial-gradient(ellipse at center, rgba(10,79,231,.22), transparent 65%);
+  pointer-events:none; z-index:0;
+}
+.hero-grid{display:grid; grid-template-columns:1.05fr .95fr; gap:60px; align-items:center; position:relative; z-index:1}
+@media(max-width:980px){ .hero-grid{grid-template-columns:1fr; gap:64px} }
+.hero-copy p.lead{color:var(--text-dim); font-size:1.14rem; margin:22px 0 34px; max-width:520px}
+.hero-ctas{display:flex; gap:14px; flex-wrap:wrap; margin-bottom:30px}
+.hero-trust{display:flex; align-items:center; gap:10px; color:var(--text-faint); font-size:.86rem; font-family:var(--font-mono)}
+html[lang="ar"] .hero-trust{font-family:var(--font-ar)}
+.hero-trust .dot{width:6px; height:6px; border-radius:50%; background:var(--green)}
+
+/* Hero dashboard mock */
+.deck{position:relative; height:460px; perspective:1400px}
+@media(max-width:980px){ .deck{height:380px; max-width:440px; margin:0 auto} }
+.panel{
+  position:absolute; background:linear-gradient(160deg,var(--surface-2),var(--surface));
+  border:1px solid var(--border-strong); border-radius:16px; padding:18px 20px;
+  box-shadow:0 30px 60px -20px rgba(0,0,0,.6);
+  transition:transform .6s var(--ease), box-shadow .6s var(--ease);
+  will-change:transform;
+}
+.panel-label{font-family:var(--font-mono); font-size:11px; text-transform:uppercase; letter-spacing:.1em; color:var(--text-faint); margin-bottom:10px}
+html[lang="ar"] .panel-label{font-family:var(--font-ar); letter-spacing:0}
+.panel-sales{width:280px; top:0; inset-inline-start:6%; transform:rotate(-4deg)}
+.panel-inv{width:220px; top:150px; inset-inline-end:0; transform:rotate(3deg)}
+.panel-cust{width:250px; bottom:0; inset-inline-start:14%; transform:rotate(-2deg)}
+.spark{width:100%; height:56px}
+.spark-figure{display:flex; align-items:baseline; gap:8px; margin-top:8px}
+.spark-figure .tag{font-family:var(--font-mono); font-size:12px; color:var(--green); background:rgba(34,197,94,.12); padding:2px 8px; border-radius:20px}
+.inv-row{display:flex; justify-content:space-between; align-items:center; font-size:.86rem; padding:7px 0; border-bottom:1px solid var(--border)}
+.inv-row:last-child{border:none}
+.inv-bar{height:4px; border-radius:4px; background:var(--accent-bright); margin-top:4px}
+.cust-avatars{display:flex}
+.cust-avatars span{
+  width:30px; height:30px; border-radius:50%; border:2px solid var(--surface); margin-inline-start:-10px;
+  background:linear-gradient(135deg,var(--accent-bright),var(--accent)); display:flex; align-items:center; justify-content:center;
+  font-size:11px; font-weight:700; color:#fff;
+}
+.cust-avatars span:first-child{margin-inline-start:0}
+.deck-caption{
+  position:absolute; bottom:-34px; inset-inline-start:0; font-size:11px; color:var(--text-faint);
+  font-family:var(--font-mono); letter-spacing:.04em;
+}
+html[lang="ar"] .deck-caption{font-family:var(--font-ar)}
+
+@media(prefers-reduced-motion:no-preference){
+  .panel-sales{animation:float1 7s ease-in-out infinite}
+  .panel-inv{animation:float2 8s ease-in-out infinite}
+  .panel-cust{animation:float3 9s ease-in-out infinite}
+}
+@keyframes float1{0%,100%{transform:rotate(-4deg) translateY(0)} 50%{transform:rotate(-4deg) translateY(-14px)}}
+@keyframes float2{0%,100%{transform:rotate(3deg) translateY(0)} 50%{transform:rotate(3deg) translateY(12px)}}
+@keyframes float3{0%,100%{transform:rotate(-2deg) translateY(0)} 50%{transform:rotate(-2deg) translateY(-10px)}}
+
+/* Scroll reveal */
+.reveal{opacity:0; transform:translateY(28px); transition:opacity .7s var(--ease), transform .7s var(--ease)}
+.reveal.in-view{opacity:1; transform:none}
+@media(prefers-reduced-motion:reduce){ .reveal{opacity:1; transform:none; transition:none} }
+
+/* Problem transform */
+.transform-row{display:flex; align-items:center; justify-content:center; gap:24px; margin:56px 0 8px; flex-wrap:wrap}
+.transform-box{
+  padding:20px 34px; border-radius:14px; border:1px solid var(--border-strong); font-family:var(--font-mono); font-size:.9rem;
+  text-align:center; min-width:200px;
+}
+html[lang="ar"] .transform-box{font-family:var(--font-ar); font-weight:600}
+.transform-box.from{color:var(--text-faint); background:var(--surface)}
+.transform-box.to{color:#fff; background:linear-gradient(145deg,var(--accent),#0838a8); border-color:transparent; box-shadow:0 12px 30px -8px rgba(10,79,231,.5)}
+.transform-arrow{color:var(--accent-bright); font-size:1.4rem}
+
+.problem-grid{display:grid; grid-template-columns:repeat(5,1fr); gap:16px; margin-top:8px}
+@media(max-width:900px){ .problem-grid{grid-template-columns:repeat(2,1fr)} }
+@media(max-width:480px){ .problem-grid{grid-template-columns:1fr} }
+.problem-item{padding:22px 18px; border:1px solid var(--border); border-radius:12px; background:var(--surface); font-size:.9rem; color:var(--text-dim)}
+.problem-item .num{font-family:var(--font-mono); color:var(--accent-bright); font-size:.78rem; display:block; margin-bottom:10px}
+
+/* Solution diagram */
+.flow{display:flex; flex-direction:column; align-items:center; gap:0; margin-top:20px}
+.flow-node{
+  padding:16px 30px; border-radius:12px; border:1px solid var(--border-strong); background:var(--surface); font-weight:600; font-size:.96rem;
+}
+.flow-node.core{
+  background:linear-gradient(145deg,var(--accent),#0838a8); color:#fff; border-color:transparent; padding:20px 44px;
+  font-family:var(--font-display); font-size:1.2rem; box-shadow:0 20px 50px -14px rgba(10,79,231,.55);
+}
+html[lang="ar"] .flow-node.core{font-family:var(--font-ar)}
+.flow-line{width:1px; height:36px; background:var(--border-strong)}
+.flow-modules{display:flex; gap:14px; flex-wrap:wrap; justify-content:center; margin-top:36px; max-width:760px}
+.flow-module{padding:11px 18px; border:1px solid var(--border); border-radius:30px; font-size:.86rem; color:var(--text-dim); font-family:var(--font-mono)}
+html[lang="ar"] .flow-module{font-family:var(--font-ar)}
+
+/* Capabilities */
+.cap-grid{display:grid; grid-template-columns:repeat(3,1fr); gap:20px}
+@media(max-width:900px){ .cap-grid{grid-template-columns:repeat(2,1fr)} }
+@media(max-width:600px){ .cap-grid{grid-template-columns:1fr} }
+.cap-card{
+  padding:30px 26px; border:1px solid var(--border); border-radius:var(--radius-md); background:var(--surface);
+  transition:border-color .3s, transform .3s, background .3s;
+}
+.cap-card:hover{border-color:var(--border-strong); transform:translateY(-4px); background:var(--surface-2)}
+.cap-icon{
+  width:42px; height:42px; border-radius:10px; background:var(--accent-soft); color:var(--accent-bright);
+  display:flex; align-items:center; justify-content:center; margin-bottom:18px;
+}
+.cap-card h3{margin-bottom:10px}
+.cap-card p{color:var(--text-dim); font-size:.93rem}
+
+/* Why grid */
+.why-grid{display:grid; grid-template-columns:repeat(3,1fr); gap:1px; background:var(--border); border:1px solid var(--border); border-radius:var(--radius-md); overflow:hidden}
+@media(max-width:900px){ .why-grid{grid-template-columns:repeat(2,1fr)} }
+@media(max-width:600px){ .why-grid{grid-template-columns:1fr} }
+.why-item{background:var(--surface); padding:32px 26px}
+.why-item h3{font-size:1.05rem; margin-bottom:8px; color:var(--text)}
+.why-item p{font-size:.9rem; color:var(--text-dim)}
+
+/* Timeline */
+.timeline{display:flex; justify-content:space-between; position:relative; margin-top:60px; gap:8px}
+.timeline::before{content:""; position:absolute; top:9px; left:4%; right:4%; height:1px; background:var(--border-strong)}
+.t-step{flex:1; text-align:center; position:relative; z-index:1}
+.t-dot{width:19px; height:19px; border-radius:50%; background:var(--bg-alt); border:2px solid var(--accent-bright); margin:0 auto 18px}
+.t-step:first-child .t-dot, .t-step:last-child .t-dot{background:var(--accent-bright)}
+.t-step h4{font-family:var(--font-mono); font-size:.82rem; letter-spacing:.06em; text-transform:uppercase; margin-bottom:8px}
+html[lang="ar"] .t-step h4{font-family:var(--font-ar); letter-spacing:0; font-weight:700}
+.t-step p{font-size:.82rem; color:var(--text-faint); max-width:130px; margin:0 auto}
+@media(max-width:820px){
+  .timeline{flex-direction:column; align-items:flex-start; gap:30px}
+  .timeline::before{display:none}
+  .t-step{display:flex; align-items:flex-start; gap:16px; text-align:start; width:100%}
+  .t-dot{margin:4px 0 0}
+  .t-step p{max-width:none}
+}
+
+/* Onboarding */
+.onb-list{display:flex; flex-direction:column; margin-top:12px}
+.onb-item{display:flex; gap:26px; padding:26px 0; border-bottom:1px solid var(--border)}
+.onb-item:last-child{border:none}
+.onb-num{font-family:var(--font-mono); font-size:1.6rem; color:var(--text-faint); font-weight:500; min-width:56px}
+.onb-item h3{margin-bottom:6px}
+.onb-item p{color:var(--text-dim); font-size:.93rem; max-width:520px}
+
+/* Pricing */
+.pricing-controls{display:flex; flex-direction:column; align-items:center; gap:18px; margin-bottom:48px}
+.seg{display:inline-flex; background:var(--surface); border:1px solid var(--border-strong); border-radius:10px; padding:4px; flex-wrap:wrap; justify-content:center}
+.seg button{padding:9px 18px; border-radius:7px; font-size:.88rem; font-weight:600; color:var(--text-dim); transition:all .2s; white-space:nowrap}
+@media(max-width:480px){
+  .seg button{padding:8px 11px; font-size:.78rem}
+}
+.seg button.active{background:var(--accent); color:#fff}
+.seg button:not(.active):hover{color:var(--text)}
+.pricing-card{
+  max-width:460px; margin:0 auto; background:linear-gradient(165deg,var(--surface-2),var(--surface));
+  border:1px solid var(--border-strong); border-radius:var(--radius-lg); padding:44px 40px; text-align:center;
+  box-shadow:0 30px 70px -30px rgba(0,0,0,.6);
+}
+.price-market{font-family:var(--font-mono); font-size:.82rem; color:var(--text-faint); letter-spacing:.08em; text-transform:uppercase; margin-bottom:18px}
+html[lang="ar"] .price-market{font-family:var(--font-ar); letter-spacing:0}
+.price-amount{display:flex; align-items:baseline; justify-content:center; gap:8px; margin-bottom:6px}
+.price-amount .num{font-family:var(--font-display); font-size:3.4rem; font-weight:700}
+html[lang="ar"] .price-amount .num{font-family:var(--font-ar)}
+.price-amount .cur{font-size:1.1rem; color:var(--text-dim); font-weight:600}
+.price-cycle{color:var(--text-faint); font-size:.9rem; margin-bottom:18px}
+.price-badge{
+  display:inline-block; background:rgba(232,163,61,.14); color:var(--gold); font-size:.78rem; font-weight:600;
+  padding:5px 14px; border-radius:20px; margin-bottom:24px; font-family:var(--font-mono);
+}
+html[lang="ar"] .price-badge{font-family:var(--font-ar)}
+.pricing-card .btn{width:100%; margin-bottom:14px}
+.price-trial{font-size:.84rem; color:var(--text-faint)}
+.price-features{margin-top:28px; padding-top:24px; border-top:1px solid var(--border); text-align:start; display:flex; flex-direction:column; gap:12px}
+.price-features li{display:flex; gap:10px; font-size:.88rem; color:var(--text-dim); align-items:flex-start}
+.price-features li svg{flex-shrink:0; margin-top:2px; color:var(--green)}
+
+/* Comparison */
+.compare{display:grid; grid-template-columns:1fr 1fr; gap:20px}
+@media(max-width:760px){ .compare{grid-template-columns:1fr} }
+.compare-col{border-radius:var(--radius-md); padding:34px 30px; border:1px solid var(--border)}
+.compare-col.before{background:var(--surface)}
+.compare-col.after{background:linear-gradient(165deg,var(--surface-2),var(--surface)); border-color:var(--border-strong)}
+.compare-col h3{font-family:var(--font-mono); font-size:.9rem; text-transform:uppercase; letter-spacing:.08em; margin-bottom:22px; color:var(--text-faint)}
+html[lang="ar"] .compare-col h3{font-family:var(--font-ar); letter-spacing:0; font-weight:700}
+.compare-col.after h3{color:var(--accent-bright)}
+.compare-col li{display:flex; align-items:flex-start; gap:12px; padding:10px 0; font-size:.94rem; color:var(--text-dim)}
+.compare-col.after li{color:var(--text)}
+
+/* Continuous dev flow */
+.cd-flow{display:flex; align-items:center; flex-wrap:wrap; justify-content:center; gap:0; margin:50px 0 10px}
+.cd-node{padding:12px 20px; border:1px solid var(--border-strong); border-radius:30px; font-size:.86rem; font-family:var(--font-mono); background:var(--surface)}
+html[lang="ar"] .cd-node{font-family:var(--font-ar)}
+.cd-arrow{color:var(--text-faint); padding:0 10px; font-size:1rem}
+
+/* Security */
+.sec-grid{display:grid; grid-template-columns:repeat(3,1fr); gap:18px}
+@media(max-width:900px){ .sec-grid{grid-template-columns:repeat(2,1fr)} }
+@media(max-width:600px){ .sec-grid{grid-template-columns:1fr} }
+.sec-card{padding:26px; border:1px solid var(--border); border-radius:var(--radius-md); background:var(--surface)}
+.sec-card h3{font-size:1rem; margin-bottom:8px; display:flex; align-items:center; gap:10px}
+.sec-card h3 svg{color:var(--accent-bright); flex-shrink:0}
+.sec-card p{font-size:.87rem; color:var(--text-dim)}
+
+/* Company trust */
+.company-block{display:grid; grid-template-columns:1fr 1fr; gap:60px; align-items:center}
+@media(max-width:860px){ .company-block{grid-template-columns:1fr; gap:36px} }
+.company-diagram{display:flex; align-items:center; justify-content:center; gap:0; flex-direction:column; padding:20px}
+.cd-chip{padding:14px 26px; border-radius:12px; border:1px solid var(--border-strong); background:var(--surface); font-weight:600; font-size:.95rem}
+.cd-chip.brand{background:linear-gradient(145deg,var(--accent),#0838a8); color:#fff; border-color:transparent}
+
+/* CTA mid */
+.cta-mid{
+  border-radius:var(--radius-lg); background:linear-gradient(150deg,var(--surface-2),var(--bg-alt));
+  border:1px solid var(--border-strong); padding:70px 40px; text-align:center;
+}
+.cta-mid .btn-row{display:flex; gap:14px; justify-content:center; flex-wrap:wrap; margin-top:30px}
+
+/* FAQ */
+.faq-list{max-width:760px; margin:0 auto; border-top:1px solid var(--border)}
+.faq-item{border-bottom:1px solid var(--border)}
+.faq-q{
+  width:100%; display:flex; align-items:center; justify-content:space-between; gap:20px; padding:24px 4px;
+  text-align:start; font-weight:600; font-size:1.02rem;
+}
+.faq-q .plus{font-family:var(--font-mono); font-size:1.2rem; color:var(--accent-bright); transition:transform .3s; flex-shrink:0}
+.faq-item.open .faq-q .plus{transform:rotate(45deg)}
+.faq-a{max-height:0; overflow:hidden; transition:max-height .35s var(--ease)}
+.faq-a p{padding:0 4px 24px; color:var(--text-dim); font-size:.94rem; max-width:640px}
+.faq-item.open .faq-a{max-height:240px}
+
+/* Final CTA */
+.final-cta{text-align:center; padding-top:60px}
+.final-cta .btn-row{display:flex; gap:14px; justify-content:center; flex-wrap:wrap; margin-top:34px}
+
+/* Footer */
+footer{border-top:1px solid var(--border); padding:60px 0 36px; background:var(--bg-alt)}
+.footer-grid{display:flex; justify-content:space-between; gap:40px; flex-wrap:wrap; margin-bottom:40px}
+.footer-brand p{color:var(--text-faint); font-size:.88rem; margin-top:14px; max-width:280px}
+.footer-cols{display:flex; gap:60px; flex-wrap:wrap}
+.footer-col h4{font-family:var(--font-mono); font-size:.78rem; text-transform:uppercase; letter-spacing:.08em; color:var(--text-faint); margin-bottom:16px}
+html[lang="ar"] .footer-col h4{font-family:var(--font-ar); letter-spacing:0; font-weight:700}
+.footer-col a{display:block; color:var(--text-dim); font-size:.9rem; margin-bottom:11px; transition:color .2s}
+.footer-col a:hover{color:var(--text)}
+.footer-bottom{display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:16px; padding-top:28px; border-top:1px solid var(--border); font-size:.82rem; color:var(--text-faint)}
+
+/* Focus states */
+a:focus-visible, button:focus-visible{outline:2px solid var(--accent-bright); outline-offset:2px; border-radius:4px}
+
+/* RTL specific tweaks */
+html[lang="ar"] .flow-node.core, html[lang="ar"] .cd-chip.brand{ direction:ltr; unicode-bidi:isolate; display:inline-block }
+</style>
+</head>
+<body>
+
+<header>
+  <nav class="container nav">
+    <a href="#top" class="logo">
+      <span class="logo-badge">YS</span>
+      <span>MATRIX<span class="logo-sep mono"> · </span><span style="font-weight:400; font-size:.72em; color:var(--text-faint)">SOFTWARE</span></span>
+    </a>
+    <div class="nav-links">
+      <a href="#capabilities" data-i18n="nav.product">Product</a>
+      <a href="#pricing" data-i18n="nav.pricing">Pricing</a>
+      <a href="#security" data-i18n="nav.security">Security</a>
+      <a href="#faq" data-i18n="nav.faq">FAQ</a>
+    </div>
+    <div class="nav-actions">
+      <button class="lang-toggle" id="langToggle" aria-label="Switch language">العربية</button>
+      <a class="btn btn-ghost btn-sm" href="https://ys-matrix-frontend.vercel.app/" target="_blank" rel="noopener" data-i18n="nav.cta">Start Trial</a>
+      <button class="nav-burger" id="burger" aria-label="Open menu" aria-expanded="false">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+  </nav>
+</header>
+<div class="mobile-menu" id="mobileMenu">
+  <a href="#capabilities" data-i18n="nav.product">Product</a>
+  <a href="#pricing" data-i18n="nav.pricing">Pricing</a>
+  <a href="#security" data-i18n="nav.security">Security</a>
+  <a href="#faq" data-i18n="nav.faq">FAQ</a>
+  <a class="btn btn-primary" href="https://ys-matrix-frontend.vercel.app/" target="_blank" rel="noopener" data-i18n="nav.cta">Start Trial</a>
+</div>
+
+<main id="top">
+
+  <!-- HERO -->
+  <section class="hero">
+    <div class="container hero-grid">
+      <div class="hero-copy">
+        <span class="eyebrow" data-i18n="hero.eyebrow">A YS-SOFTWARE Product</span>
+        <h1 class="display" data-i18n="hero.h1">Run your showroom<br>with clarity.</h1>
+        <p class="lead" data-i18n="hero.lead">YS-MATRIX brings your showroom's sales, inventory, spare parts, customers, suppliers, installments, and daily operations into one organized platform — replacing scattered spreadsheets, notebooks, and chat threads with a single system.</p>
+        <div class="hero-ctas">
+          <a class="btn btn-primary" href="https://ys-matrix-frontend.vercel.app/" target="_blank" rel="noopener" data-i18n="hero.ctaPrimary">Start Your 5-Day Free Trial</a>
+          <a class="btn btn-ghost" href="https://ys-matrix-frontend.vercel.app/" target="_blank" rel="noopener" data-i18n="hero.ctaSecondary">Explore YS-MATRIX</a>
+        </div>
+        <div class="hero-trust"><span class="dot"></span><span data-i18n="hero.trust">Powered by YS-SOFTWARE</span></div>
+      </div>
+
+      <div class="deck" aria-hidden="true">
+        <div class="panel panel-sales" id="panelSales">
+          <div class="panel-label" data-i18n="hero.panel.sales">Sales Overview</div>
+          <svg class="spark" viewBox="0 0 240 56" fill="none">
+            <path d="M0 42 L30 36 L60 40 L90 22 L120 28 L150 14 L180 20 L210 8 L240 12" stroke="#4c7dff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M0 42 L30 36 L60 40 L90 22 L120 28 L150 14 L180 20 L210 8 L240 12 L240 56 L0 56 Z" fill="url(#g1)" opacity=".5"/>
+            <defs><linearGradient id="g1" x1="0" y1="0" x2="0" y2="56"><stop stop-color="#4c7dff" stop-opacity=".35"/><stop offset="1" stop-color="#4c7dff" stop-opacity="0"/></linearGradient></defs>
+          </svg>
+          <div class="spark-figure"><span class="tag mono">▲ trending</span></div>
+        </div>
+        <div class="panel panel-inv" id="panelInv">
+          <div class="panel-label" data-i18n="hero.panel.inventory">Inventory</div>
+          <div class="inv-row"><span data-i18n="hero.panel.cars">Cars</span><span class="mono">12</span></div>
+          <div class="inv-bar" style="width:70%"></div>
+          <div class="inv-row" style="margin-top:10px"><span data-i18n="hero.panel.moto">Motorcycles</span><span class="mono">7</span></div>
+          <div class="inv-bar" style="width:45%"></div>
+          <div class="inv-row" style="margin-top:10px"><span data-i18n="hero.panel.threewheel">Three-Wheelers</span><span class="mono">4</span></div>
+          <div class="inv-bar" style="width:25%"></div>
+        </div>
+        <div class="panel panel-cust" id="panelCust">
+          <div class="panel-label" data-i18n="hero.panel.customers">Customers</div>
+          <div class="cust-avatars"><span>A</span><span>M</span><span>K</span><span>+</span></div>
+          <div style="margin-top:12px; font-size:.82rem; color:var(--text-dim)" data-i18n="hero.panel.active">Active this week</div>
+        </div>
+        <div class="deck-caption mono" data-i18n="hero.panel.caption">Conceptual preview — for illustration only</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- PROBLEM -->
+  <section id="problem">
+    <div class="container">
+      <div class="section-head reveal">
+        <span class="eyebrow" data-i18n="problem.eyebrow">The Problem</span>
+        <h2 data-i18n="problem.h2">Your business shouldn't depend on scattered information.</h2>
+        <p data-i18n="problem.body">Spreadsheets fall out of sync. Notebooks get lost. Important decisions get buried in chat threads. As a showroom grows, information spreads across more tools — and owners lose visibility into what's actually happening on the floor.</p>
+      </div>
+
+      <div class="problem-grid reveal">
+        <div class="problem-item"><span class="num mono">01</span><span data-i18n="problem.p1">Information gets scattered across tools</span></div>
+        <div class="problem-item"><span class="num mono">02</span><span data-i18n="problem.p2">Important records become hard to find</span></div>
+        <div class="problem-item"><span class="num mono">03</span><span data-i18n="problem.p3">Manual updates lead to mistakes</span></div>
+        <div class="problem-item"><span class="num mono">04</span><span data-i18n="problem.p4">Owners lose visibility into operations</span></div>
+        <div class="problem-item"><span class="num mono">05</span><span data-i18n="problem.p5">Growth adds more complexity</span></div>
+      </div>
+
+      <div class="transform-row reveal">
+        <div class="transform-box from" data-i18n="problem.from">Scattered tools</div>
+        <div class="transform-arrow">→</div>
+        <div class="transform-box to" data-i18n="problem.to">One organized system</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SOLUTION -->
+  <section class="section-alt" id="solution">
+    <div class="container">
+      <div class="section-head center reveal">
+        <span class="eyebrow" data-i18n="solution.eyebrow">The Solution</span>
+        <h2 data-i18n="solution.h2">One system for a more organized business.</h2>
+        <p data-i18n="solution.body">YS-MATRIX centralizes your showroom's operational information — so your team works from the same structured data, and you always know what's happening in your business.</p>
+      </div>
+
+      <div class="flow reveal">
+        <div class="flow-node" data-i18n="solution.data">Business Data</div>
+        <div class="flow-line"></div>
+        <div class="flow-node core mono">YS-MATRIX</div>
+        <div class="flow-modules">
+          <span class="flow-module" data-i18n="solution.m1">Operations</span>
+          <span class="flow-module" data-i18n="solution.m2">Sales</span>
+          <span class="flow-module" data-i18n="solution.m3">Inventory</span>
+          <span class="flow-module" data-i18n="solution.m4">Customers</span>
+          <span class="flow-module" data-i18n="solution.m5">Expenses</span>
+          <span class="flow-module" data-i18n="solution.m6">Reporting</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CAPABILITIES -->
+  <section id="capabilities">
+    <div class="container">
+      <div class="section-head reveal">
+        <span class="eyebrow" data-i18n="cap.eyebrow">What You Get</span>
+        <h2 data-i18n="cap.h2">Everything your showroom operates on, in one place.</h2>
+      </div>
+      <div class="cap-grid reveal">
+        <div class="cap-card">
+          <div class="cap-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg></div>
+          <h3 data-i18n="cap.t1">Business Management</h3>
+          <p data-i18n="cap.d1">Keep your showroom's core operational information organized and accessible in one place, so your team always works from the same structured data.</p>
+        </div>
+        <div class="cap-card">
+          <div class="cap-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12l4-4 4 4 6-6 4 4"/></svg></div>
+          <h3 data-i18n="cap.t2">Sales & Operations</h3>
+          <p data-i18n="cap.d2">Manage day-to-day sales and operational workflows through a single system, instead of stitching together spreadsheets and messages.</p>
+        </div>
+        <div class="cap-card">
+          <div class="cap-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 7l9-4 9 4-9 4-9-4z"/><path d="M3 12l9 4 9-4M3 17l9 4 9-4"/></svg></div>
+          <h3 data-i18n="cap.t3">Inventory & Spare Parts</h3>
+          <p data-i18n="cap.d3">Track your showroom's inventory — including spare parts — in a structured way, so you always know what you have and where it stands.</p>
+        </div>
+        <div class="cap-card">
+          <div class="cap-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-7 8-7s8 3 8 7"/></svg></div>
+          <h3 data-i18n="cap.t4">Customers</h3>
+          <p data-i18n="cap.d4">Add and manage customer records in one place, so your team can serve customers consistently and reliably.</p>
+        </div>
+        <div class="cap-card">
+          <div class="cap-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="7" width="11" height="8" rx="1"/><path d="M14 10h4l3 3v2h-7z"/><circle cx="7.5" cy="18" r="1.8"/><circle cx="17.5" cy="18" r="1.8"/></svg></div>
+          <h3 data-i18n="cap.t7">Suppliers</h3>
+          <p data-i18n="cap.d7">Keep supplier and vendor records organized alongside your customers, all within the same system.</p>
+        </div>
+        <div class="cap-card">
+          <div class="cap-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="6" width="20" height="13" rx="2"/><path d="M2 10h20"/></svg></div>
+          <h3 data-i18n="cap.t5">Financial Operations</h3>
+          <p data-i18n="cap.d5">Manage expenses, installments, and profits alongside payments and financial workflows — all within the same system as the rest of your operations.</p>
+        </div>
+        <div class="cap-card">
+          <div class="cap-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3v18h18"/><path d="M7 15l4-5 3 3 5-7"/></svg></div>
+          <h3 data-i18n="cap.t6">Dashboard & Visibility</h3>
+          <p data-i18n="cap.d6">See your business through structured, flexible dashboards — built to help owners and managers understand what's happening at a glance.</p>
+        </div>
+        <div class="cap-card">
+          <div class="cap-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8a6 6 0 10-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg></div>
+          <h3 data-i18n="cap.t8">Notifications</h3>
+          <p data-i18n="cap.d8">Stay informed with real-time notifications for the events that matter to your showroom.</p>
+        </div>
+        <div class="cap-card">
+          <div class="cap-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 2h12v20l-3-2-3 2-3-2-3 2V2z"/><path d="M9 7h6M9 11h6M9 15h4"/></svg></div>
+          <h3 data-i18n="cap.t9">Invoicing</h3>
+          <p data-i18n="cap.d9">Generate and print invoices for your sales and transactions directly from the system.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- WHY -->
+  <section class="section-alt" id="why">
+    <div class="container">
+      <div class="section-head reveal">
+        <span class="eyebrow" data-i18n="why.eyebrow">Why YS-MATRIX</span>
+        <h2 data-i18n="why.h2">Built for businesses that are ready to operate better.</h2>
+      </div>
+      <div class="why-grid reveal">
+        <div class="why-item"><h3 data-i18n="why.t1">Centralized data</h3><p data-i18n="why.d1">Your business information stays organized in one system.</p></div>
+        <div class="why-item"><h3 data-i18n="why.t2">Less operational friction</h3><p data-i18n="why.d2">Reduce dependence on scattered tools and manual workflows.</p></div>
+        <div class="why-item"><h3 data-i18n="why.t3">Better visibility</h3><p data-i18n="why.d3">Make business information easier to access and understand.</p></div>
+        <div class="why-item"><h3 data-i18n="why.t4">Built to evolve</h3><p data-i18n="why.d4">The product continues to receive improvements over time.</p></div>
+        <div class="why-item"><h3 data-i18n="why.t5">Security and maintenance</h3><p data-i18n="why.d5">The platform is maintained and continuously improved by YS-SOFTWARE.</p></div>
+        <div class="why-item"><h3 data-i18n="why.t6">Business-focused</h3><p data-i18n="why.d6">Designed around real operational workflows, not generic software features.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SUBSCRIPTION VALUE -->
+  <section id="subscription">
+    <div class="container">
+      <div class="section-head center reveal">
+        <span class="eyebrow" data-i18n="sub.eyebrow">The Subscription</span>
+        <h2 data-i18n="sub.h2">You're not just subscribing to software.<br>You're investing in an evolving business system.</h2>
+        <p data-i18n="sub.body">Your subscription covers continuous access to the platform, along with the full product lifecycle: security updates, performance improvements, bug fixes, maintenance, new capabilities, and technical support.</p>
+      </div>
+      <div class="timeline reveal">
+        <div class="t-step"><div class="t-dot"></div><h4 data-i18n="sub.s1">Launch</h4><p data-i18n="sub.s1d">Your platform goes live</p></div>
+        <div class="t-step"><div class="t-dot"></div><h4 data-i18n="sub.s2">Setup</h4><p data-i18n="sub.s2d">Your showroom is configured</p></div>
+        <div class="t-step"><div class="t-dot"></div><h4 data-i18n="sub.s3">Daily Operation</h4><p data-i18n="sub.s3d">Your team works from one system</p></div>
+        <div class="t-step"><div class="t-dot"></div><h4 data-i18n="sub.s4">Updates</h4><p data-i18n="sub.s4d">Security and performance kept current</p></div>
+        <div class="t-step"><div class="t-dot"></div><h4 data-i18n="sub.s5">Improvements</h4><p data-i18n="sub.s5d">The product keeps getting better</p></div>
+        <div class="t-step"><div class="t-dot"></div><h4 data-i18n="sub.s6">Growth</h4><p data-i18n="sub.s6d">Your system grows with your business</p></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ONBOARDING -->
+  <section class="section-alt" id="onboarding">
+    <div class="container">
+      <div class="section-head reveal">
+        <span class="eyebrow" data-i18n="onb.eyebrow">Getting Started</span>
+        <h2 data-i18n="onb.h2">We don't expect you to figure everything out alone.</h2>
+      </div>
+      <div class="onb-list reveal">
+        <div class="onb-item"><span class="onb-num mono">01</span><div><h3 data-i18n="onb.t1">Create your account</h3><p data-i18n="onb.d1">Sign up and get access to your YS-MATRIX workspace.</p></div></div>
+        <div class="onb-item"><span class="onb-num mono">02</span><div><h3 data-i18n="onb.t2">Configure your showroom</h3><p data-i18n="onb.d2">Set up your showroom's structure inside the platform.</p></div></div>
+        <div class="onb-item"><span class="onb-num mono">03</span><div><h3 data-i18n="onb.t3">Prepare your business data</h3><p data-i18n="onb.d3">Our team can help you get your showroom environment ready.</p></div></div>
+        <div class="onb-item"><span class="onb-num mono">04</span><div><h3 data-i18n="onb.t4">Start operating</h3><p data-i18n="onb.d4">Run your daily operations from a single, organized system.</p></div></div>
+        <div class="onb-item"><span class="onb-num mono">05</span><div><h3 data-i18n="onb.t5">Keep improving</h3><p data-i18n="onb.d5">Continue receiving updates, improvements, and support.</p></div></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- PRICING -->
+  <section id="pricing">
+    <div class="container">
+      <div class="section-head center reveal">
+        <span class="eyebrow" data-i18n="pricing.eyebrow">Pricing</span>
+        <h2 data-i18n="pricing.h2">Simple, transparent pricing.</h2>
+        <p data-i18n="pricing.body">Every plan starts with a 5-day free trial. No hidden fees.</p>
+      </div>
+
+      <div class="pricing-controls reveal">
+        <div class="seg" id="marketSeg" role="tablist">
+          <button class="active" data-market="eg">Egypt</button>
+          <button data-market="sa">Saudi Arabia</button>
+          <button data-market="ae">UAE</button>
+          <button data-market="global">Global</button>
+        </div>
+        <div class="seg" id="billingSeg" role="tablist">
+          <button class="active" data-billing="monthly" data-i18n="pricing.monthly">Monthly</button>
+          <button data-billing="sixmo" data-i18n="pricing.sixmo">6 Months</button>
+          <button data-billing="yearly" data-i18n="pricing.yearly">Yearly</button>
+        </div>
+      </div>
+
+      <div class="pricing-card reveal">
+        <div class="price-market mono" id="priceMarketLabel">EGYPT</div>
+        <div class="price-amount">
+          <span class="num display" id="priceAmount">350</span>
+          <span class="cur mono" id="priceCurrency">EGP</span>
+        </div>
+        <div class="price-cycle" id="priceCycle" data-i18n="pricing.perMonth">per month</div>
+        <div class="price-badge mono" id="priceBadge" style="visibility:hidden">—</div>
+        <a class="btn btn-primary" href="https://ys-matrix-frontend.vercel.app/" target="_blank" rel="noopener" data-i18n="pricing.cta">Start Your 5-Day Free Trial</a>
+        <div class="price-trial" data-i18n="pricing.trial">Includes full platform access from day one</div>
+        <ul class="price-features">
+          <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6L9 17l-5-5"/></svg><span data-i18n="pricing.f1">Full access to the YS-MATRIX platform</span></li>
+          <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6L9 17l-5-5"/></svg><span data-i18n="pricing.f2">Ongoing security and performance updates</span></li>
+          <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6L9 17l-5-5"/></svg><span data-i18n="pricing.f3">Continuous product improvements</span></li>
+          <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6L9 17l-5-5"/></svg><span data-i18n="pricing.f4">Technical support</span></li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- COMPARISON -->
+  <section class="section-alt" id="comparison">
+    <div class="container">
+      <div class="section-head center reveal">
+        <span class="eyebrow" data-i18n="comp.eyebrow">The Difference</span>
+        <h2 data-i18n="comp.h2">Before and after YS-MATRIX.</h2>
+      </div>
+      <div class="compare reveal">
+        <div class="compare-col before">
+          <h3 data-i18n="comp.beforeLabel">Before YS-MATRIX</h3>
+          <ul>
+            <li>— <span data-i18n="comp.b1">Scattered information</span></li>
+            <li>— <span data-i18n="comp.b2">Manual processes</span></li>
+            <li>— <span data-i18n="comp.b3">Hard-to-find records</span></li>
+            <li>— <span data-i18n="comp.b4">Disconnected workflows</span></li>
+            <li>— <span data-i18n="comp.b5">Limited visibility</span></li>
+            <li>— <span data-i18n="comp.b6">Growing operational complexity</span></li>
+          </ul>
+        </div>
+        <div class="compare-col after">
+          <h3 data-i18n="comp.afterLabel">With YS-MATRIX</h3>
+          <ul>
+            <li>✓ <span data-i18n="comp.a1">Centralized information</span></li>
+            <li>✓ <span data-i18n="comp.a2">Structured workflows</span></li>
+            <li>✓ <span data-i18n="comp.a3">Organized business data</span></li>
+            <li>✓ <span data-i18n="comp.a4">Better visibility</span></li>
+            <li>✓ <span data-i18n="comp.a5">More consistent operations</span></li>
+            <li>✓ <span data-i18n="comp.a6">A system that evolves with your business</span></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CONTINUOUS DEVELOPMENT -->
+  <section id="continuous">
+    <div class="container">
+      <div class="section-head center reveal">
+        <span class="eyebrow" data-i18n="cd.eyebrow">Continuous Development</span>
+        <h2 data-i18n="cd.h2">The product keeps moving forward.</h2>
+        <p data-i18n="cd.body">YS-SOFTWARE continuously evaluates and improves the platform — YS-MATRIX is never a finished, frozen product.</p>
+      </div>
+      <div class="cd-flow reveal">
+        <span class="cd-node" data-i18n="cd.n1">Security</span><span class="cd-arrow">→</span>
+        <span class="cd-node" data-i18n="cd.n2">Performance</span><span class="cd-arrow">→</span>
+        <span class="cd-node" data-i18n="cd.n3">Reliability</span><span class="cd-arrow">→</span>
+        <span class="cd-node" data-i18n="cd.n4">New capabilities</span><span class="cd-arrow">→</span>
+        <span class="cd-node" data-i18n="cd.n5">UX improvements</span><span class="cd-arrow">→</span>
+        <span class="cd-node" data-i18n="cd.n6">Business growth</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- SECURITY -->
+  <section class="section-alt" id="security">
+    <div class="container">
+      <div class="section-head reveal">
+        <span class="eyebrow" data-i18n="sec.eyebrow">Security & Trust</span>
+        <h2 data-i18n="sec.h2">Engineered with care, not an afterthought.</h2>
+      </div>
+      <div class="sec-grid reveal">
+        <div class="sec-card"><h3><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-7 8-7s8 3 8 7"/></svg><span data-i18n="sec.t1">Role-based access</span></h3><p data-i18n="sec.d1">Every team member sees only what their role allows.</p></div>
+        <div class="sec-card"><h3><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="10" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg><span data-i18n="sec.t2">Tenant isolation</span></h3><p data-i18n="sec.d2">Your showroom's data stays separate and isolated from every other business on the platform.</p></div>
+        <div class="sec-card"><h3><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 12l2 2 4-4"/><circle cx="12" cy="12" r="9"/></svg><span data-i18n="sec.t3">Audit logging</span></h3><p data-i18n="sec.d3">Important actions are logged, giving a clear record of what happened and when.</p></div>
+        <div class="sec-card"><h3><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M13 2L3 14h8l-1 8 11-14h-8l1-6z"/></svg><span data-i18n="sec.t4">Hardened against abuse</span></h3><p data-i18n="sec.d4">Rate limiting and security headers protect the platform against common web threats.</p></div>
+        <div class="sec-card"><h3><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="10" width="16" height="10" rx="2"/><path d="M8 10V7a4 4 0 118 0v3"/></svg><span data-i18n="sec.t5">Fail-closed by default</span></h3><p data-i18n="sec.d5">When in doubt, the system denies access by default — protecting your data first.</p></div>
+        <div class="sec-card"><h3><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l2.4 5 5.6.5-4.2 3.8L17 17l-5-3-5 3 1.2-5.7L3.9 7.5 9.5 7z"/></svg><span data-i18n="sec.t6">Continuous maintenance</span></h3><p data-i18n="sec.d6">Security isn't a one-time setup — it's maintained on an ongoing basis.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- COMPANY TRUST -->
+  <section id="company">
+    <div class="container company-block">
+      <div class="reveal">
+        <span class="eyebrow" data-i18n="comp2.eyebrow">About YS-SOFTWARE</span>
+        <h2 data-i18n="comp2.h2">Built by a technology company that stays with the product.</h2>
+        <p style="color:var(--text-dim); margin-top:18px; max-width:480px" data-i18n="comp2.body">YS-SOFTWARE builds and operates digital products for businesses. YS-MATRIX is one of its products — continuously developed and maintained, not shipped once and left behind.</p>
+      </div>
+      <div class="company-diagram reveal">
+        <div class="cd-chip brand mono">YS-SOFTWARE</div>
+        <div class="flow-line"></div>
+        <div class="cd-chip mono">YS-MATRIX</div>
+        <div class="flow-line"></div>
+        <div class="cd-chip" data-i18n="comp2.chip">Continuous Development</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA MID -->
+  <section class="section-alt">
+    <div class="container">
+      <div class="cta-mid reveal">
+        <h2 data-i18n="ctaMid.h2">Ready to see your business differently?</h2>
+        <div class="btn-row">
+          <a class="btn btn-primary" href="https://ys-matrix-frontend.vercel.app/" target="_blank" rel="noopener" data-i18n="hero.ctaPrimary">Start Your 5-Day Free Trial</a>
+          <a class="btn btn-ghost" href="https://ys-matrix-frontend.vercel.app/" target="_blank" rel="noopener" data-i18n="ctaMid.secondary">Open YS-MATRIX</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FAQ -->
+  <section id="faq">
+    <div class="container">
+      <div class="section-head center reveal">
+        <span class="eyebrow" data-i18n="faq.eyebrow">FAQ</span>
+        <h2 data-i18n="faq.h2">Frequently asked questions.</h2>
+      </div>
+      <div class="faq-list reveal" id="faqList">
+        <div class="faq-item">
+          <button class="faq-q"><span data-i18n="faq.q1">What is YS-MATRIX?</span><span class="plus">+</span></button>
+          <div class="faq-a"><p data-i18n="faq.a1">YS-MATRIX is a business management platform by YS-SOFTWARE, built to help showrooms organize their daily operations in one system.</p></div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-q"><span data-i18n="faq.q2">Who is YS-MATRIX for?</span><span class="plus">+</span></button>
+          <div class="faq-a"><p data-i18n="faq.a2">Showroom owners and managers, and small to medium automotive businesses currently relying on spreadsheets, notebooks, or scattered tools.</p></div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-q"><span data-i18n="faq.q3">Is YS-MATRIX a one-time purchase?</span><span class="plus">+</span></button>
+          <div class="faq-a"><p data-i18n="faq.a3">No. YS-MATRIX is a subscription that gives you continuous access to the platform, along with ongoing maintenance and development.</p></div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-q"><span data-i18n="faq.q4">What does the subscription include?</span><span class="plus">+</span></button>
+          <div class="faq-a"><p data-i18n="faq.a4">Platform access, security updates, performance improvements, bug fixes, maintenance, new capabilities, and technical support.</p></div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-q"><span data-i18n="faq.q5">Is there a free trial?</span><span class="plus">+</span></button>
+          <div class="faq-a"><p data-i18n="faq.a5">Yes — every plan includes a 5-day free trial.</p></div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-q"><span data-i18n="faq.q6">Can you help us set up our showroom?</span><span class="plus">+</span></button>
+          <div class="faq-a"><p data-i18n="faq.a6">Yes. Our team can help you get your showroom environment ready as part of onboarding.</p></div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-q"><span data-i18n="faq.q7">Where is my business data stored?</span><span class="plus">+</span></button>
+          <div class="faq-a"><p data-i18n="faq.a7">Your business data is managed within YS-MATRIX's secured infrastructure, following the tenant isolation and access-control principles described above.</p></div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-q"><span data-i18n="faq.q8">Can YS-MATRIX grow with my business?</span><span class="plus">+</span></button>
+          <div class="faq-a"><p data-i18n="faq.a8">The platform is continuously developed and improved, with YS-SOFTWARE focused on supporting businesses as they grow.</p></div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-q"><span data-i18n="faq.q9">How do I get started?</span><span class="plus">+</span></button>
+          <div class="faq-a"><p data-i18n="faq.a9">Open YS-MATRIX and start your 5-day free trial — no commitment required.</p></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FINAL CTA -->
+  <section class="section-alt">
+    <div class="container final-cta reveal">
+      <span class="eyebrow" data-i18n="finalCta.eyebrow">Get Started</span>
+      <h2 data-i18n="finalCta.h2">Your business is growing.<br>Your system should grow with it.</h2>
+      <p style="color:var(--text-dim); max-width:480px; margin:18px auto 0" data-i18n="finalCta.body">Start with YS-MATRIX today and build your showroom operations on a system designed to keep improving.</p>
+      <div class="btn-row">
+        <a class="btn btn-primary" href="https://ys-matrix-frontend.vercel.app/" target="_blank" rel="noopener" data-i18n="hero.ctaPrimary">Start Your 5-Day Free Trial</a>
+        <a class="btn btn-ghost" href="https://ys-matrix-frontend.vercel.app/" target="_blank" rel="noopener" data-i18n="hero.ctaSecondary">Explore YS-MATRIX</a>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  <div class="container">
+    <div class="footer-grid">
+      <div class="footer-brand">
+        <div class="logo">
+          <span class="logo-badge">YS</span>
+          <span>MATRIX</span>
+        </div>
+        <p data-i18n="footer.tagline">A business management platform by YS-SOFTWARE.</p>
+      </div>
+      <div class="footer-cols">
+        <div class="footer-col">
+          <h4 data-i18n="footer.product">Product</h4>
+          <a href="#capabilities" data-i18n="nav.product">Product</a>
+          <a href="#pricing" data-i18n="nav.pricing">Pricing</a>
+          <a href="#security" data-i18n="nav.security">Security</a>
+          <a href="https://ys-matrix-frontend.vercel.app/" target="_blank" rel="noopener" data-i18n="footer.openApp">Open YS-MATRIX</a>
+        </div>
+        <div class="footer-col">
+          <h4 data-i18n="footer.company">Company</h4>
+          <a href="#company" data-i18n="footer.about">About YS-SOFTWARE</a>
+          <a href="#faq" data-i18n="nav.faq">FAQ</a>
+        </div>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span data-i18n="footer.copyright">© 2026 YS-SOFTWARE. All rights reserved.</span>
+      <span class="mono" data-i18n="footer.built">YS-MATRIX — built by YS-SOFTWARE</span>
+    </div>
+  </div>
+</footer>
+
+<script>
+(function(){
+  "use strict";
+
+  /* ---------- i18n ---------- */
+  var translations = {
+    en: {
+      "nav.product":"Product","nav.pricing":"Pricing","nav.security":"Security","nav.faq":"FAQ","nav.cta":"Start Trial",
+      "hero.eyebrow":"A YS-SOFTWARE Product",
+      "hero.h1":"Run your showroom<br>with clarity.",
+      "hero.lead":"YS-MATRIX brings your showroom's sales, inventory, spare parts, customers, suppliers, installments, and daily operations into one organized platform — replacing scattered spreadsheets, notebooks, and chat threads with a single system.",
+      "hero.ctaPrimary":"Start Your 5-Day Free Trial",
+      "hero.ctaSecondary":"Explore YS-MATRIX",
+      "hero.trust":"Powered by YS-SOFTWARE",
+      "hero.panel.sales":"Sales Overview","hero.panel.inventory":"Inventory","hero.panel.customers":"Customers",
+      "hero.panel.cars":"Cars","hero.panel.moto":"Motorcycles","hero.panel.threewheel":"Three-Wheelers",
+      "hero.panel.active":"Active this week",
+      "hero.panel.caption":"Conceptual preview — for illustration only",
+      "problem.eyebrow":"The Problem",
+      "problem.h2":"Your business shouldn't depend on scattered information.",
+      "problem.body":"Spreadsheets fall out of sync. Notebooks get lost. Important decisions get buried in chat threads. As a showroom grows, information spreads across more tools — and owners lose visibility into what's actually happening on the floor.",
+      "problem.p1":"Information gets scattered across tools","problem.p2":"Important records become hard to find","problem.p3":"Manual updates lead to mistakes","problem.p4":"Owners lose visibility into operations","problem.p5":"Growth adds more complexity",
+      "problem.from":"Scattered tools","problem.to":"One organized system",
+      "solution.eyebrow":"The Solution","solution.h2":"One system for a more organized business.",
+      "solution.body":"YS-MATRIX centralizes your showroom's operational information — so your team works from the same structured data, and you always know what's happening in your business.",
+      "solution.data":"Business Data","solution.m1":"Operations","solution.m2":"Sales","solution.m3":"Inventory","solution.m4":"Customers","solution.m5":"Expenses","solution.m6":"Reporting",
+      "cap.eyebrow":"What You Get","cap.h2":"Everything your showroom operates on, in one place.",
+      "cap.t1":"Business Management","cap.d1":"Keep your showroom's core operational information organized and accessible in one place, so your team always works from the same structured data.",
+      "cap.t2":"Sales & Operations","cap.d2":"Manage day-to-day sales and operational workflows through a single system, instead of stitching together spreadsheets and messages.",
+      "cap.t3":"Inventory & Spare Parts","cap.d3":"Track your showroom's inventory — including spare parts — in a structured way, so you always know what you have and where it stands.",
+      "cap.t4":"Customers","cap.d4":"Add and manage customer records in one place, so your team can serve customers consistently and reliably.",
+      "cap.t7":"Suppliers","cap.d7":"Keep supplier and vendor records organized alongside your customers, all within the same system.",
+      "cap.t5":"Financial Operations","cap.d5":"Manage expenses, installments, and profits alongside payments and financial workflows — all within the same system as the rest of your operations.",
+      "cap.t6":"Dashboard & Visibility","cap.d6":"See your business through structured, flexible dashboards — built to help owners and managers understand what's happening at a glance.",
+      "cap.t8":"Notifications","cap.d8":"Stay informed with real-time notifications for the events that matter to your showroom.",
+      "cap.t9":"Invoicing","cap.d9":"Generate and print invoices for your sales and transactions directly from the system.",
+      "why.eyebrow":"Why YS-MATRIX","why.h2":"Built for businesses that are ready to operate better.",
+      "why.t1":"Centralized data","why.d1":"Your business information stays organized in one system.",
+      "why.t2":"Less operational friction","why.d2":"Reduce dependence on scattered tools and manual workflows.",
+      "why.t3":"Better visibility","why.d3":"Make business information easier to access and understand.",
+      "why.t4":"Built to evolve","why.d4":"The product continues to receive improvements over time.",
+      "why.t5":"Security and maintenance","why.d5":"The platform is maintained and continuously improved by YS-SOFTWARE.",
+      "why.t6":"Business-focused","why.d6":"Designed around real operational workflows, not generic software features.",
+      "sub.eyebrow":"The Subscription",
+      "sub.h2":"You're not just subscribing to software.<br>You're investing in an evolving business system.",
+      "sub.body":"Your subscription covers continuous access to the platform, along with the full product lifecycle: security updates, performance improvements, bug fixes, maintenance, new capabilities, and technical support.",
+      "sub.s1":"Launch","sub.s1d":"Your platform goes live",
+      "sub.s2":"Setup","sub.s2d":"Your showroom is configured",
+      "sub.s3":"Daily Operation","sub.s3d":"Your team works from one system",
+      "sub.s4":"Updates","sub.s4d":"Security and performance kept current",
+      "sub.s5":"Improvements","sub.s5d":"The product keeps getting better",
+      "sub.s6":"Growth","sub.s6d":"Your system grows with your business",
+      "onb.eyebrow":"Getting Started","onb.h2":"We don't expect you to figure everything out alone.",
+      "onb.t1":"Create your account","onb.d1":"Sign up and get access to your YS-MATRIX workspace.",
+      "onb.t2":"Configure your showroom","onb.d2":"Set up your showroom's structure inside the platform.",
+      "onb.t3":"Prepare your business data","onb.d3":"Our team can help you get your showroom environment ready.",
+      "onb.t4":"Start operating","onb.d4":"Run your daily operations from a single, organized system.",
+      "onb.t5":"Keep improving","onb.d5":"Continue receiving updates, improvements, and support.",
+      "pricing.eyebrow":"Pricing","pricing.h2":"Simple, transparent pricing.",
+      "pricing.body":"Every plan starts with a 5-day free trial. No hidden fees.",
+      "pricing.monthly":"Monthly","pricing.sixmo":"6 Months","pricing.yearly":"Yearly",
+      "pricing.perMonth":"per month","pricing.per6":"every 6 months","pricing.perYear":"per year",
+      "pricing.cta":"Start Your 5-Day Free Trial","pricing.trial":"Includes full platform access from day one",
+      "pricing.f1":"Full access to the YS-MATRIX platform","pricing.f2":"Ongoing security and performance updates","pricing.f3":"Continuous product improvements","pricing.f4":"Technical support",
+      "pricing.save":"Save",
+      "comp.eyebrow":"The Difference","comp.h2":"Before and after YS-MATRIX.",
+      "comp.beforeLabel":"Before YS-MATRIX","comp.afterLabel":"With YS-MATRIX",
+      "comp.b1":"Scattered information","comp.b2":"Manual processes","comp.b3":"Hard-to-find records","comp.b4":"Disconnected workflows","comp.b5":"Limited visibility","comp.b6":"Growing operational complexity",
+      "comp.a1":"Centralized information","comp.a2":"Structured workflows","comp.a3":"Organized business data","comp.a4":"Better visibility","comp.a5":"More consistent operations","comp.a6":"A system that evolves with your business",
+      "cd.eyebrow":"Continuous Development","cd.h2":"The product keeps moving forward.",
+      "cd.body":"YS-SOFTWARE continuously evaluates and improves the platform — YS-MATRIX is never a finished, frozen product.",
+      "cd.n1":"Security","cd.n2":"Performance","cd.n3":"Reliability","cd.n4":"New capabilities","cd.n5":"UX improvements","cd.n6":"Business growth",
+      "sec.eyebrow":"Security & Trust","sec.h2":"Engineered with care, not an afterthought.",
+      "sec.t1":"Role-based access","sec.d1":"Every team member sees only what their role allows.",
+      "sec.t2":"Tenant isolation","sec.d2":"Your showroom's data stays separate and isolated from every other business on the platform.",
+      "sec.t3":"Audit logging","sec.d3":"Important actions are logged, giving a clear record of what happened and when.",
+      "sec.t4":"Hardened against abuse","sec.d4":"Rate limiting and security headers protect the platform against common web threats.",
+      "sec.t5":"Fail-closed by default","sec.d5":"When in doubt, the system denies access by default — protecting your data first.",
+      "sec.t6":"Continuous maintenance","sec.d6":"Security isn't a one-time setup — it's maintained on an ongoing basis.",
+      "comp2.eyebrow":"About YS-SOFTWARE","comp2.h2":"Built by a technology company that stays with the product.",
+      "comp2.body":"YS-SOFTWARE builds and operates digital products for businesses. YS-MATRIX is one of its products — continuously developed and maintained, not shipped once and left behind.",
+      "comp2.chip":"Continuous Development",
+      "ctaMid.h2":"Ready to see your business differently?","ctaMid.secondary":"Open YS-MATRIX",
+      "faq.eyebrow":"FAQ","faq.h2":"Frequently asked questions.",
+      "faq.q1":"What is YS-MATRIX?","faq.a1":"YS-MATRIX is a business management platform by YS-SOFTWARE, built to help showrooms organize their daily operations in one system.",
+      "faq.q2":"Who is YS-MATRIX for?","faq.a2":"Vehicle showroom owners and managers — across cars, motorcycles, and three-wheelers — and small to medium transport businesses currently relying on spreadsheets, notebooks, or scattered tools.",
+      "faq.q3":"Is YS-MATRIX a one-time purchase?","faq.a3":"No. YS-MATRIX is a subscription that gives you continuous access to the platform, along with ongoing maintenance and development.",
+      "faq.q4":"What does the subscription include?","faq.a4":"Platform access, security updates, performance improvements, bug fixes, maintenance, new capabilities, and technical support.",
+      "faq.q5":"Is there a free trial?","faq.a5":"Yes — every plan includes a 5-day free trial.",
+      "faq.q6":"Can you help us set up our showroom?","faq.a6":"Yes. Our team can help you get your showroom environment ready as part of onboarding.",
+      "faq.q7":"Where is my business data stored?","faq.a7":"Your business data is managed within YS-MATRIX's secured infrastructure, following the tenant isolation and access-control principles described above.",
+      "faq.q8":"Can YS-MATRIX grow with my business?","faq.a8":"The platform is continuously developed and improved, with YS-SOFTWARE focused on supporting businesses as they grow.",
+      "faq.q9":"How do I get started?","faq.a9":"Open YS-MATRIX and start your 5-day free trial — no commitment required.",
+      "finalCta.eyebrow":"Get Started","finalCta.h2":"Your business is growing.<br>Your system should grow with it.",
+      "finalCta.body":"Start with YS-MATRIX today and build your showroom operations on a system designed to keep improving.",
+      "footer.tagline":"A business management platform by YS-SOFTWARE.",
+      "footer.product":"Product","footer.company":"Company","footer.about":"About YS-SOFTWARE","footer.openApp":"Open YS-MATRIX",
+      "footer.copyright":"© 2026 YS-SOFTWARE. All rights reserved.","footer.built":"YS-MATRIX — built by YS-SOFTWARE"
+    },
+    ar: {
+      "nav.product":"المنتج","nav.pricing":"الأسعار","nav.security":"الأمان","nav.faq":"الأسئلة الشائعة","nav.cta":"ابدأ التجربة",
+      "hero.eyebrow":"منتج من YS-SOFTWARE",
+      "hero.h1":"أدر معرضك<br>بكل وضوح.",
+      "hero.lead":"يجمع YS-MATRIX مبيعات معرضك ومخزونه وقطع غياره وعملاءه وموردينه وأقساطه وعملياته اليومية في نظام واحد منظم — بدلًا من جداول بيانات ودفاتر ومحادثات متفرقة.",
+      "hero.ctaPrimary":"ابدأ تجربتك المجانية لمدة 5 أيام",
+      "hero.ctaSecondary":"استكشف YS-MATRIX",
+      "hero.trust":"بدعم من YS-SOFTWARE",
+      "hero.panel.sales":"نظرة على المبيعات","hero.panel.inventory":"المخزون","hero.panel.customers":"العملاء",
+      "hero.panel.cars":"سيارات","hero.panel.moto":"موتوسيكلات","hero.panel.threewheel":"تروسيكل",
+      "hero.panel.active":"نشط هذا الأسبوع",
+      "hero.panel.caption":"معاينة توضيحية — لأغراض العرض فقط",
+      "problem.eyebrow":"المشكلة",
+      "problem.h2":"عملك لا يجب أن يعتمد على معلومات متفرقة.",
+      "problem.body":"جداول البيانات تفقد تزامنها، والدفاتر تُفقد، وتُدفن القرارات المهمة في محادثات متفرقة. ومع نمو المعرض، تتوزع المعلومات على أدوات أكثر — ويفقد الملاك الرؤية الواضحة لما يجري فعليًا في صالة العرض.",
+      "problem.p1":"تتفرق المعلومات بين أدوات متعددة","problem.p2":"يصعب إيجاد السجلات المهمة","problem.p3":"التحديثات اليدوية تؤدي إلى أخطاء","problem.p4":"يفقد الملاك الرؤية الواضحة على العمليات","problem.p5":"النمو يزيد من التعقيد",
+      "problem.from":"أدوات متفرقة","problem.to":"نظام واحد منظم",
+      "solution.eyebrow":"الحل","solution.h2":"نظام واحد لعمل أكثر تنظيمًا.",
+      "solution.body":"يجمع YS-MATRIX معلومات معرضك التشغيلية في مكان واحد — ليعمل فريقك من نفس البيانات المنظمة، ولتعرف دائمًا ما يجري في عملك.",
+      "solution.data":"بيانات العمل","solution.m1":"العمليات","solution.m2":"المبيعات","solution.m3":"المخزون","solution.m4":"العملاء","solution.m5":"المصروفات","solution.m6":"التقارير",
+      "cap.eyebrow":"ماذا تحصل عليه","cap.h2":"كل ما يشغّل معرضك، في مكان واحد.",
+      "cap.t1":"إدارة الأعمال","cap.d1":"حافظ على تنظيم معلومات معرضك التشغيلية الأساسية وسهولة الوصول إليها في مكان واحد، ليعمل فريقك دائمًا من نفس البيانات المنظمة.",
+      "cap.t2":"المبيعات والعمليات","cap.d2":"أدر عمليات البيع اليومية من خلال نظام واحد، بدلًا من الجمع بين جداول بيانات ورسائل متفرقة.",
+      "cap.t3":"المخزون وقطع الغيار","cap.d3":"تتبع مخزون معرضك — بما في ذلك قطع الغيار — بطريقة منظمة، لتعرف دائمًا ما لديك وأين يقف.",
+      "cap.t4":"العملاء","cap.d4":"أضف وأدر سجلات العملاء في مكان واحد، ليقدّم فريقك خدمة متسقة وموثوقة.",
+      "cap.t7":"الموردين","cap.d7":"حافظ على تنظيم سجلات الموردين إلى جانب عملائك، ضمن نفس النظام.",
+      "cap.t5":"العمليات المالية","cap.d5":"أدر المصروفات والأقساط والأرباح إلى جانب المدفوعات والعمليات المالية — كل ذلك ضمن نفس نظام باقي عملياتك.",
+      "cap.t6":"لوحة المعلومات والرؤية","cap.d6":"اطّلع على عملك من خلال لوحات معلومات منظمة ومرنة، صُممت لمساعدة الملاك والمديرين على فهم ما يجري بنظرة واحدة.",
+      "cap.t8":"الإشعارات","cap.d8":"ابقَ على اطلاع بإشعارات فورية للأحداث المهمة في معرضك.",
+      "cap.t9":"الفواتير","cap.d9":"أصدر واطبع فواتير مبيعاتك ومعاملاتك مباشرة من النظام.",
+      "why.eyebrow":"لماذا YS-MATRIX","why.h2":"مبني للأعمال المستعدة للعمل بشكل أفضل.",
+      "why.t1":"بيانات مركزية","why.d1":"تبقى معلومات عملك منظمة في نظام واحد.",
+      "why.t2":"احتكاك تشغيلي أقل","why.d2":"قلّل الاعتماد على أدوات متفرقة وعمليات يدوية.",
+      "why.t3":"رؤية أفضل","why.d3":"اجعل معلومات عملك أسهل في الوصول والفهم.",
+      "why.t4":"مبني للتطور","why.d4":"يستمر المنتج في تلقي التحسينات مع الوقت.",
+      "why.t5":"الأمان والصيانة","why.d5":"تتم صيانة المنصة وتحسينها باستمرار من قِبل YS-SOFTWARE.",
+      "why.t6":"تركيز على الأعمال","why.d6":"مصمم حول سير العمل التشغيلي الحقيقي، لا مزايا برمجية عامة.",
+      "sub.eyebrow":"الاشتراك",
+      "sub.h2":"أنت لا تشترك في برنامج فقط.<br>أنت تستثمر في نظام أعمال متطور.",
+      "sub.body":"يمنحك اشتراكك وصولًا مستمرًا إلى المنصة، إلى جانب دورة حياة المنتج الكاملة: تحديثات أمنية، تحسينات أداء، إصلاح للأخطاء، صيانة، مزايا جديدة، ودعم فني.",
+      "sub.s1":"الإطلاق","sub.s1d":"تنطلق منصتك",
+      "sub.s2":"الإعداد","sub.s2d":"يتم إعداد معرضك",
+      "sub.s3":"التشغيل اليومي","sub.s3d":"يعمل فريقك من نظام واحد",
+      "sub.s4":"التحديثات","sub.s4d":"الأمان والأداء يبقيان محدَّثين",
+      "sub.s5":"التحسينات","sub.s5d":"المنتج يستمر في التحسّن",
+      "sub.s6":"النمو","sub.s6d":"نظامك ينمو مع عملك",
+      "onb.eyebrow":"البدء","onb.h2":"لا نتوقع منك معرفة كل شيء بمفردك.",
+      "onb.t1":"أنشئ حسابك","onb.d1":"سجّل واحصل على الوصول إلى مساحة عمل YS-MATRIX الخاصة بك.",
+      "onb.t2":"قم بإعداد معرضك","onb.d2":"جهّز هيكل معرضك داخل المنصة.",
+      "onb.t3":"جهّز بيانات عملك","onb.d3":"يمكن لفريقنا مساعدتك في تجهيز بيئة معرضك.",
+      "onb.t4":"ابدأ التشغيل","onb.d4":"أدر عملياتك اليومية من نظام واحد منظم.",
+      "onb.t5":"استمر في التحسين","onb.d5":"استمر في تلقي التحديثات والتحسينات والدعم.",
+      "pricing.eyebrow":"الأسعار","pricing.h2":"تسعير بسيط وشفاف.",
+      "pricing.body":"تبدأ كل خطة بتجربة مجانية لمدة 5 أيام. بدون رسوم خفية.",
+      "pricing.monthly":"شهري","pricing.sixmo":"6 أشهر","pricing.yearly":"سنوي",
+      "pricing.perMonth":"شهريًا","pricing.per6":"كل 6 أشهر","pricing.perYear":"سنويًا",
+      "pricing.cta":"ابدأ تجربتك المجانية لمدة 5 أيام","pricing.trial":"يشمل وصولاً كاملاً للمنصة من اليوم الأول",
+      "pricing.f1":"وصول كامل إلى منصة YS-MATRIX","pricing.f2":"تحديثات أمنية وأداء مستمرة","pricing.f3":"تحسينات مستمرة على المنتج","pricing.f4":"دعم فني",
+      "pricing.save":"وفّر",
+      "comp.eyebrow":"الفرق","comp.h2":"قبل وبعد YS-MATRIX.",
+      "comp.beforeLabel":"قبل YS-MATRIX","comp.afterLabel":"مع YS-MATRIX",
+      "comp.b1":"معلومات متفرقة","comp.b2":"عمليات يدوية","comp.b3":"سجلات يصعب إيجادها","comp.b4":"سير عمل غير مترابط","comp.b5":"رؤية محدودة","comp.b6":"تعقيد تشغيلي متزايد",
+      "comp.a1":"معلومات مركزية","comp.a2":"سير عمل منظم","comp.a3":"بيانات أعمال منظمة","comp.a4":"رؤية أفضل","comp.a5":"عمليات أكثر اتساقًا","comp.a6":"نظام يتطور مع عملك",
+      "cd.eyebrow":"التطوير المستمر","cd.h2":"المنتج يستمر في التقدم.",
+      "cd.body":"تقوم YS-SOFTWARE بتقييم المنصة وتحسينها باستمرار — YS-MATRIX ليس منتجًا نهائيًا مجمّدًا أبدًا.",
+      "cd.n1":"الأمان","cd.n2":"الأداء","cd.n3":"الموثوقية","cd.n4":"مزايا جديدة","cd.n5":"تحسينات تجربة المستخدم","cd.n6":"نمو الأعمال",
+      "sec.eyebrow":"الأمان والثقة","sec.h2":"مصمم بعناية، لا كفكرة لاحقة.",
+      "sec.t1":"التحكم حسب الدور","sec.d1":"يرى كل عضو في الفريق فقط ما يسمح به دوره.",
+      "sec.t2":"عزل بيانات المستأجرين","sec.d2":"تبقى بيانات معرضك منفصلة ومعزولة عن أي عمل آخر على المنصة.",
+      "sec.t3":"تسجيل العمليات","sec.d3":"يتم تسجيل الإجراءات المهمة، ما يوفر سجلًا واضحًا لما حدث ومتى.",
+      "sec.t4":"محصّن ضد الإساءة","sec.d4":"الحد من معدل الطلبات ورؤوس الحماية يحميان المنصة من التهديدات الشائعة على الويب.",
+      "sec.t5":"رفض الوصول افتراضيًا","sec.d5":"عند الشك، يرفض النظام الوصول افتراضيًا — لحماية بياناتك أولًا.",
+      "sec.t6":"صيانة مستمرة","sec.d6":"الأمان ليس إعدادًا لمرة واحدة — بل تتم صيانته باستمرار.",
+      "comp2.eyebrow":"عن YS-SOFTWARE","comp2.h2":"من صنع شركة تقنية تبقى مع المنتج.",
+      "comp2.body":"تبني YS-SOFTWARE وتُشغّل منتجات رقمية للأعمال. و YS-MATRIX أحد هذه المنتجات — يُطوَّر ويُصان باستمرار، بدلًا من إطلاقه مرة واحدة وتركه.",
+      "comp2.chip":"تطوير مستمر",
+      "ctaMid.h2":"مستعد لترى عملك بطريقة مختلفة؟","ctaMid.secondary":"افتح YS-MATRIX",
+      "faq.eyebrow":"الأسئلة الشائعة","faq.h2":"الأسئلة الأكثر شيوعًا.",
+      "faq.q1":"ما هو YS-MATRIX؟","faq.a1":"YS-MATRIX هو منصة لإدارة الأعمال من YS-SOFTWARE، صُممت لمساعدة المعارض على تنظيم عملياتها اليومية في نظام واحد.",
+      "faq.q2":"لمن يناسب YS-MATRIX؟","faq.a2":"لأصحاب معارض السيارات والموتوسيكلات والتروسيكل ومديريها، والأعمال الصغيرة والمتوسطة في مجال النقل التي تعتمد حاليًا على جداول البيانات أو الدفاتر أو أدوات متفرقة.",
+      "faq.q3":"هل YS-MATRIX عملية شراء لمرة واحدة؟","faq.a3":"لا. YS-MATRIX هو اشتراك يمنحك وصولًا مستمرًا للمنصة، مع صيانتها وتطويرها المستمرين.",
+      "faq.q4":"ماذا يتضمن الاشتراك؟","faq.a4":"الوصول إلى المنصة، التحديثات الأمنية، تحسينات الأداء، إصلاح الأخطاء، الصيانة، المزايا الجديدة، والدعم الفني.",
+      "faq.q5":"هل توجد تجربة مجانية؟","faq.a5":"نعم — تشمل كل خطة تجربة مجانية لمدة 5 أيام.",
+      "faq.q6":"هل يمكنكم مساعدتنا في إعداد معرضنا؟","faq.a6":"نعم. يمكن لفريقنا مساعدتك في تجهيز بيئة معرضك كجزء من عملية الإعداد.",
+      "faq.q7":"أين تُخزَّن بيانات عملي؟","faq.a7":"تُدار بيانات عملك ضمن بنية YS-MATRIX الآمنة، وفق مبادئ عزل البيانات والتحكم في الوصول الموضحة أعلاه.",
+      "faq.q8":"هل يمكن أن ينمو YS-MATRIX مع عملي؟","faq.a8":"تستمر المنصة في التطور والتحسين، مع تركيز YS-SOFTWARE على دعم الأعمال أثناء نموها.",
+      "faq.q9":"كيف أبدأ؟","faq.a9":"افتح YS-MATRIX وابدأ تجربتك المجانية لمدة 5 أيام — دون أي التزام.",
+      "finalCta.eyebrow":"ابدأ الآن","finalCta.h2":"عملك ينمو.<br>ونظامك يجب أن ينمو معه.",
+      "finalCta.body":"ابدأ مع YS-MATRIX اليوم، وابنِ عمليات معرضك على نظام مصمم للاستمرار في التحسّن.",
+      "footer.tagline":"منصة لإدارة الأعمال من YS-SOFTWARE.",
+      "footer.product":"المنتج","footer.company":"الشركة","footer.about":"عن YS-SOFTWARE","footer.openApp":"افتح YS-MATRIX",
+      "footer.copyright":"© 2026 YS-SOFTWARE. جميع الحقوق محفوظة.","footer.built":"YS-MATRIX — من إنتاج YS-SOFTWARE"
+    }
+  };
+
+  var langLabels = { en:"العربية", ar:"English" };
+  var currentLang = "en";
+
+  function applyLang(lang){
+    currentLang = lang;
+    document.documentElement.lang = lang;
+    document.documentElement.dir = lang === "ar" ? "rtl" : "ltr";
+    var dict = translations[lang];
+    document.querySelectorAll("[data-i18n]").forEach(function(el){
+      var key = el.getAttribute("data-i18n");
+      if(dict[key] !== undefined) el.innerHTML = dict[key];
+    });
+    document.getElementById("langToggle").textContent = langLabels[lang];
+    renderPricing();
+  }
+
+  document.getElementById("langToggle").addEventListener("click", function(){
+    applyLang(currentLang === "en" ? "ar" : "en");
+  });
+
+  /* ---------- mobile menu ---------- */
+  var burger = document.getElementById("burger");
+  var mobileMenu = document.getElementById("mobileMenu");
+  burger.addEventListener("click", function(){
+    var open = mobileMenu.classList.toggle("open");
+    burger.setAttribute("aria-expanded", open);
+  });
+  mobileMenu.querySelectorAll("a").forEach(function(a){
+    a.addEventListener("click", function(){ mobileMenu.classList.remove("open"); });
+  });
+
+  /* ---------- pricing ---------- */
+  var markets = {
+    eg:     { nameEn:"Egypt",        nameAr:"مصر",       cur:"EGP", monthly:350,  sixmo:1955, yearly:3570 },
+    sa:     { nameEn:"Saudi Arabia", nameAr:"السعودية", cur:"SAR", monthly:65,   sixmo:365,  yearly:665  },
+    ae:     { nameEn:"UAE",          nameAr:"الإمارات", cur:"AED", monthly:65,   sixmo:365,  yearly:665  },
+    global: { nameEn:"Global",       nameAr:"عالمي",     cur:"USD", monthly:19,   sixmo:105,  yearly:195  }
+  };
+  var currentMarket = "eg";
+  var currentBilling = "monthly";
+
+  document.getElementById("marketSeg").addEventListener("click", function(e){
+    var btn = e.target.closest("button");
+    if(!btn) return;
+    currentMarket = btn.getAttribute("data-market");
+    this.querySelectorAll("button").forEach(function(b){ b.classList.remove("active"); });
+    btn.classList.add("active");
+    renderPricing();
+  });
+
+  document.getElementById("billingSeg").addEventListener("click", function(e){
+    var btn = e.target.closest("button");
+    if(!btn) return;
+    currentBilling = btn.getAttribute("data-billing");
+    this.querySelectorAll("button").forEach(function(b){ b.classList.remove("active"); });
+    btn.classList.add("active");
+    renderPricing();
+  });
+
+  function formatNumber(n){
+    return n.toLocaleString(currentLang === "ar" ? "ar-EG" : "en-US");
+  }
+
+  function renderPricing(){
+    var m = markets[currentMarket];
+    var dict = translations[currentLang];
+    var amount, cycleKey, badge = "";
+    if(currentBilling === "monthly"){ amount = m.monthly; cycleKey = "pricing.perMonth"; }
+    else if(currentBilling === "sixmo"){ amount = m.sixmo; cycleKey = "pricing.per6"; badge = dict["pricing.save"] + " 7%"; }
+    else { amount = m.yearly; cycleKey = "pricing.perYear"; badge = dict["pricing.save"] + " 15%"; }
+
+    document.getElementById("priceMarketLabel").textContent = (currentLang === "ar" ? m.nameAr : m.nameEn).toUpperCase();
+    document.getElementById("priceAmount").textContent = formatNumber(amount);
+    document.getElementById("priceCurrency").textContent = m.cur;
+    document.getElementById("priceCycle").textContent = dict[cycleKey];
+    var badgeEl = document.getElementById("priceBadge");
+    if(badge){ badgeEl.textContent = badge; badgeEl.style.visibility = "visible"; }
+    else { badgeEl.style.visibility = "hidden"; }
+  }
+
+  /* ---------- FAQ ---------- */
+  document.getElementById("faqList").addEventListener("click", function(e){
+    var q = e.target.closest(".faq-q");
+    if(!q) return;
+    var item = q.closest(".faq-item");
+    var wasOpen = item.classList.contains("open");
+    this.querySelectorAll(".faq-item").forEach(function(i){ i.classList.remove("open"); });
+    if(!wasOpen) item.classList.add("open");
+  });
+
+  /* ---------- scroll reveal ---------- */
+  var reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  if("IntersectionObserver" in window && !reduceMotion){
+    var io = new IntersectionObserver(function(entries){
+      entries.forEach(function(entry){
+        if(entry.isIntersecting){
+          entry.target.classList.add("in-view");
+          io.unobserve(entry.target);
+        }
+      });
+    }, { threshold: .12, rootMargin: "0px 0px -60px 0px" });
+    document.querySelectorAll(".reveal").forEach(function(el){ io.observe(el); });
+  } else {
+    document.querySelectorAll(".reveal").forEach(function(el){ el.classList.add("in-view"); });
+  }
+
+  /* ---------- hero parallax (desktop only) ---------- */
+  if(window.matchMedia("(pointer: fine)").matches && !reduceMotion){
+    var deck = document.querySelector(".deck");
+    var panels = [document.getElementById("panelSales"), document.getElementById("panelInv"), document.getElementById("panelCust")];
+    if(deck){
+      deck.addEventListener("mousemove", function(e){
+        var rect = deck.getBoundingClientRect();
+        var x = (e.clientX - rect.left) / rect.width - .5;
+        var y = (e.clientY - rect.top) / rect.height - .5;
+        panels.forEach(function(p, i){
+          if(!p) return;
+          var depth = (i + 1) * 6;
+          p.style.transform = "translate(" + (x * depth) + "px," + (y * depth) + "px)";
+        });
+      });
+      deck.addEventListener("mouseleave", function(){
+        panels.forEach(function(p){ if(p) p.style.transform = ""; });
+      });
+    }
+  }
+
+  /* ---------- init ---------- */
+  applyLang("en");
+})();
+</script>
+</body>
+</html>

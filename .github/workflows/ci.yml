@@ -1,0 +1,193 @@
+name: CI Pipeline
+
+on:
+  push:
+    branches: [main, develop, 'release/*']
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+env:
+  NODE_VERSION: '20'
+  PHP_VERSION: '8.4'
+
+jobs:
+  # ─────────────────────────────────────────────
+  # 1. INSTALL & LINT (Frontend)
+  # ─────────────────────────────────────────────
+  frontend-lint:
+    name: Frontend Lint & Type Check
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./ys-web
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+          cache-dependency-path: ./ys-web/package-lock.json
+      - run: npm ci
+      - run: npm run lint
+      - run: npm run type-check
+
+  # ─────────────────────────────────────────────
+  # 2. INSTALL & STATIC ANALYSIS (Backend)
+  # ─────────────────────────────────────────────
+  backend-static:
+    name: Backend Static Analysis
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./ys-api
+    steps:
+      - uses: actions/checkout@v4
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ env.PHP_VERSION }}
+          tools: composer:v2
+          extensions: pdo_pgsql, pdo_mysql, zip
+      - run: composer install --prefer-dist --no-progress
+      # Real code-style gate: `php artisan lint` does not exist and phpstan is
+      # not in composer.json, so the previous `|| echo "placeholder"` chain
+      # could never fail. The actual tooling in this repo is Laravel Pint.
+      - run: vendor/bin/pint --test
+
+  # ─────────────────────────────────────────────
+  # 3. STATIC GATES (Frontend)
+  # ─────────────────────────────────────────────
+  frontend-tests:
+    name: Frontend Tests
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./ys-web
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+          cache-dependency-path: ./ys-web/package-lock.json
+      - run: npm ci
+      # G-03: vitest IS installed (tests/contracts, tests/security) and
+      # `npm test` runs the real suite; the previous job treated the test
+      # runner as optional and only ran lint/type-check.
+      - run: npm test
+      - run: npm run lint
+      - run: npm run type-check
+
+  # ─────────────────────────────────────────────
+  # 4. UNIT TESTS (Backend)
+  # ─────────────────────────────────────────────
+  backend-tests:
+    name: Backend Tests
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./ys-api
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_DB: ys_test
+          POSTGRES_USER: ys_user
+          POSTGRES_PASSWORD: secret
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ env.PHP_VERSION }}
+          tools: composer:v2
+          extensions: pdo_pgsql, pdo_mysql, zip
+      - run: cp .env.example .env
+      - run: composer install --prefer-dist --no-progress
+      # The postgres service creates `ys_test` with user ys_user/secret;
+      # .env.example points at DB_USERNAME=postgres with a blank password,
+      # and neither `ys_api` (php artisan migrate) nor `ys_api_test`
+      # (phpunit.xml) exists on the service yet — without this step the
+      # first CI run would fail at migrate with "database does not exist".
+      - run: sed -i 's/^DB_USERNAME=.*/DB_USERNAME=ys_user/; s/^DB_PASSWORD=.*/DB_PASSWORD=secret/' .env
+      - name: Create application and test databases
+        run: |
+          php -r '
+          $p = new PDO("pgsql:host=127.0.0.1;port=5432;dbname=postgres", "ys_user", "secret");
+          $q = $p->prepare("SELECT 1 FROM pg_database WHERE datname = ?");
+          foreach (["ys_api", "ys_api_test"] as $db) {
+            $q->execute([$db]);
+            if (!$q->fetchColumn()) $p->exec("CREATE DATABASE \"$db\"");
+          }
+          '
+      - run: php artisan key:generate
+      # VULN-10 regression guard: every Gate::define must have at least
+      # one call site outside the provider — a defined-but-unwired gate
+      # means a dead permission (or worse, a mis-gated controller).
+      - name: Assert every Gate has a call site
+        run: |
+          for ability in $(grep -oP "Gate::define\('\K[a-z_]+" app/Providers/AuthServiceProvider.php); do
+            count=$(grep -rn "'$ability'" app --include='*.php' | grep -v 'Providers/AuthServiceProvider' | wc -l)
+            if [ "$count" -eq 0 ]; then
+              echo "::error::Dead gate: '$ability' has no call site"
+              exit 1
+            fi
+          done
+      - run: php artisan migrate --force
+      - run: php artisan test
+
+  # ─────────────────────────────────────────────
+  # 5. BUILD (Frontend)
+  # ─────────────────────────────────────────────
+  frontend-build:
+    name: Frontend Build
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./ys-web
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+          cache-dependency-path: ./ys-web/package-lock.json
+      - run: npm ci
+      - run: npm run build
+      - uses: actions/upload-artifact@v4
+        with:
+          name: frontend-build
+          path: ./ys-web/.next/
+          retention-days: 7
+
+  # ─────────────────────────────────────────────
+  # 6. SECURITY SCAN
+  # ─────────────────────────────────────────────
+  security-scan:
+    name: Security Scan
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+      - run: npm audit --production || true
+        working-directory: ./ys-web
+      - name: Run Trivy scan
+        uses: aquasecurity/trivy-action@master
+        with:
+          scan-type: 'fs'
+          scan-ref: '.'
+          format: 'sarif'
+          output: 'trivy-results.sarif'
+          severity: 'HIGH,CRITICAL'
+      - name: Upload Trivy results
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: 'trivy-results.sarif'

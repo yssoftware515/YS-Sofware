@@ -1,0 +1,14 @@
+.git
+.env
+.gitignore
+node_modules
+tests
+phpunit.xml
+.dockerignore
+bootstrap/cache/*.php
+storage/framework/cache/data/*
+storage/framework/sessions/*
+storage/framework/testing/*
+storage/framework/views/*
+storage/logs/*
+storage/app/public/*

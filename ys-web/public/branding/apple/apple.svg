@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg xmlns="http://www.w3.org/2000/svg"
+     width="1812" height="1788" viewBox="0 0 1812 1788">
+  <defs>
+    <clipPath id="iconClip">
+      <path d="M 155,121 L 124,152 L 90,194 L 65,234 L 49,266 L 31,314 L 19,359 L 10,408 L 4,470 L 4,1281 L 8,1337 L 16,1394 L 24,1432 L 36,1474 L 50,1512 L 70,1554 L 78,1567 L 99,1596 L 124,1626 L 163,1665 L 196,1690 L 245,1720 L 273,1734 L 304,1747 L 346,1759 L 404,1770 L 454,1776 L 513,1779 L 1280,1779 L 1357,1774 L 1405,1768 L 1454,1759 L 1493,1749 L 1523,1739 L 1564,1719 L 1593,1702 L 1628,1677 L 1649,1659 L 1680,1628 L 1712,1588 L 1735,1551 L 1755,1510 L 1775,1449 L 1787,1394 L 1795,1332 L 1797,1279 L 1797,475 L 1794,436 L 1790,404 L 1781,357 L 1767,305 L 1754,269 L 1741,242 L 1715,200 L 1693,171 L 1672,147 L 1639,115 L 1594,80 L 1570,65 L 1526,45 L 1471,27 L 1413,14 L 1359,6 L 1305,2 L 484,2 L 441,5 L 409,9 L 357,19 L 319,29 L 261,50 L 234,63 L 211,77 L 182,98 Z"/>
+    </clipPath>
+
+    <!-- Dark body with subtle purple cast toward the lower half -->
+    <linearGradient id="bodyGrad" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#000000"/>
+      <stop offset="48%" stop-color="#010102"/>
+      <stop offset="68%" stop-color="#070311"/>
+      <stop offset="82%" stop-color="#1E0C45"/>
+      <stop offset="100%" stop-color="#5C35B8"/>
+    </linearGradient>
+
+    <!-- Broad lower violet bloom -->
+    <radialGradient id="bottomGlow" cx="50%" cy="100%" r="72%" fx="50%" fy="100%">
+      <stop offset="0%" stop-color="#A779FF" stop-opacity="0.72"/>
+      <stop offset="24%" stop-color="#7D49E8" stop-opacity="0.48"/>
+      <stop offset="50%" stop-color="#4D219D" stop-opacity="0.27"/>
+      <stop offset="78%" stop-color="#1F0A4C" stop-opacity="0.08"/>
+      <stop offset="100%" stop-color="#000000" stop-opacity="0"/>
+    </radialGradient>
+
+    <!-- Side glow, stronger around lower corners -->
+    <radialGradient id="leftGlow" cx="0%" cy="78%" r="54%">
+      <stop offset="0%" stop-color="#713CE1" stop-opacity="0.42"/>
+      <stop offset="56%" stop-color="#371270" stop-opacity="0.12"/>
+      <stop offset="100%" stop-color="#000000" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="rightGlow" cx="100%" cy="78%" r="54%">
+      <stop offset="0%" stop-color="#713CE1" stop-opacity="0.42"/>
+      <stop offset="56%" stop-color="#371270" stop-opacity="0.12"/>
+      <stop offset="100%" stop-color="#000000" stop-opacity="0"/>
+    </radialGradient>
+
+    <!-- Edge sheen -->
+    <linearGradient id="edgeGrad" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#8E7AC7" stop-opacity="0.48"/>
+      <stop offset="30%" stop-color="#42355F" stop-opacity="0.18"/>
+      <stop offset="62%" stop-color="#2F1655" stop-opacity="0.24"/>
+      <stop offset="100%" stop-color="#9B6CFF" stop-opacity="0.78"/>
+    </linearGradient>
+
+    <filter id="softGlow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="38"/>
+    </filter>
+  </defs>
+
+  <!-- Exact source silhouette -->
+  <path d="M 155,121 L 124,152 L 90,194 L 65,234 L 49,266 L 31,314 L 19,359 L 10,408 L 4,470 L 4,1281 L 8,1337 L 16,1394 L 24,1432 L 36,1474 L 50,1512 L 70,1554 L 78,1567 L 99,1596 L 124,1626 L 163,1665 L 196,1690 L 245,1720 L 273,1734 L 304,1747 L 346,1759 L 404,1770 L 454,1776 L 513,1779 L 1280,1779 L 1357,1774 L 1405,1768 L 1454,1759 L 1493,1749 L 1523,1739 L 1564,1719 L 1593,1702 L 1628,1677 L 1649,1659 L 1680,1628 L 1712,1588 L 1735,1551 L 1755,1510 L 1775,1449 L 1787,1394 L 1795,1332 L 1797,1279 L 1797,475 L 1794,436 L 1790,404 L 1781,357 L 1767,305 L 1754,269 L 1741,242 L 1715,200 L 1693,171 L 1672,147 L 1639,115 L 1594,80 L 1570,65 L 1526,45 L 1471,27 L 1413,14 L 1359,6 L 1305,2 L 484,2 L 441,5 L 409,9 L 357,19 L 319,29 L 261,50 L 234,63 L 211,77 L 182,98 Z" fill="url(#bodyGrad)"/>
+
+  <g clip-path="url(#iconClip)">
+    <rect x="-120" y="700" width="2052" height="1188" fill="url(#bottomGlow)"/>
+    <rect x="-80" y="620" width="1146" height="1308" fill="url(#leftGlow)"/>
+    <rect x="746" y="620" width="1146" height="1308" fill="url(#rightGlow)"/>
+
+    <!-- Diffuse lower light -->
+    <ellipse cx="906.0" cy="1754" rx="869.8" ry="225"
+             fill="#7A4DE4" opacity="0.16" filter="url(#softGlow)"/>
+  </g>
+
+  <!-- Fine purple edge around the squircle -->
+  <path d="M 155,121 L 124,152 L 90,194 L 65,234 L 49,266 L 31,314 L 19,359 L 10,408 L 4,470 L 4,1281 L 8,1337 L 16,1394 L 24,1432 L 36,1474 L 50,1512 L 70,1554 L 78,1567 L 99,1596 L 124,1626 L 163,1665 L 196,1690 L 245,1720 L 273,1734 L 304,1747 L 346,1759 L 404,1770 L 454,1776 L 513,1779 L 1280,1779 L 1357,1774 L 1405,1768 L 1454,1759 L 1493,1749 L 1523,1739 L 1564,1719 L 1593,1702 L 1628,1677 L 1649,1659 L 1680,1628 L 1712,1588 L 1735,1551 L 1755,1510 L 1775,1449 L 1787,1394 L 1795,1332 L 1797,1279 L 1797,475 L 1794,436 L 1790,404 L 1781,357 L 1767,305 L 1754,269 L 1741,242 L 1715,200 L 1693,171 L 1672,147 L 1639,115 L 1594,80 L 1570,65 L 1526,45 L 1471,27 L 1413,14 L 1359,6 L 1305,2 L 484,2 L 441,5 L 409,9 L 357,19 L 319,29 L 261,50 L 234,63 L 211,77 L 182,98 Z" fill="none" stroke="url(#edgeGrad)" stroke-width="3.2" opacity="0.95"/>
+
+  <!-- Original YS monogram reconstructed as vector paths -->
+  <path d="M 1142,945 L 1142,845 L 1007,710 L 1301,426 L 1103,427 L 910,612 L 719,431 L 516,431 L 1002,901 L 1002,1042 L 1016,1059 Z" fill="#FFFFFF"/>
+  <path d="M 799,723 L 675,841 L 674,938 L 990,1248 L 910,1322 L 812,1227 L 812,1093 L 799,1079 L 675,1193 L 675,1284 L 911,1507 L 1142,1289 L 1142,1197 L 813,880 L 812,733 Z" fill="#FFFFFF"/>
+</svg>

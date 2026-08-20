@@ -1,0 +1,115 @@
+{
+  "nav": {
+    "products":   "Products",
+    "docs":       "Docs",
+    "roadmap":    "Roadmap",
+    "updates":    "Updates",
+    "about":      "About",
+    "careers":    "Careers",
+    "contact":    "Contact",
+    "status":     "Status",
+    "changelog":  "Changelog",
+    "releases":   "Releases",
+    "faq":        "FAQ"
+  },
+  "hero": {
+    "badge":    "Software Products Company",
+    "headline": "Building Modern Software Systems",
+    "subline":  "Scalable, secure, and production-grade SaaS platforms for real business problems.",
+    "cta_primary":   "Explore Products",
+    "cta_secondary": "View Roadmap"
+  },
+  "products": {
+    "title":       "Our Products",
+    "subtitle":    "A growing ecosystem of software solutions.",
+    "status": {
+      "active":   "Active",
+      "beta":     "Beta",
+      "planned":  "Planned",
+      "archived": "Archived"
+    }
+  },
+  "about": {
+    "title":    "About YS Systems",
+    "subtitle": "Building the future of business software.",
+    "mission":  "Mission",
+    "vision":   "Vision"
+  },
+  "contact": {
+    "title":       "Get in Touch",
+    "subtitle":    "We'd love to hear from you.",
+    "name":        "Full Name",
+    "email":       "Email Address",
+    "subject":     "Subject",
+    "message":     "Message",
+    "type":        "Inquiry Type",
+    "submit":      "Send Message",
+    "success":     "Message sent successfully.",
+    "types": {
+      "general":     "General Inquiry",
+      "sales":       "Sales",
+      "support":     "Support",
+      "partnership": "Partnership"
+    }
+  },
+  "careers": {
+    "title":    "Careers",
+    "subtitle": "Join us in building the future.",
+    "openings": "Open Positions",
+    "types": {
+      "full_time":  "Full Time",
+      "part_time":  "Part Time",
+      "contract":   "Contract",
+      "internship": "Internship"
+    }
+  },
+  "docs": {
+    "title":    "Documentation",
+    "subtitle": "Everything you need to get started.",
+    "search":   "Search documentation..."
+  },
+  "roadmap": {
+    "title":    "Roadmap",
+    "subtitle": "Where we're heading.",
+    "statuses": {
+      "planned":     "Planned",
+      "in_progress": "In Progress",
+      "completed":   "Completed",
+      "cancelled":   "Cancelled"
+    }
+  },
+  "updates": {
+    "title":    "Updates",
+    "subtitle": "Latest from YS Systems."
+  },
+  "footer": {
+    "company":   "YS Systems & Software",
+    "tagline":   "Building modern software systems.",
+    "products":  "Products",
+    "company_links": "Company",
+    "resources": "Resources",
+    "legal":     "Legal",
+    "privacy":   "Privacy Policy",
+    "terms":     "Terms of Service",
+    "status":    "System Status",
+    "copyright": "All rights reserved."
+  },
+  "common": {
+    "learn_more":   "Learn More",
+    "view_all":     "View All",
+    "get_started":  "Get Started",
+    "back":         "Back",
+    "loading":      "Loading...",
+    "error":        "Something went wrong.",
+    "not_found":    "Page not found.",
+    "coming_soon":  "Coming Soon",
+    "new":          "New",
+    "updated":      "Updated",
+    "read_more":    "Read More",
+    "close":        "Close",
+    "open_menu":    "Open menu",
+    "close_menu":   "Close menu",
+    "toggle_theme": "Toggle theme",
+    "switch_lang":  "Switch language"
+  }
+}

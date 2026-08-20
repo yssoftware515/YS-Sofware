@@ -1,0 +1,115 @@
+{
+  "nav": {
+    "products":   "المنتجات",
+    "docs":       "التوثيق",
+    "roadmap":    "خارطة الطريق",
+    "updates":    "المستجدات",
+    "about":      "عن الشركة",
+    "careers":    "الوظائف",
+    "contact":    "تواصل معنا",
+    "status":     "حالة النظام",
+    "changelog":  "سجل التغييرات",
+    "releases":   "الإصدارات",
+    "faq":        "الأسئلة الشائعة"
+  },
+  "hero": {
+    "badge":    "شركة منتجات برمجية",
+    "headline": "بناء أنظمة برمجية حديثة",
+    "subline":  "منصات SaaS قابلة للتوسع وآمنة ومُنتجة لحل مشكلات الأعمال الحقيقية.",
+    "cta_primary":   "استكشف المنتجات",
+    "cta_secondary": "خارطة الطريق"
+  },
+  "products": {
+    "title":       "منتجاتنا",
+    "subtitle":    "منظومة متنامية من الحلول البرمجية.",
+    "status": {
+      "active":   "نشط",
+      "beta":     "تجريبي",
+      "planned":  "مخطط",
+      "archived": "مؤرشف"
+    }
+  },
+  "about": {
+    "title":    "عن YS Systems",
+    "subtitle": "نبني مستقبل برامج الأعمال.",
+    "mission":  "المهمة",
+    "vision":   "الرؤية"
+  },
+  "contact": {
+    "title":       "تواصل معنا",
+    "subtitle":    "يسعدنا الاستماع إليك.",
+    "name":        "الاسم الكامل",
+    "email":       "البريد الإلكتروني",
+    "subject":     "الموضوع",
+    "message":     "الرسالة",
+    "type":        "نوع الاستفسار",
+    "submit":      "إرسال الرسالة",
+    "success":     "تم إرسال رسالتك بنجاح.",
+    "types": {
+      "general":     "استفسار عام",
+      "sales":       "مبيعات",
+      "support":     "دعم فني",
+      "partnership": "شراكة"
+    }
+  },
+  "careers": {
+    "title":    "الوظائف",
+    "subtitle": "انضم إلينا في بناء المستقبل.",
+    "openings": "الوظائف المتاحة",
+    "types": {
+      "full_time":  "دوام كامل",
+      "part_time":  "دوام جزئي",
+      "contract":   "عقد",
+      "internship": "تدريب"
+    }
+  },
+  "docs": {
+    "title":    "التوثيق",
+    "subtitle": "كل ما تحتاجه للبدء.",
+    "search":   "ابحث في التوثيق..."
+  },
+  "roadmap": {
+    "title":    "خارطة الطريق",
+    "subtitle": "إلى أين نتجه.",
+    "statuses": {
+      "planned":     "مخطط",
+      "in_progress": "قيد التنفيذ",
+      "completed":   "مكتمل",
+      "cancelled":   "ملغى"
+    }
+  },
+  "updates": {
+    "title":    "المستجدات",
+    "subtitle": "آخر أخبار YS Systems."
+  },
+  "footer": {
+    "company":       "YS Systems & Software",
+    "tagline":       "نبني أنظمة برمجية حديثة.",
+    "products":      "المنتجات",
+    "company_links": "الشركة",
+    "resources":     "الموارد",
+    "legal":         "القانونية",
+    "privacy":       "سياسة الخصوصية",
+    "terms":         "شروط الخدمة",
+    "status":        "حالة النظام",
+    "copyright":     "جميع الحقوق محفوظة."
+  },
+  "common": {
+    "learn_more":   "اعرف المزيد",
+    "view_all":     "عرض الكل",
+    "get_started":  "ابدأ الآن",
+    "back":         "رجوع",
+    "loading":      "جاري التحميل...",
+    "error":        "حدث خطأ ما.",
+    "not_found":    "الصفحة غير موجودة.",
+    "coming_soon":  "قريباً",
+    "new":          "جديد",
+    "updated":      "محدّث",
+    "read_more":    "اقرأ المزيد",
+    "close":        "إغلاق",
+    "open_menu":    "فتح القائمة",
+    "close_menu":   "إغلاق القائمة",
+    "toggle_theme": "تبديل المظهر",
+    "switch_lang":  "تغيير اللغة"
+  }
+}

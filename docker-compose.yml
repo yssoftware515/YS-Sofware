@@ -1,0 +1,270 @@
+x-common: &common
+  networks:
+    - ys-network
+  restart: unless-stopped
+
+services:
+  # ------------------------------- FRONTEND -------------------------------
+  frontend:
+    <<: *common
+    build:
+      context: ./ys-web
+      dockerfile: Dockerfile
+      target: ${DOCKER_TARGET:-runner}
+      args:
+        # NEXT_PUBLIC_* values are inlined at build time; the runtime
+        # environment can no longer change them (K-21).
+        NEXT_PUBLIC_API_URL: ${API_URL:-http://localhost:8000/api/v1}
+        NEXT_PUBLIC_APP_URL: ${APP_URL:-https://ys-systems.com}
+        # G-04: Turnstile site key is build-time (the widget is server-side
+        # rendered on the login page). Empty in dev = widget hidden.
+        NEXT_PUBLIC_TURNSTILE_SITE_KEY: ${NEXT_PUBLIC_TURNSTILE_SITE_KEY:-}
+    image: ys-systems/frontend:${APP_VERSION:-latest}
+    ports:
+      - "127.0.0.1:${FRONTEND_PORT:-3000}:3000"
+    environment:
+      - NODE_ENV=${NODE_ENV:-production}
+    depends_on:
+      backend:
+        condition: service_started
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3000/health/live"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # ------------------------------- BACKEND -------------------------------
+  backend:
+    <<: *common
+    build:
+      context: ./ys-api
+      dockerfile: Dockerfile
+      target: ${DOCKER_TARGET:-runner}
+    image: ys-systems/backend:${APP_VERSION:-latest}
+    ports:
+      - "127.0.0.1:${BACKEND_PORT:-8000}:8000"
+    environment:
+      - APP_ENV=${APP_ENV:-production}
+      - APP_DEBUG=${APP_DEBUG:-false}
+      # Laravel requires the app key to sign/encrypt cookies (session,
+      # CSRF, remember). Without it the container boots but every cookie
+      # operation throws — cookie auth dead on arrival.
+      - APP_KEY=${APP_KEY:?Set APP_KEY in the environment / .env}
+      # Canonical application URL — used for absolute URLs generated in
+      # emails and storage URLs, and (inlined at frontend build time) as the
+      # public NEXT_PUBLIC_APP_URL. One variable, one value per environment.
+      - APP_URL=${APP_URL:-https://ys-systems.com}
+      - DB_CONNECTION=${DB_CONNECTION:-pgsql}
+      - DB_HOST=database
+      - DB_PORT=5432
+      - DB_DATABASE=${DB_DATABASE:-ys_platform}
+      - DB_USERNAME=${DB_USERNAME:-ys_app}
+      - DB_PASSWORD=${DB_PASSWORD:?Set DB_PASSWORD in the environment / .env}
+      # Phase 4A (P1-01): this stack is deliberately DB/file-backed —
+      # cache = file (storage volume), sessions = file (storage volume),
+      # queue = database (jobs table). NO Redis service exists. Only
+      # reintroduce Redis when a concrete need appears.
+      - MAIL_MAILER=${MAIL_MAILER:-smtp}
+      - MAIL_HOST=${MAIL_HOST:-}
+      - MAIL_PORT=${MAIL_PORT:-587}
+      - MAIL_USERNAME=${MAIL_USERNAME:-}
+      - MAIL_PASSWORD=${MAIL_PASSWORD:-}
+      - MAIL_ENCRYPTION=${MAIL_ENCRYPTION:-tls}
+      - MAIL_FROM_ADDRESS=${MAIL_FROM_ADDRESS:-no-reply@ys-systems.com}
+      # Required for admin notifications (contact requests, welcome emails).
+      - MAIL_ADMIN_ADDRESS=${MAIL_ADMIN_ADDRESS:-}
+      # CORS + Sanctum cookie auth depend on the frontend origin. Without
+      # this, config/cors.php falls back to http://localhost:3000 and the
+      # deployed browser is CORS-blocked on every API call.
+      - FRONTEND_URL=${FRONTEND_URL:-http://localhost:3000}
+      # Fail-closed: secure cookies ON by default (VULN-09). Set false
+      # only for local development over plain HTTP.
+      - SESSION_SECURE_COOKIE=${SESSION_SECURE_COOKIE:-true}
+      # VULN-09 hard gate: refuse plain-HTTP requests in production.
+      - REQUIRE_TLS=${REQUIRE_TLS:-true}
+      # Trusted proxy CIDRs (comma-separated). The edge nginx forwards
+      # X-Forwarded-For built from $remote_addr; trusting the docker
+      # network keeps per-IP rate limits per-client (VULN-07). Set to an
+      # empty value when no proxy sits in front (local dev).
+      - TRUSTED_PROXIES=${TRUSTED_PROXIES:-172.16.0.0/12}
+    depends_on:
+      database:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/up"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+    volumes:
+      - backend_storage:/app/storage
+
+  # ------------------------------- DATABASE ------------------------------
+  database:
+    <<: *common
+    image: postgres:16-alpine
+    ports:
+      - "127.0.0.1:${DB_PORT:-5432}:5432"
+    environment:
+      - POSTGRES_DB=${DB_DATABASE:-ys_platform}
+      # Cluster superuser — bootstrap/ops only. The APPLICATION connects as
+      # DB_USERNAME (ys_app, least privilege): superusers bypass RLS and
+      # table privileges, which would defeat audit_logs immutability
+      # (VULN-08).
+      - POSTGRES_USER=${DB_SUPERUSER:-postgres}
+      - POSTGRES_PASSWORD=${DB_SUPERUSER_PASSWORD:?Set DB_SUPERUSER_PASSWORD in the environment / .env}
+      # Least-privilege app role, provisioned by docker/postgres/init
+      # on first boot (idempotent).
+      - POSTGRES_APP_USERNAME=${DB_USERNAME:-ys_app}
+      - POSTGRES_APP_PASSWORD=${DB_PASSWORD:?Set DB_PASSWORD in the environment / .env}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./docker/postgres/init:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USERNAME:-ys_app} -d ${DB_DATABASE:-ys_platform}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # -------------------------------- NGINX --------------------------------
+  nginx:
+    <<: *common
+    image: nginx:alpine
+    ports:
+      - "${NGINX_PORT:-80}:80"
+    # 443 is intentionally not published: this nginx is a plain-HTTP edge
+    # and terminates no TLS (no certs/SSL vhost exist in docker/nginx).
+    # TLS is expected to terminate on an external gateway in front of it.
+    volumes:
+      - ./docker/nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./docker/nginx/sites:/etc/nginx/conf.d:ro
+    depends_on:
+      - frontend
+      - backend
+    healthcheck:
+      test: ["CMD", "nginx", "-t"]
+      interval: 60s
+      timeout: 5s
+      retries: 3
+
+# ------------------------------- QUEUE WORKER --------------------------
+  queue-worker:
+    <<: *common
+    build:
+      context: ./ys-api
+      dockerfile: Dockerfile
+    image: ys-systems/backend:${APP_VERSION:-latest}
+    command: php artisan queue:work --sleep=3 --tries=3 --max-time=3600
+    environment:
+      - APP_ENV=${APP_ENV:-production}
+      - APP_KEY=${APP_KEY:?Set APP_KEY in the environment / .env}
+      - APP_URL=${APP_URL:-https://ys-systems.com}
+      - DB_CONNECTION=${DB_CONNECTION:-pgsql}
+      - DB_HOST=database
+      - DB_PORT=5432
+      - DB_DATABASE=${DB_DATABASE:-ys_platform}
+      - DB_USERNAME=${DB_USERNAME:-ys_app}
+      - DB_PASSWORD=${DB_PASSWORD:?Set DB_PASSWORD in the environment / .env}
+      # Jobs run here — mail credentials and settings must be present.
+      - MAIL_MAILER=${MAIL_MAILER:-smtp}
+      - MAIL_HOST=${MAIL_HOST:-}
+      - MAIL_PORT=${MAIL_PORT:-587}
+      - MAIL_USERNAME=${MAIL_USERNAME:-}
+      - MAIL_PASSWORD=${MAIL_PASSWORD:-}
+      - MAIL_ENCRYPTION=${MAIL_ENCRYPTION:-tls}
+      - MAIL_FROM_ADDRESS=${MAIL_FROM_ADDRESS:-no-reply@ys-systems.com}
+      - MAIL_ADMIN_ADDRESS=${MAIL_ADMIN_ADDRESS:-}
+    volumes:
+      # Logs and the file-backed cache must outlive the container
+      # (Phase 4A, P9) — shared with the backend service.
+      - backend_storage:/app/storage
+    depends_on:
+      database:
+        condition: service_healthy
+
+# ------------------------------- SCHEDULER ------------------------------
+  scheduler:
+    <<: *common
+    build:
+      context: ./ys-api
+      dockerfile: Dockerfile
+    image: ys-systems/backend:${APP_VERSION:-latest}
+    command: php artisan schedule:work
+    environment:
+      - APP_ENV=${APP_ENV:-production}
+      - APP_KEY=${APP_KEY:?Set APP_KEY in the environment / .env}
+      - DB_CONNECTION=${DB_CONNECTION:-pgsql}
+      - DB_HOST=database
+      - DB_PORT=5432
+      - DB_DATABASE=${DB_DATABASE:-ys_platform}
+      - DB_USERNAME=${DB_USERNAME:-ys_app}
+      - DB_PASSWORD=${DB_PASSWORD:?Set DB_PASSWORD in the environment / .env}
+    volumes:
+      # Logs must outlive the container (Phase 4A, P9) — shared with
+      # the backend service.
+      - backend_storage:/app/storage
+    depends_on:
+      database:
+        condition: service_healthy
+
+# ------------------------------- BACKUP (one-shot) ---------------------
+  backup:
+    image: postgres:16-alpine
+    profiles:
+      - development
+      - staging
+      - production
+    volumes:
+      - ./ops/backup:/backup:ro
+      - ./backups:/backups
+    environment:
+      - DB_HOST=database
+      - DB_PORT=5432
+      - DB_DATABASE=${DB_DATABASE:-ys_platform}
+      - DB_USERNAME=${DB_USERNAME:-ys_app}
+      - DB_PASSWORD=${DB_PASSWORD:?Set DB_PASSWORD in the environment / .env}
+      # Number of newest dumps to keep (0 = keep all). Timestamped filenames
+      # mean old backups are never overwritten, only pruned by count.
+      - BACKUP_RETENTION=${BACKUP_RETENTION:-7}
+      - BACKUP_DIR=/backups
+    depends_on:
+      database:
+        condition: service_healthy
+    command: ["/bin/sh", "/backup/backup.sh"]
+    restart: "no"
+
+# ------------------------------- MAILHOG (dev only) ---------------------
+  mailhog:
+    <<: *common
+    image: mailhog/mailhog
+    profiles:
+      - development
+      - staging
+    ports:
+      - "127.0.0.1:${MAILHOG_WEB_PORT:-8025}:8025"
+      - "127.0.0.1:${MAILHOG_SMTP_PORT:-1025}:1025"
+
+# ------------------------------- MONITORING ------------------------------
+  monitoring:
+    <<: *common
+    image: grafana/grafana:11.4.0
+    profiles:
+      - production
+    ports:
+      - "127.0.0.1:${GRAFANA_PORT:-3001}:3000"
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_PASSWORD:?Set GRAFANA_PASSWORD in the environment / .env}
+    volumes:
+      - grafana_data:/var/lib/grafana
+    depends_on:
+      - backend
+
+volumes:
+  postgres_data:
+  backend_storage:
+  grafana_data:
+
+networks:
+  ys-network:
+    driver: bridge
