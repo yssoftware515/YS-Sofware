@@ -238,7 +238,8 @@ jobs:
         with:
           sarif_file: 'trivy-frontend.sarif'
       - name: Upload backend Trivy results
-        if: always() && hashFiles('trivy-backend.sarif') != ''
+        if: always()
         uses: github/codeql-action/upload-sarif@v4
+        continue-on-error: true
         with:
           sarif_file: 'trivy-backend.sarif'
