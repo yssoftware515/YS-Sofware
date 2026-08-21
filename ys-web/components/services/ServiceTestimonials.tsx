@@ -45,7 +45,7 @@ export function ServiceTestimonials({ locale }: ServiceTestimonialsProps) {
         </p>
       </motion.div>
 
-      {/* Stats strip */}
+      {/* Stats strip — each stat has EN/AR values; no placeholders. */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={inView ? { opacity: 1, y: 0 } : {}}
@@ -53,10 +53,10 @@ export function ServiceTestimonials({ locale }: ServiceTestimonialsProps) {
         className="mt-12 grid grid-cols-2 lg:grid-cols-4 gap-4"
       >
         {[
-          { value: "SaaS", valueAr: "SaaS", label: isAr ? "منظومة منتجات" : "Product Ecosystem", labelAr: "منظومة منتجات" },
-          { value: "AR·EN", valueAr: "AR·EN", label: isAr ? "ثنائي اللغة" : "Bilingual by Design", labelAr: "ثنائي اللغة" },
-          { value: "End-to-End", valueAr: "متكامل", label: isAr ? "تصميم ← بناء ← تشغيل" : "Design → Build → Operate", labelAr: "تصميم ← بناء ← تشغيل" },
-          { value: "Long-Term", valueAr: "طويل الأمد", label: isAr ? "شراكة تقنية" : "Technology Partnership", labelAr: "شراكة تقنية" },
+          { en: "SaaS", ar: "SaaS", labelEn: "Product Ecosystem", labelAr: "منظومة منتجات" },
+          { en: "AR·EN", ar: "AR·EN", labelEn: "Bilingual by Design", labelAr: "ثنائي اللغة" },
+          { en: "End-to-End", ar: "متكامل", labelEn: "Design → Build → Operate", labelAr: "تصميم ← بناء ← تشغيل" },
+          { en: "Long-Term", ar: "طويل الأمد", labelEn: "Technology Partnership", labelAr: "شراكة تقنية" },
         ].map((stat, i) => (
           <div
             key={i}
@@ -70,10 +70,10 @@ export function ServiceTestimonials({ locale }: ServiceTestimonialsProps) {
               className="font-display font-bold text-2xl lg:text-3xl mb-1"
               style={{ color: "var(--color-accent)" }}
             >
-              {isAr ? stat.valueAr : stat.value}
+              {isAr ? stat.ar : stat.en}
             </p>
             <p className="text-xs" style={{ color: "var(--color-foreground-muted)" }}>
-              {isAr ? stat.labelAr : stat.label}
+              {isAr ? stat.labelAr : stat.labelEn}
             </p>
           </div>
         ))}

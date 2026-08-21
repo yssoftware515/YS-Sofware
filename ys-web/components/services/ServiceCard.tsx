@@ -59,7 +59,7 @@ export function ServiceCard({ service, locale, index, featured = false, budgetCu
     >
       <Link
         href={`/${locale}/services/${service.slug}`}
-        className="flex flex-col h-full rounded-2xl overflow-hidden transition-all duration-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/30"
+        className="flex flex-col h-full rounded-2xl overflow-hidden transition-all duration-300 ease-in-out hover:-translate-y-1 hover:shadow-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/30"
         style={{
           background: "var(--surface-subtle)",
           backdropFilter: "blur(20px)",
@@ -67,18 +67,6 @@ export function ServiceCard({ service, locale, index, featured = false, budgetCu
           border: "1px solid var(--border-card)",
           boxShadow: "var(--shadow-card-lg)",
           textDecoration: "none",
-        }}
-        onMouseEnter={(e) => {
-          const el = e.currentTarget
-          el.style.borderColor = `${colorSet.accent}40`
-          el.style.boxShadow = `var(--shadow-card-lg), 0 0 40px -8px ${colorSet.glow}`
-          el.style.transform = "translateY(-4px)"
-        }}
-        onMouseLeave={(e) => {
-          const el = e.currentTarget
-          el.style.borderColor = "var(--border-card)"
-          el.style.boxShadow = "var(--shadow-card-lg)"
-          el.style.transform = "translateY(0)"
         }}
       >
         {/* Top Bar: Icon + Category + Price */}
