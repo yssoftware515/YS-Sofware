@@ -171,6 +171,14 @@ services:
       interval: 60s
       timeout: 5s
       retries: 3
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+          cpus: "0.5"
+        reservations:
+          memory: 64M
+          cpus: "0.1"
 
 # ------------------------------- QUEUE WORKER --------------------------
   queue-worker:
