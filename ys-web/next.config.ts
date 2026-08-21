@@ -18,10 +18,6 @@ const apiUrl = (() => {
 const apiOrigin = apiUrl.origin
 
 const nextConfig: NextConfig = {
-  // The production Dockerfile copies .next/standalone and runs server.js;
-  // this option is required or that build step fails.
-  output: 'standalone',
-
   compress:       true,
   poweredByHeader: false,
 
