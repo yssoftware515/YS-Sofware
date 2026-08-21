@@ -194,17 +194,27 @@ jobs:
       - name: Composer audit (backend)
         working-directory: ./ys-api
         run: composer install --prefer-dist --no-progress --no-scripts && composer audit
-      - name: Run Trivy scan
+      - name: Trivy scan (frontend)
         uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25  # v0.36.0
         with:
           scan-type: 'fs'
-          scan-ref: '.'
+          scan-ref: './ys-web'
           format: 'sarif'
-          output: 'trivy-results.sarif'
+          output: 'trivy-frontend.sarif'
+          severity: 'HIGH,CRITICAL'
+          exit-code: '1'
+      - name: Trivy scan (backend)
+        if: always()
+        uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25  # v0.36.0
+        with:
+          scan-type: 'fs'
+          scan-ref: './ys-api'
+          format: 'sarif'
+          output: 'trivy-backend.sarif'
           severity: 'HIGH,CRITICAL'
           exit-code: '1'
       - name: Upload Trivy results
         if: always()
         uses: github/codeql-action/upload-sarif@v4
         with:
-          sarif_file: 'trivy-results.sarif'
+          sarif_file: 'trivy-frontend.sarif'
