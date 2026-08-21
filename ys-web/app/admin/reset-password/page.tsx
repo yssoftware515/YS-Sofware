@@ -1,8 +1,8 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import Link from 'next/link'
-import { useRouter, useSearchParams } from 'next/navigation'
+import { useSearchParams } from 'next/navigation'
 import { Eye, EyeOff, Lock, ArrowLeft, CheckCircle2 } from 'lucide-react'
 import { Button } from '@/components/ui/Button'
 import { ensureXsrfToken, readXsrfToken } from '@/lib/csrf'
@@ -23,12 +23,15 @@ function checkPasswordComplexity(pw: string): string[] {
 }
 
 export default function ResetPasswordPage() {
-  const router = useRouter()
   const searchParams = useSearchParams()
 
-  const [token, setToken] = useState<string | null>(null)
-  const [email, setEmail] = useState<string | null>(null)
-  const [paramError, setParamError] = useState<string | null>(null)
+  const rawToken = searchParams.get('token')
+  const rawEmail = searchParams.get('email')
+  const paramsValid =
+    rawToken !== null &&
+    rawEmail !== null &&
+    TOKEN_RE.test(rawToken) &&
+    EMAIL_RE.test(rawEmail)
 
   const [password, setPassword] = useState('')
   const [confirm, setConfirm] = useState('')
@@ -39,22 +42,8 @@ export default function ResetPasswordPage() {
   const [fieldErrors, setFieldErrors] = useState<Record<string, string[]>>({})
   const [submitted, setSubmitted] = useState(false)
 
-  // Extract and validate URL params on mount
-  useEffect(() => {
-    const t = searchParams.get('token')
-    const e = searchParams.get('email')
-
-    if (!t || !e || !TOKEN_RE.test(t) || !EMAIL_RE.test(e)) {
-      setParamError('This password reset link is invalid or has expired.')
-      return
-    }
-
-    setToken(t)
-    setEmail(e)
-  }, [searchParams])
-
   // Redirect if params are invalid
-  if (paramError) {
+  if (!paramsValid) {
     return (
       <div className="min-h-dvh bg-background flex items-center justify-center p-4">
         <div className="absolute inset-0 bg-grid opacity-30" aria-hidden="true" />
@@ -65,7 +54,9 @@ export default function ResetPasswordPage() {
             </div>
           </div>
           <div className="bg-surface border border-border rounded-2xl p-8 shadow-lg text-center space-y-4">
-            <p className="text-sm text-red-600 dark:text-red-400">{paramError}</p>
+            <p className="text-sm text-red-600 dark:text-red-400">
+              This password reset link is invalid or has expired.
+            </p>
             <Link
               href="/admin/forgot-password"
               className="inline-flex items-center gap-1.5 text-sm text-accent hover:text-accent-hover transition-colors"
@@ -118,7 +109,7 @@ export default function ResetPasswordPage() {
           Accept: 'application/json',
           ...(xsrf ? { 'X-XSRF-TOKEN': xsrf } : {}),
         },
-        body: JSON.stringify({ email, token, password }),
+        body: JSON.stringify({ email: rawEmail, token: rawToken, password }),
         credentials: 'include',
       })
 
@@ -146,7 +137,6 @@ export default function ResetPasswordPage() {
       // Clear sensitive data from memory
       setPassword('')
       setConfirm('')
-      setToken(null)
       setSubmitted(true)
     } catch {
       setError('Unable to connect. Please try again.')
