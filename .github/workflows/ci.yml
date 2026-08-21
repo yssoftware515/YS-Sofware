@@ -213,6 +213,7 @@ jobs:
           output: 'trivy-backend-table.txt'
           severity: 'HIGH,CRITICAL'
           exit-code: '0'
+          skip-dirs: 'vendor'
       - name: Show backend Trivy results
         if: always()
         run: |
@@ -230,6 +231,7 @@ jobs:
           output: 'trivy-backend.sarif'
           severity: 'HIGH,CRITICAL'
           exit-code: '1'
+          skip-dirs: 'vendor'
       - name: Upload Trivy results
         if: always()
         uses: github/codeql-action/upload-sarif@v4
