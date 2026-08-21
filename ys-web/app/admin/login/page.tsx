@@ -2,6 +2,7 @@
 
 import { useState, useRef } from 'react'
 import { useRouter } from 'next/navigation'
+import Link from 'next/link'
 import { Eye, EyeOff, Lock } from 'lucide-react'
 import { Button } from '@/components/ui/Button'
 import TurnstileWidget, { type TurnstileHandle } from '@/components/TurnstileWidget'
@@ -173,18 +174,23 @@ export default function AdminLoginPage() {
               </div>
             </div>
 
-            {/* Remember */}
-            <div className="flex items-center gap-2.5">
-              <input
-                id="remember"
-                type="checkbox"
-                checked={remember}
-                onChange={e => setRemember(e.target.checked)}
-                className="w-4 h-4 rounded border-border text-accent focus:ring-accent"
-              />
-              <label htmlFor="remember" className="text-sm text-foreground-muted cursor-pointer">
-                Remember me for 30 days
-              </label>
+            {/* Remember + Forgot */}
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2.5">
+                <input
+                  id="remember"
+                  type="checkbox"
+                  checked={remember}
+                  onChange={e => setRemember(e.target.checked)}
+                  className="w-4 h-4 rounded border-border text-accent focus:ring-accent"
+                />
+                <label htmlFor="remember" className="text-sm text-foreground-muted cursor-pointer">
+                  Remember me for 30 days
+                </label>
+              </div>
+              <Link href="/admin/forgot-password" className="text-sm text-accent hover:text-accent-hover transition-colors">
+                Forgot password?
+              </Link>
             </div>
 
             <Button type="submit" variant="primary" size="lg" loading={loading} className="w-full">
