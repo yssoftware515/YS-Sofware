@@ -54,6 +54,15 @@ class ProjectController extends Controller
         $this->authorize('manage_projects');
 
         $validated = $this->projects->validate($request->all());
+
+        // Financial write boundary: users without view_financials must
+        // not be able to create or set quoted_value/currency through any
+        // API path. The frontend is NOT a security boundary — this check
+        // must be enforced server-side independently.
+        if (! Auth::user()->can('view_financials')) {
+            $validated = Arr::except($validated, ['quoted_value', 'currency']);
+        }
+
         $this->projects->assertRequestMatchesCustomer($validated, $validated['customer_id'] ?? null);
         $this->projects->assertCustomerAccessible($validated['customer_id'] ?? null);
 
@@ -95,6 +104,15 @@ class ProjectController extends Controller
         $this->projects->assertProjectAccessible($project);
 
         $validated = $this->projects->validate($request->all());
+
+        // Financial write boundary: users without view_financials must
+        // not be able to modify quoted_value/currency through any API
+        // path. The frontend is NOT a security boundary — this check
+        // must be enforced server-side independently.
+        if (! Auth::user()->can('view_financials')) {
+            $validated = Arr::except($validated, ['quoted_value', 'currency']);
+        }
+
         // The invariant is "request's customer == project's customer".
         // On update the project may be MOVING to a different customer, so
         // the decision must be made against the new (validated) customer â€”
