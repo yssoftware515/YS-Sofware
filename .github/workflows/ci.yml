@@ -209,24 +209,6 @@ jobs:
         with:
           scan-type: 'fs'
           scan-ref: './ys-api'
-          format: 'table'
-          output: 'trivy-backend-table.txt'
-          severity: 'HIGH,CRITICAL'
-          exit-code: '0'
-          skip-dirs: 'vendor'
-      - name: Show backend Trivy results
-        if: always()
-        run: |
-          echo "### Trivy Backend Scan Results" >> $GITHUB_STEP_SUMMARY
-          echo '```' >> $GITHUB_STEP_SUMMARY
-          cat trivy-backend-table.txt >> $GITHUB_STEP_SUMMARY 2>/dev/null || echo "No output" >> $GITHUB_STEP_SUMMARY
-          echo '```' >> $GITHUB_STEP_SUMMARY
-      - name: Trivy scan (backend) - enforce gate
-        if: always()
-        uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25  # v0.36.0
-        with:
-          scan-type: 'fs'
-          scan-ref: './ys-api'
           format: 'sarif'
           output: 'trivy-backend.sarif'
           severity: 'HIGH,CRITICAL'
