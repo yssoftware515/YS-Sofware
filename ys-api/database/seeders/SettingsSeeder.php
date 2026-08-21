@@ -140,14 +140,14 @@ class SettingsSeeder extends Seeder
             [
                 'group' => 'contacts',
                 'key' => 'whatsapp_number',
-                'value' => '201558559450',
+                'value' => '201008920677',
                 'description' => 'Primary WhatsApp number for service inquiries (international digits only, no leading + — consumed directly in wa.me links).',
                 'is_public' => true,
             ],
             [
                 'group' => 'contacts',
                 'key' => 'whatsapp_display',
-                'value' => '0155 855 9450',
+                'value' => '0100 892 0677',
                 'description' => 'Human-friendly WhatsApp number shown on the contact page.',
                 'is_public' => true,
             ],

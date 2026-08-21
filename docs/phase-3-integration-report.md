@@ -223,7 +223,7 @@ Summary: **14 aligned, 3 broken, 2 mismatch (+2 gated), 3 minor.**
 
 ## 23. Post-Audit Changes (executed between audit and this report)
 
-A separate implementation order was executed after this audit, touching only: legal-page "last updated" rendering (now uses `published_at` from the API, no `new Date()` fabrication; `security` page had no bug), Privacy/Cookie content in `CmsSeeder.php` + frontend fallbacks (verified in DB), and `SettingsSeeder.php` (TikTok company URL, WhatsApp number `201558559450` digits-only for `wa.me`, display `0155 855 9450`). All gates green (tsc, eslint, next build, reseed). None of the Phase 3 P1s were addressed by that order — they remain open.
+A separate implementation order was executed after this audit, touching only: legal-page "last updated" rendering (now uses `published_at` from the API, no `new Date()` fabrication; `security` page had no bug), Privacy/Cookie content in `CmsSeeder.php` + frontend fallbacks (verified in DB), and `SettingsSeeder.php` (TikTok company URL, WhatsApp number `201008920677` digits-only for `wa.me`, display `0100 892 0677`). All gates green (tsc, eslint, next build, reseed). None of the Phase 3 P1s were addressed by that order — they remain open.
 
 ## 24. Remediation Recommendations (not executed — read-only phase)
 
