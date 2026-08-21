@@ -57,7 +57,7 @@ class ContactRequestController extends Controller
             $this->auditService->log('contact_request.read', 'ContactRequest', $contactRequest->id);
         }
 
-        return response()->json(['success' => true, 'data' => $contactRequest->load('customer:id,name,email,company', 'projects:id,contact_request_id,name,status,quoted_value,currency')]);
+        return response()->json(['success' => true, 'data' => $contactRequest->load('customer:id,name,email,company', 'projects:'.$this->projectFields())]);
     }
 
     public function updateStatus(Request $request, ContactRequest $contactRequest): JsonResponse
@@ -85,7 +85,7 @@ class ContactRequestController extends Controller
             newValues: ['status' => $validated['status']],
         );
 
-        return response()->json(['success' => true, 'data' => $contactRequest->fresh()->load('customer:id,name,email,company', 'projects:id,contact_request_id,name,status,quoted_value,currency')]);
+        return response()->json(['success' => true, 'data' => $contactRequest->fresh()->load('customer:id,name,email,company', 'projects:'.$this->projectFields())]);
     }
 
     /**
@@ -124,7 +124,7 @@ class ContactRequestController extends Controller
         return response()->json([
             'success' => true,
             'message' => 'Contact request linked to customer.',
-            'data' => $contactRequest->fresh()->load('customer:id,name,email,phone', 'projects:id,contact_request_id,name,status,quoted_value,currency'),
+            'data' => $contactRequest->fresh()->load('customer:id,name,email,phone', 'projects:'.$this->projectFields()),
         ]);
     }
 
@@ -241,7 +241,7 @@ class ContactRequestController extends Controller
         return response()->json([
             'success' => true,
             'message' => 'Contact request unlinked from customer.',
-            'data' => $contactRequest->fresh()->load('customer:id,name,email,phone', 'projects:id,contact_request_id,name,status,quoted_value,currency'),
+            'data' => $contactRequest->fresh()->load('customer:id,name,email,phone', 'projects:'.$this->projectFields()),
         ]);
     }
 
@@ -319,7 +319,21 @@ class ContactRequestController extends Controller
 
     private function requestPayload(ContactRequest $contactRequest): ContactRequest
     {
-        return $contactRequest->fresh()->load('customer:id,name,email,phone', 'projects:id,contact_request_id,name,status,quoted_value,currency');
+        return $contactRequest->fresh()->load('customer:id,name,email,phone', 'projects:'.$this->projectFields());
+    }
+
+    /**
+     * Select clause for the projects eager-load. Financial fields
+     * (quoted_value, currency) are only included when the caller holds
+     * view_financials — consistent with ProjectController::payload().
+     */
+    private function projectFields(): string
+    {
+        $base = 'id,contact_request_id,name,status';
+
+        return Auth::user()->can('view_financials')
+            ? $base.',quoted_value,currency'
+            : $base;
     }
 
     private function assertRequestAccessible(ContactRequest $contactRequest): void
