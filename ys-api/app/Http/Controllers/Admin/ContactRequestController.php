@@ -193,12 +193,6 @@ class ContactRequestController extends Controller
             throw $e;
         }
 
-        $contactRequest->update([
-            'customer_id' => $customer->id,
-            'handled_by' => Auth::id(),
-            'handled_at' => now(),
-        ]);
-
         $this->auditService->logModelChange('customer.created', $customer, userId: Auth::id());
         $this->auditService->log(
             action: 'contact_request.customer_converted',

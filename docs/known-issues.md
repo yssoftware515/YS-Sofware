@@ -50,7 +50,7 @@ Every item below was confirmed by reading code (no speculation).
 | K-21 | NEXT_PUBLIC_* are build-time | compose runtime env vars do not affect a prebuilt image (Next.js inlines at build) | + resolved (Sprint 1.1): build arg `NEXT_PUBLIC_API_URL` in `ys-web/Dockerfile` + compose `build.args` + `release.yml` build-args; docs per-env |
 | K-22 | No migration step in deploy | SSH deploy runs compose up only; `php artisan migrate --force` not present (❓ run manually?) | + fixed (release.yml now runs `migrate --force` before `up -d`) |
 | K-23 | CI backend static analysis is a placeholder | `php artisan lint || phpstan || echo` — phpstan not installed → always placeholder | + RESOLVED (Sprint 12 C-3: real `vendor/bin/pint --test` gate) |
-| K-24 | CI frontend tests are a placeholder | `npm test` doesn't exist → `|| echo "Tests placeholder"` always runs; npm audit `|| true` (fail-open) | + RESOLVED (Sprint 12 C-4 lint gate + real backend tests; Phase 5B G-03: real `npm test` — vitest 75/75) |
+| K-24 | CI frontend tests are a placeholder | `npm test` doesn't exist → `|| echo "Tests placeholder"` always runs; npm audit `|| true` (fail-open) | + RESOLVED (Sprint 12 C-4 lint gate + real backend tests; Phase 5B G-03: real `npm test` — vitest 75/75; Delta Audit: `|| true` removed, `--audit-level=high`, `composer audit` added) |
 
 ### NEW (Sprint 1 findings)
 | # | Issue | Status | Detail |
@@ -87,5 +87,19 @@ Every item below was confirmed by reading code (no speculation).
 3. Production deployment environment details (hosts, TLS, migrations policy)? → **OPERATOR CONTROLLED** (Track B checklist in phase-6 report §12–§23).
 4. ~~Should `health` endpoints follow the old docs' `/health/live` etc., or the current `/api/v1/health`?~~ → **Answered:** the current `/api/v1/health` + `/up` are the contract (K-14 RESOLVED); CI/deploy targets them.
 5. Should the `status` page reflect real health metrics? → **DEFERRED** (K-33: static by design, no live metrics).
+
+### Delta Audit findings (Sprint 13)
+| # | Issue | Status | Detail |
+|---|---|---|---|
+| D-01 | `npm audit \|\| true` always passes CI security gate | + **RESOLVED** | `.github/workflows/ci.yml`: removed `\|\| true`, added `--audit-level=high`, added `composer audit` for backend |
+| D-02 | `customers.product_id` lacks database index | + **RESOLVED** | New migration `2026_08_21_000001_add_product_id_index_to_customers_table.php` adds index |
+| D-03 | `ys-web/lib/platform` ~7000 lines dead code | FALSE POSITIVE | `grep` confirms 8 files import from `@/lib/platform` - `PlatformProvider`, `NavigationRegistry`, `WidgetRegistry`, `PermissionRegistry` actively wired |
+| D-04 | No container resource limits in docker-compose | + **RESOLVED** | `deploy.resources.limits` + `reservations` added to frontend (512M), backend (1G), database (2G), queue-worker (512M), scheduler (256M) |
+| D-05 | Backup service exists but no cron scheduling | + **RESOLVED** | `ops/backup/README.md` created with host-cron and GitHub Actions scheduling examples |
+| D-06 | `AUTH_COOKIE_PARTITIONED=false` in .env.example | + **RESOLVED** | Flipped to `true` - production CHIPS default |
+| D-07 | Duplicate `$contactRequest->update()` in `convertCustomer()` | + **RESOLVED** | Redundant call outside `DB::transaction` removed (`ContactRequestController.php:196-200`) |
+| D-08 | Absolute token expiry not enforced (middleware) | + **RESOLVED** (commit `6c90e1b`) | `EnforceIdleSessionTimeout` middleware + `TokenExpirationTest` (9 tests) - two-layer defense: Sanctum Guard + middleware |
+| D-09 | Project financial write paths ungated | + **RESOLVED** (commit `6c90e1b`) | `ProjectController` `store()`/`update()` strip financial fields via `Arr::except` + `ProjectFinancialWriteAuthorizationTest` (9 tests) |
+| D-10 | ContactRequest projects expose financial fields | + **RESOLVED** (commit `6c90e1b`) | `projectFields()` in `ContactRequestController` now conditionally gates `quoted_value`/`currency` behind `view_financials` |
 
 | K-36 | eslint baseline: 16 pre-existing errors in files untouched by Sprint 7 (Header, SearchModal, ColorPicker, CookieConsent, GlobalSearch, ProductsSection, PermissionGate, PlatformProvider, useModule, roles page, not-found) | react-hooks v6 rules strictness � one-line-per-file chore, correctness unaffected |
