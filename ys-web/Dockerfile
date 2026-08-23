@@ -20,6 +20,9 @@ COPY . .
 ARG NEXT_PUBLIC_API_URL=http://localhost:8000/api/v1
 ENV NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL
 ENV NEXT_TELEMETRY_DISABLED=1
+# Enable standalone output for the Docker deployment path.
+# next.config.ts reads this to conditionally set output: 'standalone'.
+ENV DOCKER_BUILD=true
 RUN npm run build
 
 # Stage 3: Production runner
@@ -30,6 +33,7 @@ RUN addgroup --system --gid 1001 nodejs && \
 WORKDIR /app
 ENV NODE_ENV=production
 ENV NEXT_TELEMETRY_DISABLED=1
+ENV HOSTNAME=0.0.0.0
 
 COPY --from=builder /app/public ./public
 COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./

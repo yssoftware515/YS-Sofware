@@ -18,6 +18,13 @@ const apiUrl = (() => {
 const apiOrigin = apiUrl.origin
 
 const nextConfig: NextConfig = {
+  // Standalone output is required for the Docker deployment path
+  // (ys-web/Dockerfile copies .next/standalone and runs node server.js).
+  // Vercel does not need or want this — its build pipeline handles output
+  // packaging itself. The DOCKER_BUILD env var is set in the Dockerfile's
+  // builder stage; Vercel and local dev never set it, so standalone is
+  // off by default and only activates when explicitly requested.
+  ...(process.env.DOCKER_BUILD === 'true' && { output: 'standalone' }),
   compress:       true,
   poweredByHeader: false,
 

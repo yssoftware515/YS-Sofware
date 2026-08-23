@@ -9,7 +9,7 @@ RUN apk add --no-cache \
 
 COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 WORKDIR /app
-COPY composer.json composer.lock ./
+COPY ys-api/composer.json ys-api/composer.lock ./
 RUN composer install --no-dev --no-scripts --no-autoloader --prefer-dist
 
 # Stage 2: Production
@@ -24,13 +24,14 @@ RUN apk add --no-cache \
     && addgroup -g 1001 -S appgroup && adduser -S -u 1001 -G appgroup appuser
 
 WORKDIR /app
+COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 COPY --from=deps /app/vendor ./vendor
-COPY . .
+COPY ys-api/ .
 
 # Discard any runtime caches that exist in the repo (a git-tracked stale
 # route cache would otherwise be baked into the image), regenerate the
 # composer package map, and wire the public storage symlink.
-RUN composer dump-autoload --no-dev --optimize \
+RUN composer dump-autoload --no-dev --optimize --no-scripts \
     && rm -f bootstrap/cache/*.php \
     && mkdir -p storage/app/public storage/framework/cache/data storage/framework/sessions storage/framework/views storage/logs bootstrap/cache \
     && ln -sfn /app/storage/app/public public/storage
@@ -39,13 +40,22 @@ RUN composer dump-autoload --no-dev --optimize \
 # sessions) stays writable by the application.
 RUN sed -i 's/^user = .*/user = appuser/; s/^group = .*/group = appgroup/' /usr/local/etc/php-fpm.d/www.conf
 
-COPY docker/nginx/nginx.conf /etc/nginx/nginx.conf
-COPY docker/php/opcache.ini /usr/local/etc/php/conf.d/zz-opcache.ini
-COPY docker/entrypoint.sh /usr/local/bin/entrypoint.sh
+COPY ys-api/docker/nginx/nginx.conf /etc/nginx/nginx.conf
+COPY ys-api/docker/php/opcache.ini /usr/local/etc/php/conf.d/zz-opcache.ini
+COPY ys-api/docker/php/security.ini /usr/local/etc/php/conf.d/zz-security.ini
+COPY ys-api/docker/entrypoint.sh /usr/local/bin/entrypoint.sh
 RUN chmod +x /usr/local/bin/entrypoint.sh
 
-RUN chown -R appuser:appgroup /app/storage /app/bootstrap/cache
+# nginx needs writable dirs for temp files and error log.
+# These must be created and chowned BEFORE switching to appuser
+# because the alpine nginx package creates /var/lib/nginx with
+# root ownership, and appuser cannot create subdirs there.
+RUN mkdir -p /var/lib/nginx/logs /var/lib/nginx/tmp \
+    && chown -R appuser:appgroup /app/storage /app/bootstrap/cache /etc/nginx/ /var/lib/nginx/
 USER appuser
 
+# Render: container must bind to $PORT (provided by Render).
+# Local Docker Compose: defaults to 8000 via entrypoint.sh.
+# nginx.conf port is templated at startup by entrypoint.sh.
 EXPOSE 8000
 ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]
