@@ -6,6 +6,7 @@ use App\Domains\Cms\Models\Menu;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\Public\MenuResource;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Facades\Cache;
 
 class MenuController extends Controller
 {
@@ -15,10 +16,12 @@ class MenuController extends Controller
      */
     public function index(): JsonResponse
     {
-        $menus = Menu::where('is_active', true)
-            ->with(['rootItems' => fn ($q) => $q->where('is_active', true)->orderBy('sort_order'),
-                'rootItems.children' => fn ($q) => $q->where('is_active', true)->orderBy('sort_order')])
-            ->get();
+        $menus = Cache::remember('public:menus:list', 600, fn () =>
+            Menu::where('is_active', true)
+                ->with(['rootItems' => fn ($q) => $q->where('is_active', true)->orderBy('sort_order'),
+                    'rootItems.children' => fn ($q) => $q->where('is_active', true)->orderBy('sort_order')])
+                ->get()
+        );
 
         return response()->json([
             'success' => true,
@@ -31,11 +34,13 @@ class MenuController extends Controller
      */
     public function show(string $location): JsonResponse
     {
-        $menu = Menu::where('location', $location)
-            ->where('is_active', true)
-            ->with(['rootItems' => fn ($q) => $q->where('is_active', true)->orderBy('sort_order'),
-                'rootItems.children' => fn ($q) => $q->where('is_active', true)->orderBy('sort_order')])
-            ->firstOrFail();
+        $menu = Cache::remember("public:menus:{$location}", 600, fn () =>
+            Menu::where('location', $location)
+                ->where('is_active', true)
+                ->with(['rootItems' => fn ($q) => $q->where('is_active', true)->orderBy('sort_order'),
+                    'rootItems.children' => fn ($q) => $q->where('is_active', true)->orderBy('sort_order')])
+                ->firstOrFail()
+        );
 
         return response()->json([
             'success' => true,

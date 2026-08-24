@@ -52,6 +52,8 @@ class SubscriptionController extends Controller
 
     public function store(CreateSubscriptionRequest $request): JsonResponse
     {
+        $this->authorize('manage_subscriptions');
+
         $validated = $request->validated();
         abort_unless(Auth::user()->canAccessProduct($validated['product_id']), 403, 'You do not have access to this product.');
 
@@ -90,6 +92,8 @@ class SubscriptionController extends Controller
 
     public function update(UpdateSubscriptionRequest $request, Subscription $subscription): JsonResponse
     {
+        $this->authorize('manage_subscriptions');
+
         abort_unless(Auth::user()->canAccessProduct($subscription->product_id), 403, 'You do not have access to this product.');
 
         $old = $subscription->only(['price', 'status', 'ends_at']);

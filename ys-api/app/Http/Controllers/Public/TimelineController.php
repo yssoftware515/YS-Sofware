@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Public;
 use App\Domains\Content\Models\TimelineEntry;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Facades\Cache;
 
 class TimelineController extends Controller
 {
@@ -13,10 +14,12 @@ class TimelineController extends Controller
      */
     public function index(): JsonResponse
     {
-        $entries = TimelineEntry::with('product:id,name_en,name_ar,slug')
-            ->public()
-            ->ordered()
-            ->get();
+        $entries = Cache::remember('public:timeline:list', 300, fn () =>
+            TimelineEntry::with('product:id,name_en,name_ar,slug')
+                ->public()
+                ->ordered()
+                ->get()
+        );
 
         $locale = app()->getLocale();
 

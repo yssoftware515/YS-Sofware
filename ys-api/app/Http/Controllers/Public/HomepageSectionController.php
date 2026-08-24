@@ -6,6 +6,7 @@ use App\Domains\Cms\Models\HomepageSection;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\Public\HomepageSectionResource;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Facades\Cache;
 
 class HomepageSectionController extends Controller
 {
@@ -15,7 +16,9 @@ class HomepageSectionController extends Controller
      */
     public function index(): JsonResponse
     {
-        $sections = HomepageSection::enabled()->ordered()->get();
+        $sections = Cache::remember('public:homepage:sections', 600, fn () =>
+            HomepageSection::enabled()->ordered()->get()
+        );
 
         return response()->json([
             'success' => true,

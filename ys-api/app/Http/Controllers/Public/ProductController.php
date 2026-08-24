@@ -7,6 +7,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Resources\Public\ProductDetailResource;
 use App\Http\Resources\Public\ProductResource;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Facades\Cache;
 
 class ProductController extends Controller
 {
@@ -15,10 +16,12 @@ class ProductController extends Controller
      */
     public function index(): JsonResponse
     {
-        $products = Product::with('coverImage')
-            ->public()
-            ->ordered()
-            ->get();
+        $products = Cache::remember('public:products:list', 300, fn () =>
+            Product::with('coverImage')
+                ->public()
+                ->ordered()
+                ->get()
+        );
 
         return response()->json([
             'success' => true,
@@ -31,10 +34,12 @@ class ProductController extends Controller
      */
     public function show(string $slug): JsonResponse
     {
-        $product = Product::with(['coverImage', 'logoImage', 'features', 'pricingPlans', 'mediaAttachments.media', 'latestRelease'])
-            ->public()
-            ->where('slug', $slug)
-            ->firstOrFail();
+        $product = Cache::remember("public:products:{$slug}", 300, fn () =>
+            Product::with(['coverImage', 'logoImage', 'features', 'pricingPlans', 'mediaAttachments.media', 'latestRelease'])
+                ->public()
+                ->where('slug', $slug)
+                ->firstOrFail()
+        );
 
         return response()->json([
             'success' => true,

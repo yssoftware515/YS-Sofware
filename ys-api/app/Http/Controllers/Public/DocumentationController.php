@@ -7,6 +7,7 @@ use App\Domains\Content\Models\DocumentationCategory;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 
 class DocumentationController extends Controller
 {
@@ -25,15 +26,19 @@ class DocumentationController extends Controller
         // roots, or the public tree silently leaks other products' docs.
         $scopedChildren = fn ($query) => $query->when($productId, fn ($q) => $q->forProduct($productId));
 
-        $categories = DocumentationCategory::with([
-            'children.articles' => fn ($q) => $q->published()->ordered(),
-            'children' => $scopedChildren,
-            'articles' => fn ($q) => $q->published()->ordered(),
-        ])
-            ->roots()
-            ->when($productId, fn ($q) => $q->forProduct($productId))
-            ->ordered()
-            ->get();
+        $cacheKey = $productId ? "public:docs:list:product:{$productId}" : 'public:docs:list';
+
+        $categories = Cache::remember($cacheKey, 300, fn () =>
+            DocumentationCategory::with([
+                'children.articles' => fn ($q) => $q->published()->ordered(),
+                'children' => $scopedChildren,
+                'articles' => fn ($q) => $q->published()->ordered(),
+            ])
+                ->roots()
+                ->when($productId, fn ($q) => $q->forProduct($productId))
+                ->ordered()
+                ->get()
+        );
 
         return response()->json(['success' => true, 'data' => $categories]);
     }
@@ -43,10 +48,12 @@ class DocumentationController extends Controller
      */
     public function show(string $slug): JsonResponse
     {
-        $article = DocumentationArticle::with('category:id,title_en,title_ar,slug')
-            ->published()
-            ->where('slug', $slug)
-            ->firstOrFail();
+        $article = Cache::remember("public:docs:{$slug}", 300, fn () =>
+            DocumentationArticle::with('category:id,title_en,title_ar,slug')
+                ->published()
+                ->where('slug', $slug)
+                ->firstOrFail()
+        );
 
         $locale = app()->getLocale();
 

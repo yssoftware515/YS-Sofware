@@ -211,7 +211,7 @@ export function Footer({ locale, settings, menus, products }: FooterProps) {
 
       <div className="container-site relative z-10">
         {/* ═══════════════════════════════════════════════════════════════
-            TIER 1: Newsletter + Brand
+            TIER 1: Brand
         ═══════════════════════════════════════════════════════════════ */}
         <div
           className="py-14 lg:py-16"
@@ -247,45 +247,6 @@ export function Footer({ locale, settings, menus, products }: FooterProps) {
               >
                 {tagline}
               </p>
-            </div>
-
-            {/* Newsletter */}
-            <div className="w-full max-w-md lg:max-w-sm">
-              <h4
-                className="font-display font-semibold text-sm mb-1.5"
-                style={{ color: "var(--color-foreground)" }}
-              >
-                {t.newsletter_title}
-              </h4>
-              <p
-                className="text-xs leading-relaxed mb-3.5"
-                style={{ color: "var(--color-foreground-muted)" }}
-              >
-                {t.newsletter_subtitle}
-              </p>
-              <form
-                className="flex gap-2"
-                onSubmit={(e) => e.preventDefault()}
-              >
-                <input
-                  type="email"
-                  placeholder={t.newsletter_placeholder}
-                  className="flex-1 min-w-0 px-3.5 py-2.5 rounded-xl text-sm outline-none transition-all duration-200 focus:ring-2"
-                  style={{
-                    background: "var(--surface-subtle)",
-                    border: "1px solid var(--border-input)",
-                    color: "var(--color-foreground)",
-                    caretColor: "var(--color-accent)",
-                  }}
-                  dir={isAr ? "rtl" : "ltr"}
-                />
-                <button
-                  type="submit"
-                  className="shrink-0 px-4 py-2.5 rounded-xl text-sm font-semibold transition-all duration-200 btn-hero-primary"
-                >
-                  {t.newsletter_button}
-                </button>
-              </form>
             </div>
           </div>
         </div>

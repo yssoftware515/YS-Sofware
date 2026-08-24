@@ -53,6 +53,8 @@ class CustomerController extends Controller
 
     public function store(CreateCustomerRequest $request): JsonResponse
     {
+        $this->authorize('manage_customers');
+
         $validated = $request->validated();
         $this->assertProductAccessible($validated['product_id'] ?? null);
 
@@ -137,6 +139,8 @@ class CustomerController extends Controller
 
     public function update(UpdateCustomerRequest $request, Customer $customer): JsonResponse
     {
+        $this->authorize('manage_customers');
+
         $this->assertCustomerAccessible($customer);
 
         $validated = $request->validated();

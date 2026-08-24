@@ -7,6 +7,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Resources\Public\ServiceDetailResource;
 use App\Http\Resources\Public\ServiceResource;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Facades\Cache;
 
 class ServiceController extends Controller
 {
@@ -15,10 +16,12 @@ class ServiceController extends Controller
      */
     public function index(): JsonResponse
     {
-        $services = Service::with('coverImage')
-            ->public()
-            ->ordered()
-            ->get();
+        $services = Cache::remember('public:services:list', 300, fn () =>
+            Service::with('coverImage')
+                ->public()
+                ->ordered()
+                ->get()
+        );
 
         return response()->json([
             'success' => true,
@@ -31,10 +34,12 @@ class ServiceController extends Controller
      */
     public function show(string $slug): JsonResponse
     {
-        $service = Service::with('coverImage')
-            ->public()
-            ->where('slug', $slug)
-            ->firstOrFail();
+        $service = Cache::remember("public:services:{$slug}", 300, fn () =>
+            Service::with('coverImage')
+                ->public()
+                ->where('slug', $slug)
+                ->firstOrFail()
+        );
 
         return response()->json([
             'success' => true,

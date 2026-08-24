@@ -6,6 +6,7 @@ use App\Domains\Content\Models\RoadmapItem;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 
 class RoadmapController extends Controller
 {
@@ -14,12 +15,18 @@ class RoadmapController extends Controller
      */
     public function index(Request $request): JsonResponse
     {
-        $items = RoadmapItem::with('product:id,name_en,name_ar,slug')
-            ->public()
-            ->when($request->query('product_id'), fn ($q, $id) => $q->where('product_id', $id))
-            ->when($request->query('status'), fn ($q, $s) => $q->byStatus($s))
-            ->ordered()
-            ->get();
+        $productId = $request->query('product_id');
+        $status = $request->query('status');
+        $cacheKey = "public:roadmap:list:{$productId}:{$status}";
+
+        $items = Cache::remember($cacheKey, 300, fn () =>
+            RoadmapItem::with('product:id,name_en,name_ar,slug')
+                ->public()
+                ->when($productId, fn ($q, $id) => $q->where('product_id', $id))
+                ->when($status, fn ($q, $s) => $q->byStatus($s))
+                ->ordered()
+                ->get()
+        );
 
         $locale = app()->getLocale();
 

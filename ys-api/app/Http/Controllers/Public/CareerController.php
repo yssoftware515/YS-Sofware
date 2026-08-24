@@ -6,6 +6,7 @@ use App\Domains\Content\Models\Career;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 
 class CareerController extends Controller
 {
@@ -14,10 +15,15 @@ class CareerController extends Controller
      */
     public function index(Request $request): JsonResponse
     {
-        $careers = Career::open()
-            ->when($request->query('department'), fn ($q, $d) => $q->byDepartment($d))
-            ->ordered()
-            ->get();
+        $department = $request->query('department');
+        $cacheKey = $department ? "public:careers:list:{$department}" : 'public:careers:list';
+
+        $careers = Cache::remember($cacheKey, 300, fn () =>
+            Career::open()
+                ->when($department, fn ($q, $d) => $q->byDepartment($d))
+                ->ordered()
+                ->get()
+        );
 
         $locale = app()->getLocale();
 
@@ -45,18 +51,30 @@ class CareerController extends Controller
         }
 
         $locale = app()->getLocale();
+        $cached = Cache::remember("public:careers:{$career->id}", 300, fn () => [
+            'id' => $career->id,
+            'title_en' => $career->title_en,
+            'title_ar' => $career->title_ar,
+            'department' => $career->department,
+            'location' => $career->location,
+            'type' => $career->type,
+            'description_en' => $career->description_en,
+            'description_ar' => $career->description_ar,
+            'requirements' => $career->requirements,
+            'responsibilities' => $career->responsibilities,
+        ]);
 
         return response()->json([
             'success' => true,
             'data' => [
-                'id' => $career->id,
-                'title' => $locale === 'ar' ? $career->title_ar : $career->title_en,
-                'department' => $career->department,
-                'location' => $career->location,
-                'type' => $career->type,
-                'description' => $locale === 'ar' ? $career->description_ar : $career->description_en,
-                'requirements' => $career->requirements,
-                'responsibilities' => $career->responsibilities,
+                'id' => $cached['id'],
+                'title' => $locale === 'ar' ? $cached['title_ar'] : $cached['title_en'],
+                'department' => $cached['department'],
+                'location' => $cached['location'],
+                'type' => $cached['type'],
+                'description' => $locale === 'ar' ? $cached['description_ar'] : $cached['description_en'],
+                'requirements' => $cached['requirements'],
+                'responsibilities' => $cached['responsibilities'],
             ],
         ]);
     }

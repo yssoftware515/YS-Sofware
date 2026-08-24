@@ -6,6 +6,7 @@ use App\Domains\Content\Models\Update;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 
 class UpdateController extends Controller
 {
@@ -14,12 +15,19 @@ class UpdateController extends Controller
      */
     public function index(Request $request): JsonResponse
     {
-        $updates = Update::with('product:id,name_en,name_ar,slug')
-            ->published()
-            ->when($request->query('type'), fn ($q, $t) => $q->ofType($t))
-            ->when($request->query('product_id'), fn ($q, $id) => $q->where('product_id', $id))
-            ->orderByDesc('published_at')
-            ->paginate($this->perPage($request, 10));
+        $type = $request->query('type');
+        $productId = $request->query('product_id');
+        $page = $request->query('page', 1);
+        $cacheKey = "public:updates:list:{$type}:{$productId}:{$page}";
+
+        $updates = Cache::remember($cacheKey, 120, fn () =>
+            Update::with('product:id,name_en,name_ar,slug')
+                ->published()
+                ->when($type, fn ($q, $t) => $q->ofType($t))
+                ->when($productId, fn ($q, $id) => $q->where('product_id', $id))
+                ->orderByDesc('published_at')
+                ->paginate($this->perPage($request, 10))
+        );
 
         $locale = app()->getLocale();
 

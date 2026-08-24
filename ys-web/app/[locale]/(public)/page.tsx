@@ -1,4 +1,5 @@
 import type { Metadata } from 'next'
+import { Suspense } from 'react'
 import { api }              from '@/lib/api/client'
 import { buildMetadata, safeJsonLd } from '@/lib/seo'
 import { HeroSection }      from '@/components/sections/HeroSection'
@@ -8,6 +9,17 @@ import { ServicesSection }  from '@/components/sections/ServicesSection'
 import { HowWeWorkSection } from '@/components/sections/HowWeWorkSection'
 import { CTASection }       from '@/components/sections/CTASection'
 import type { Product, Service, PublicSettings, HomepageSection } from '@/types'
+
+function SectionSkeleton() {
+  return (
+    <div className="w-full py-20" style={{ background: 'var(--color-background)' }}>
+      <div className="max-w-site mx-auto px-6">
+        <div className="h-8 w-48 rounded-lg animate-shimmer mb-4" style={{ background: 'var(--color-background-muted)' }} />
+        <div className="h-4 w-72 rounded animate-shimmer" style={{ background: 'var(--color-background-muted)' }} />
+      </div>
+    </div>
+  )
+}
 
 export async function generateMetadata({
   params,
@@ -27,6 +39,16 @@ export async function generateMetadata({
   })
 }
 
+async function ProductsData({ locale }: { locale: string }) {
+  const products = await api.products(locale).catch(() => [] as Product[])
+  return <ProductsSection locale={locale} products={products} />
+}
+
+async function ServicesData({ locale }: { locale: string }) {
+  const services = await api.services(locale).catch(() => [] as Service[])
+  return <ServicesSection locale={locale} services={services} />
+}
+
 export default async function HomePage({
   params,
 }: {
@@ -34,11 +56,10 @@ export default async function HomePage({
 }) {
   const { locale } = await params
 
-  const [productsResult, settingsResult, sectionsResult, servicesResult] = await Promise.allSettled([
+  const [productsResult, settingsResult, sectionsResult] = await Promise.allSettled([
     api.products(locale),
     api.settings(locale),
     api.homepageSections(locale).catch(() => [] as HomepageSection[]),
-    api.services(locale).catch(() => [] as Service[]),
   ])
 
   const products: Product[] =
@@ -50,9 +71,6 @@ export default async function HomePage({
   const sections: HomepageSection[] =
     sectionsResult.status === 'fulfilled' ? sectionsResult.value : []
 
-  const services: Service[] =
-    servicesResult.status === 'fulfilled' ? servicesResult.value : []
-
   const heroSection      = sections.find(s => s.type === 'hero')
   const whyChoose        = sections.find(s => s.type === 'why_choose')
   const productsSec      = sections.find(s => s.type === 'products')
@@ -60,8 +78,6 @@ export default async function HomePage({
   const processSec       = sections.find(s => s.type === 'process')
   const ctaSection       = sections.find(s => s.type === 'cta')
 
-  // Factual organization data only — no invented claims, social links,
-  // dates, or contact details. Used for Google's organization markup.
   const APP_URL = process.env.NEXT_PUBLIC_APP_URL ?? 'https://ys-systems.com'
   const orgJsonLd = {
     '@context': 'https://schema.org',
@@ -77,14 +93,6 @@ export default async function HomePage({
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: safeJsonLd(orgJsonLd) }}
       />
-      {/*
-        WhyChooseSection is now MERGED into HeroSection as a bottom-docked
-        features bar. This ensures the entire hero — text, cards, and features —
-        is visible above the fold on desktop without scrolling.
-
-        The why_choose CMS section is passed to HeroSection so CMS-driven
-        feature items can still be used when configured.
-      */}
       <HeroSection
         locale={locale}
         settings={settings}
@@ -92,12 +100,21 @@ export default async function HomePage({
         whyChooseSection={whyChoose}
         products={products}
       />
-      <CapabilitiesSection locale={locale} cmsSection={sections.find(s => s.type === 'capabilities')} />
-      <ProductsSection locale={locale} products={products} cmsSection={productsSec} />
-      <ServicesSection locale={locale} services={services} cmsSection={servicesSec} />
-      {/* WhyChooseSection REMOVED — now lives inside HeroSection */}
-      <HowWeWorkSection locale={locale} cmsSection={processSec} />
-      <CTASection locale={locale} cmsSection={ctaSection} settings={settings} />
+      <Suspense fallback={<SectionSkeleton />}>
+        <CapabilitiesSection locale={locale} cmsSection={sections.find(s => s.type === 'capabilities')} />
+      </Suspense>
+      <Suspense fallback={<SectionSkeleton />}>
+        <ProductsData locale={locale} />
+      </Suspense>
+      <Suspense fallback={<SectionSkeleton />}>
+        <ServicesData locale={locale} />
+      </Suspense>
+      <Suspense fallback={<SectionSkeleton />}>
+        <HowWeWorkSection locale={locale} cmsSection={processSec} />
+      </Suspense>
+      <Suspense fallback={<SectionSkeleton />}>
+        <CTASection locale={locale} cmsSection={ctaSection} settings={settings} />
+      </Suspense>
     </>
   )
 }

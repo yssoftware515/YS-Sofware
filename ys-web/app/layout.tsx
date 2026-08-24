@@ -1,7 +1,29 @@
 import type { Metadata } from 'next'
 import { headers } from 'next/headers'
+import { DM_Sans, DM_Mono, Space_Grotesk } from 'next/font/google'
 import '@/styles/globals.css'
 import { getVerificationMetaTags } from '@/lib/search-verification'
+
+const dmSans = DM_Sans({
+  subsets: ['latin'],
+  weight: ['400', '500', '600', '700'],
+  variable: '--font-sans',
+  display: 'swap',
+})
+
+const dmMono = DM_Mono({
+  subsets: ['latin'],
+  weight: ['400', '500'],
+  variable: '--font-mono',
+  display: 'swap',
+})
+
+const spaceGrotesk = Space_Grotesk({
+  subsets: ['latin'],
+  weight: ['500', '600', '700'],
+  variable: '--font-display',
+  display: 'swap',
+})
 
 export const metadata: Metadata = {
   title: {
@@ -61,7 +83,7 @@ export default async function RootLayout({
           <meta key={tag.name} name={tag.name} content={tag.content} />
         ))}
       </head>
-      <body style={{ margin: 0 }}>
+      <body style={{ margin: 0 }} className={`${dmSans.variable} ${dmMono.variable} ${spaceGrotesk.variable}`}>
         {children}
       </body>
     </html>
