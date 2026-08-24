@@ -11,6 +11,7 @@ use App\Http\Resources\Admin\FaqResource;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Validation\Rule;
 
 class FaqController extends Controller
@@ -56,6 +57,7 @@ class FaqController extends Controller
 
         $faq = $this->createFaq->execute($validated);
         $this->auditService->logModelChange('faq.created', $faq);
+        $this->flushPublicFaqCache();
 
         return response()->json(['success' => true, 'data' => new FaqResource($faq)], Response::HTTP_CREATED);
     }
@@ -85,6 +87,7 @@ class FaqController extends Controller
 
         $updated = $this->updateFaq->execute($faq, $validated);
         $this->auditService->logModelChange('faq.updated', $updated);
+        $this->flushPublicFaqCache();
 
         return response()->json(['success' => true, 'data' => new FaqResource($updated->load('creator'))]);
     }
@@ -95,7 +98,13 @@ class FaqController extends Controller
 
         $this->auditService->logModelChange('faq.deleted', $faq);
         $faq->delete();
+        $this->flushPublicFaqCache();
 
         return response()->json(['success' => true, 'message' => 'FAQ deleted.']);
+    }
+
+    private function flushPublicFaqCache(): void
+    {
+        Cache::forget('public:faqs:list');
     }
 }
