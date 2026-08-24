@@ -18,11 +18,10 @@ class CareerController extends Controller
         $department = $request->query('department');
         $cacheKey = $department ? "public:careers:list:{$department}" : 'public:careers:list';
 
-        $careers = Cache::remember($cacheKey, 300, fn () =>
-            Career::open()
-                ->when($department, fn ($q, $d) => $q->byDepartment($d))
-                ->ordered()
-                ->get()
+        $careers = Cache::remember($cacheKey, 300, fn () => Career::open()
+            ->when($department, fn ($q, $d) => $q->byDepartment($d))
+            ->ordered()
+            ->get()
         );
 
         $locale = app()->getLocale();

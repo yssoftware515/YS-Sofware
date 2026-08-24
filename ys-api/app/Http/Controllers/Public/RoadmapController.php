@@ -19,13 +19,12 @@ class RoadmapController extends Controller
         $status = $request->query('status');
         $cacheKey = "public:roadmap:list:{$productId}:{$status}";
 
-        $items = Cache::remember($cacheKey, 300, fn () =>
-            RoadmapItem::with('product:id,name_en,name_ar,slug')
-                ->public()
-                ->when($productId, fn ($q, $id) => $q->where('product_id', $id))
-                ->when($status, fn ($q, $s) => $q->byStatus($s))
-                ->ordered()
-                ->get()
+        $items = Cache::remember($cacheKey, 300, fn () => RoadmapItem::with('product:id,name_en,name_ar,slug')
+            ->public()
+            ->when($productId, fn ($q, $id) => $q->where('product_id', $id))
+            ->when($status, fn ($q, $s) => $q->byStatus($s))
+            ->ordered()
+            ->get()
         );
 
         $locale = app()->getLocale();

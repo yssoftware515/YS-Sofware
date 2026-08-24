@@ -597,7 +597,7 @@ export function HeroSection({ locale, settings, cmsSection, whyChooseSection, pr
                       <br />
                       {f.headline_l2}
                       <br />
-                      <span className="text-gradient-blue-strong">{f.headline_hl}</span>
+                      <span className="text-gradient-blue-strong whitespace-nowrap">{f.headline_hl}</span>
                     </>
                   )}
                 </motion.h1>

@@ -19,11 +19,10 @@ class FaqController extends Controller
         $category = $request->query('category');
         $cacheKey = $category ? "public:faqs:list:{$category}" : 'public:faqs:list';
 
-        $faqs = Cache::remember($cacheKey, 600, fn () =>
-            Faq::published()
-                ->when($category, fn ($q, $c) => $q->byCategory($c))
-                ->ordered()
-                ->get()
+        $faqs = Cache::remember($cacheKey, 600, fn () => Faq::published()
+            ->when($category, fn ($q, $c) => $q->byCategory($c))
+            ->ordered()
+            ->get()
         );
 
         return response()->json([

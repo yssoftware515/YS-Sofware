@@ -28,16 +28,15 @@ class DocumentationController extends Controller
 
         $cacheKey = $productId ? "public:docs:list:product:{$productId}" : 'public:docs:list';
 
-        $categories = Cache::remember($cacheKey, 300, fn () =>
-            DocumentationCategory::with([
-                'children.articles' => fn ($q) => $q->published()->ordered(),
-                'children' => $scopedChildren,
-                'articles' => fn ($q) => $q->published()->ordered(),
-            ])
-                ->roots()
-                ->when($productId, fn ($q) => $q->forProduct($productId))
-                ->ordered()
-                ->get()
+        $categories = Cache::remember($cacheKey, 300, fn () => DocumentationCategory::with([
+            'children.articles' => fn ($q) => $q->published()->ordered(),
+            'children' => $scopedChildren,
+            'articles' => fn ($q) => $q->published()->ordered(),
+        ])
+            ->roots()
+            ->when($productId, fn ($q) => $q->forProduct($productId))
+            ->ordered()
+            ->get()
         );
 
         return response()->json(['success' => true, 'data' => $categories]);
@@ -48,11 +47,10 @@ class DocumentationController extends Controller
      */
     public function show(string $slug): JsonResponse
     {
-        $article = Cache::remember("public:docs:{$slug}", 300, fn () =>
-            DocumentationArticle::with('category:id,title_en,title_ar,slug')
-                ->published()
-                ->where('slug', $slug)
-                ->firstOrFail()
+        $article = Cache::remember("public:docs:{$slug}", 300, fn () => DocumentationArticle::with('category:id,title_en,title_ar,slug')
+            ->published()
+            ->where('slug', $slug)
+            ->firstOrFail()
         );
 
         $locale = app()->getLocale();

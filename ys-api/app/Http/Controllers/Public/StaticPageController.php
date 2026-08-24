@@ -15,8 +15,7 @@ class StaticPageController extends Controller
      */
     public function index(): JsonResponse
     {
-        $pages = Cache::remember('public:pages:list', 300, fn () =>
-            StaticPage::published()->ordered()->get()
+        $pages = Cache::remember('public:pages:list', 300, fn () => StaticPage::published()->ordered()->get()
         );
 
         return response()->json([
@@ -30,8 +29,7 @@ class StaticPageController extends Controller
      */
     public function show(string $slug): JsonResponse
     {
-        $page = Cache::remember("public:pages:{$slug}", 300, fn () =>
-            StaticPage::published()->bySlug($slug)->firstOrFail()->load('cover')
+        $page = Cache::remember("public:pages:{$slug}", 300, fn () => StaticPage::published()->bySlug($slug)->firstOrFail()->load('cover')
         );
 
         return response()->json([

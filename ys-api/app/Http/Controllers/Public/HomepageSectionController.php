@@ -16,8 +16,7 @@ class HomepageSectionController extends Controller
      */
     public function index(): JsonResponse
     {
-        $sections = Cache::remember('public:homepage:sections', 600, fn () =>
-            HomepageSection::enabled()->ordered()->get()
+        $sections = Cache::remember('public:homepage:sections', 600, fn () => HomepageSection::enabled()->ordered()->get()
         );
 
         return response()->json([

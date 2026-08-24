@@ -14,11 +14,10 @@ class TimelineController extends Controller
      */
     public function index(): JsonResponse
     {
-        $entries = Cache::remember('public:timeline:list', 300, fn () =>
-            TimelineEntry::with('product:id,name_en,name_ar,slug')
-                ->public()
-                ->ordered()
-                ->get()
+        $entries = Cache::remember('public:timeline:list', 300, fn () => TimelineEntry::with('product:id,name_en,name_ar,slug')
+            ->public()
+            ->ordered()
+            ->get()
         );
 
         $locale = app()->getLocale();

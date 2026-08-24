@@ -16,11 +16,10 @@ class ServiceController extends Controller
      */
     public function index(): JsonResponse
     {
-        $services = Cache::remember('public:services:list', 300, fn () =>
-            Service::with('coverImage')
-                ->public()
-                ->ordered()
-                ->get()
+        $services = Cache::remember('public:services:list', 300, fn () => Service::with('coverImage')
+            ->public()
+            ->ordered()
+            ->get()
         );
 
         return response()->json([
@@ -34,11 +33,10 @@ class ServiceController extends Controller
      */
     public function show(string $slug): JsonResponse
     {
-        $service = Cache::remember("public:services:{$slug}", 300, fn () =>
-            Service::with('coverImage')
-                ->public()
-                ->where('slug', $slug)
-                ->firstOrFail()
+        $service = Cache::remember("public:services:{$slug}", 300, fn () => Service::with('coverImage')
+            ->public()
+            ->where('slug', $slug)
+            ->firstOrFail()
         );
 
         return response()->json([

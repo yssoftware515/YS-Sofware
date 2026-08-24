@@ -20,13 +20,12 @@ class UpdateController extends Controller
         $page = $request->query('page', 1);
         $cacheKey = "public:updates:list:{$type}:{$productId}:{$page}";
 
-        $updates = Cache::remember($cacheKey, 120, fn () =>
-            Update::with('product:id,name_en,name_ar,slug')
-                ->published()
-                ->when($type, fn ($q, $t) => $q->ofType($t))
-                ->when($productId, fn ($q, $id) => $q->where('product_id', $id))
-                ->orderByDesc('published_at')
-                ->paginate($this->perPage($request, 10))
+        $updates = Cache::remember($cacheKey, 120, fn () => Update::with('product:id,name_en,name_ar,slug')
+            ->published()
+            ->when($type, fn ($q, $t) => $q->ofType($t))
+            ->when($productId, fn ($q, $id) => $q->where('product_id', $id))
+            ->orderByDesc('published_at')
+            ->paginate($this->perPage($request, 10))
         );
 
         $locale = app()->getLocale();
