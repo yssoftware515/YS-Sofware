@@ -75,7 +75,7 @@ services:
       - key: REQUIRE_TLS
         value: "true"
       - key: TRUSTED_PROXIES
-        sync: false
+        value: "private_ranges"
       - key: SANCTUM_STATEFUL_DOMAINS
         value: localhost,localhost:3000,127.0.0.1,127.0.0.1:8000,::1,ys-sofware.vercel.app
       - key: AUTH_COOKIE_PARTITIONED

@@ -155,8 +155,7 @@ $app->booted(function () {
     if ($trustedProxies !== []) {
         TrustProxies::at($trustedProxies);
         TrustProxies::withHeaders(
-            Request::HEADER_X_FORWARDED_FOR
-                | Request::HEADER_X_FORWARDED_PROTO
+            Request::HEADER_X_FORWARDED_PROTO
                 | Request::HEADER_X_FORWARDED_HOST,
         );
     }
