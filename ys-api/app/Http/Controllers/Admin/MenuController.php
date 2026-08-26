@@ -14,6 +14,7 @@ use App\Rules\SafeUrl;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Validation\Rule;
 
 class MenuController extends Controller
@@ -51,6 +52,7 @@ class MenuController extends Controller
 
         $menu = $this->createMenu->execute($validated);
         $this->auditService->logModelChange('menu.created', $menu);
+        $this->flushPublicMenuCache();
 
         return response()->json(['success' => true, 'data' => $menu], Response::HTTP_CREATED);
     }
@@ -77,6 +79,7 @@ class MenuController extends Controller
 
         $updated = $this->updateMenu->execute($menu, $validated);
         $this->auditService->logModelChange('menu.updated', $updated);
+        $this->flushPublicMenuCache();
 
         return response()->json(['success' => true, 'data' => $updated]);
     }
@@ -87,6 +90,7 @@ class MenuController extends Controller
 
         $this->auditService->logModelChange('menu.deleted', $menu);
         $menu->delete();
+        $this->flushPublicMenuCache();
 
         return response()->json(['success' => true, 'message' => 'Menu deleted.']);
     }
@@ -114,6 +118,7 @@ class MenuController extends Controller
 
         $item = $this->createMenuItem->execute($validated);
         $this->auditService->logModelChange('menu_item.created', $item);
+        $this->flushPublicMenuCache();
 
         return response()->json(['success' => true, 'data' => $item], Response::HTTP_CREATED);
     }
@@ -136,6 +141,7 @@ class MenuController extends Controller
 
         $updated = $this->updateMenuItem->execute($menuItem, $validated);
         $this->auditService->logModelChange('menu_item.updated', $updated);
+        $this->flushPublicMenuCache();
 
         return response()->json(['success' => true, 'data' => $updated]);
     }
@@ -146,7 +152,13 @@ class MenuController extends Controller
 
         $this->auditService->logModelChange('menu_item.deleted', $menuItem);
         $menuItem->delete();
+        $this->flushPublicMenuCache();
 
         return response()->json(['success' => true, 'message' => 'Menu item deleted.']);
+    }
+
+    private function flushPublicMenuCache(): void
+    {
+        Cache::forget('public:menus:list');
     }
 }

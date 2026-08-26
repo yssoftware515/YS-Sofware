@@ -16,6 +16,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Cache;
 
 class ProductController extends Controller
 {
@@ -72,6 +73,8 @@ class ProductController extends Controller
             CreateProductDTO::fromRequest($request)
         );
 
+        $this->flushPublicProductCache($product);
+
         return response()->json([
             'success' => true,
             'message' => 'Product created successfully.',
@@ -110,6 +113,8 @@ class ProductController extends Controller
             UpdateProductDTO::fromArray($request->validated())
         );
 
+        $this->flushPublicProductCache($updated);
+
         return response()->json([
             'success' => true,
             'message' => 'Product updated successfully.',
@@ -129,9 +134,17 @@ class ProductController extends Controller
 
         $this->deleteProduct->execute($product);
 
+        $this->flushPublicProductCache($product);
+
         return response()->json([
             'success' => true,
             'message' => 'Product deleted successfully.',
         ]);
+    }
+
+    private function flushPublicProductCache(Product $product): void
+    {
+        Cache::forget('public:products:list');
+        Cache::forget("public:products:{$product->slug}");
     }
 }

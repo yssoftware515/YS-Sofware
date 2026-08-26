@@ -10,6 +10,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Validation\Rule;
 
 class StaticPageController extends Controller
@@ -60,6 +61,7 @@ class StaticPageController extends Controller
 
         $page = $this->createPage->execute($validated);
         $this->auditService->logModelChange('static_page.created', $page);
+        $this->flushPublicPageCache($page);
 
         return response()->json(['success' => true, 'data' => $page], Response::HTTP_CREATED);
     }
@@ -95,6 +97,7 @@ class StaticPageController extends Controller
 
         $updated = $this->updatePage->execute($staticPage, $validated);
         $this->auditService->logModelChange('static_page.updated', $updated);
+        $this->flushPublicPageCache($staticPage);
 
         return response()->json(['success' => true, 'data' => $updated]);
     }
@@ -105,7 +108,14 @@ class StaticPageController extends Controller
 
         $this->auditService->logModelChange('static_page.deleted', $staticPage);
         $staticPage->delete();
+        $this->flushPublicPageCache($staticPage);
 
         return response()->json(['success' => true, 'message' => 'Page deleted.']);
+    }
+
+    private function flushPublicPageCache(StaticPage $page): void
+    {
+        Cache::forget('public:pages:list');
+        Cache::forget("public:pages:{$page->slug}");
     }
 }

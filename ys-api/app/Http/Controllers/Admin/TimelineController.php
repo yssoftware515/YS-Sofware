@@ -12,6 +12,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Validation\Rule;
 
 class TimelineController extends Controller
@@ -63,6 +64,7 @@ class TimelineController extends Controller
         }
 
         $entry = $this->createEntry->execute($validated);
+        Cache::forget('public:timeline:list');
 
         return response()->json(['success' => true, 'data' => new TimelineResource($entry->load('product'))], Response::HTTP_CREATED);
     }
@@ -90,6 +92,7 @@ class TimelineController extends Controller
         ]);
 
         $updated = $this->updateEntry->execute($timelineEntry, $validated);
+        Cache::forget('public:timeline:list');
 
         return response()->json(['success' => true, 'data' => new TimelineResource($updated->load('product'))]);
     }
@@ -99,6 +102,7 @@ class TimelineController extends Controller
         $this->authorize('manage_timeline');
         abort_unless($this->canAccessEntry($timelineEntry->product_id), 403, 'You do not have access to this product.');
         $timelineEntry->delete();
+        Cache::forget('public:timeline:list');
 
         return response()->json(['success' => true, 'message' => 'Timeline entry deleted.']);
     }

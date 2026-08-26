@@ -11,6 +11,7 @@ use App\Http\Resources\Admin\CareerResource;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Validation\Rule;
 
 class CareerController extends Controller
@@ -61,6 +62,7 @@ class CareerController extends Controller
 
         $career = $this->createCareer->execute($validated);
         $this->auditService->logModelChange('career.created', $career);
+        $this->flushPublicCareerCache($career);
 
         return response()->json(['success' => true, 'data' => new CareerResource($career)], Response::HTTP_CREATED);
     }
@@ -93,6 +95,7 @@ class CareerController extends Controller
 
         $updated = $this->updateCareer->execute($career, $validated);
         $this->auditService->logModelChange('career.updated', $updated);
+        $this->flushPublicCareerCache($career);
 
         return response()->json(['success' => true, 'data' => new CareerResource($updated)]);
     }
@@ -103,7 +106,14 @@ class CareerController extends Controller
 
         $this->auditService->logModelChange('career.deleted', $career);
         $career->delete();
+        $this->flushPublicCareerCache($career);
 
         return response()->json(['success' => true, 'message' => 'Career listing deleted.']);
+    }
+
+    private function flushPublicCareerCache(Career $career): void
+    {
+        Cache::forget('public:careers:list');
+        Cache::forget("public:careers:{$career->id}");
     }
 }

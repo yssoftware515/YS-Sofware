@@ -48,20 +48,20 @@ class RequireTlsInProduction
             // Diagnostic: log why TLS gate fired so deploy-time
             // misconfigurations are visible in logs without code changes.
             logger('TLS gate blocked request', [
-                'url'         => $request->fullUrl(),
-                'scheme'      => $request->getScheme(),
-                'secure'      => $request->secure(),
-                'forwarded'   => $request->headers->get('X-Forwarded-Proto'),
-                'trusted'     => $request->getTrustedProxies(),
-                'client_ip'   => $request->ip(),
-                'server_ip'   => $request->server('SERVER_ADDR'),
+                'url' => $request->fullUrl(),
+                'scheme' => $request->getScheme(),
+                'secure' => $request->secure(),
+                'forwarded' => $request->headers->get('X-Forwarded-Proto'),
+                'trusted' => $request->getTrustedProxies(),
+                'client_ip' => $request->ip(),
+                'server_ip' => $request->server('SERVER_ADDR'),
                 'forward_for' => $request->headers->get('X-Forwarded-For'),
             ]);
 
             return response()->json([
                 'success' => false,
                 'message' => 'HTTPS is required — TLS must terminate in front of the application.',
-                'code'    => 'TLS_REQUIRED',
+                'code' => 'TLS_REQUIRED',
             ], Response::HTTP_FORBIDDEN);
         }
 

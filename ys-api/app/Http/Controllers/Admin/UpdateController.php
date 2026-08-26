@@ -13,6 +13,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Validation\Rule;
 
 class UpdateController extends Controller
@@ -73,6 +74,7 @@ class UpdateController extends Controller
 
         $update = $this->createUpdate->execute($validated);
         $this->auditService->logModelChange('update.created', $update);
+        Cache::forget('public:updates:list');
 
         return response()->json(['success' => true, 'data' => $update], Response::HTTP_CREATED);
     }
@@ -118,6 +120,7 @@ class UpdateController extends Controller
 
         $update->update(array_filter($validated, fn ($v) => $v !== null));
         $this->auditService->logModelChange('update.updated', $update);
+        Cache::forget('public:updates:list');
 
         return response()->json(['success' => true, 'data' => $update->fresh()]);
     }
@@ -128,6 +131,7 @@ class UpdateController extends Controller
         abort_unless($this->canAccessUpdate($update->product_id), 403, 'You do not have access to this product.');
         $updated = $this->publishUpdate->execute($update);
         $this->auditService->logModelChange('update.published', $updated);
+        Cache::forget('public:updates:list');
 
         return response()->json(['success' => true, 'data' => $updated]);
     }
@@ -138,6 +142,7 @@ class UpdateController extends Controller
         abort_unless($this->canAccessUpdate($update->product_id), 403, 'You do not have access to this product.');
         $updated = $this->unpublishUpdate->execute($update);
         $this->auditService->logModelChange('update.unpublished', $updated);
+        Cache::forget('public:updates:list');
 
         return response()->json(['success' => true, 'data' => $updated]);
     }
@@ -152,6 +157,7 @@ class UpdateController extends Controller
         }
 
         $update->delete();
+        Cache::forget('public:updates:list');
 
         return response()->json(['success' => true, 'message' => 'Update deleted.']);
     }

@@ -16,6 +16,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Cache;
 
 class DocumentationController extends Controller
 {
@@ -70,6 +71,7 @@ class DocumentationController extends Controller
         $category = $this->createCategory->execute($validated);
 
         $this->auditService->logModelChange('documentation_category.created', $category);
+        $this->flushPublicDocsCache();
 
         return response()->json([
             'success' => true,
@@ -105,6 +107,7 @@ class DocumentationController extends Controller
         $updated = $this->updateCategory->execute($category, $validated);
 
         $this->auditService->logModelChange('documentation_category.updated', $updated);
+        $this->flushPublicDocsCache();
 
         return response()->json(['success' => true, 'data' => new DocumentationCategoryResource($updated->load(['product', 'parent']))]);
     }
@@ -123,6 +126,7 @@ class DocumentationController extends Controller
 
         $this->auditService->logModelChange('documentation_category.deleted', $category);
         $category->delete();
+        $this->flushPublicDocsCache();
 
         return response()->json(['success' => true, 'message' => 'Category deleted successfully.']);
     }
@@ -183,6 +187,7 @@ class DocumentationController extends Controller
         $article = $this->createArticle->execute($validated);
 
         $this->auditService->logModelChange('documentation_article.created', $article);
+        $this->flushPublicDocsCache($article->slug);
 
         return response()->json([
             'success' => true,
@@ -240,6 +245,7 @@ class DocumentationController extends Controller
             resourceId: $updated->id,
             oldValues: $old,
         );
+        $this->flushPublicDocsCache($article->slug);
 
         return response()->json(['success' => true, 'data' => new DocumentationArticleResource($updated->load(['category', 'author']))]);
     }
@@ -253,7 +259,16 @@ class DocumentationController extends Controller
 
         $this->auditService->logModelChange('documentation_article.deleted', $article);
         $article->delete();
+        $this->flushPublicDocsCache($article->slug);
 
         return response()->json(['success' => true, 'message' => 'Article deleted successfully.']);
+    }
+
+    private function flushPublicDocsCache(?string $slug = null): void
+    {
+        Cache::forget('public:docs:list');
+        if ($slug) {
+            Cache::forget("public:docs:{$slug}");
+        }
     }
 }

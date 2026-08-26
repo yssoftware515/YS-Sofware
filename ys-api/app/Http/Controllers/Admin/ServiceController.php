@@ -12,6 +12,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Cache;
 
 class ServiceController extends Controller
 {
@@ -86,6 +87,8 @@ class ServiceController extends Controller
             'created_by' => Auth::id(),
         ]);
 
+        $this->flushPublicServiceCache($service);
+
         return response()->json([
             'success' => true,
             'message' => 'Service created successfully.',
@@ -140,6 +143,8 @@ class ServiceController extends Controller
 
         $service->update($validated);
 
+        $this->flushPublicServiceCache($service);
+
         return response()->json([
             'success' => true,
             'message' => 'Service updated successfully.',
@@ -169,9 +174,17 @@ class ServiceController extends Controller
 
         $service->delete();
 
+        $this->flushPublicServiceCache($service);
+
         return response()->json([
             'success' => true,
             'message' => 'Service deleted successfully.',
         ]);
+    }
+
+    private function flushPublicServiceCache(Service $service): void
+    {
+        Cache::forget('public:services:list');
+        Cache::forget("public:services:{$service->slug}");
     }
 }

@@ -10,6 +10,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Validation\Rule;
 
 class HomepageSectionController extends Controller
@@ -54,6 +55,7 @@ class HomepageSectionController extends Controller
 
         $section = $this->createSection->execute($validated);
         $this->auditService->logModelChange('homepage_section.created', $section);
+        Cache::forget('public:homepage:sections');
 
         return response()->json(['success' => true, 'data' => $section], Response::HTTP_CREATED);
     }
@@ -82,6 +84,7 @@ class HomepageSectionController extends Controller
 
         $updated = $this->updateSection->execute($section, $validated);
         $this->auditService->logModelChange('homepage_section.updated', $updated);
+        Cache::forget('public:homepage:sections');
 
         return response()->json(['success' => true, 'data' => $updated]);
     }
@@ -92,6 +95,7 @@ class HomepageSectionController extends Controller
 
         $this->auditService->logModelChange('homepage_section.deleted', $section);
         $section->delete();
+        Cache::forget('public:homepage:sections');
 
         return response()->json(['success' => true, 'message' => 'Section deleted.']);
     }

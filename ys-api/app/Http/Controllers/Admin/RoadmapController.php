@@ -11,6 +11,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Validation\Rule;
 
 class RoadmapController extends Controller
@@ -72,6 +73,7 @@ class RoadmapController extends Controller
 
         $item = $this->createItem->execute($validated);
         $this->auditService->logModelChange('roadmap_item.created', $item);
+        Cache::forget('public:roadmap:list');
 
         return response()->json(['success' => true, 'data' => $item], Response::HTTP_CREATED);
     }
@@ -113,6 +115,7 @@ class RoadmapController extends Controller
 
         $updated = $this->updateItem->execute($roadmapItem, $validated);
         $this->auditService->logModelChange('roadmap_item.updated', $updated);
+        Cache::forget('public:roadmap:list');
 
         return response()->json(['success' => true, 'data' => $updated]);
     }
@@ -124,6 +127,7 @@ class RoadmapController extends Controller
 
         $this->auditService->logModelChange('roadmap_item.deleted', $roadmapItem);
         $roadmapItem->delete();
+        Cache::forget('public:roadmap:list');
 
         return response()->json(['success' => true, 'message' => 'Roadmap item deleted.']);
     }
