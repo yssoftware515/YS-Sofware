@@ -5,7 +5,7 @@ import { useParams } from 'next/navigation'
 import { ProductForm, type ProductFormData } from '@/components/admin/ProductForm'
 import type { ProductPlanRow, ProductMediaRow } from '@/components/admin/ProductForm'
 
-const API = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:8000/api/v1'
+import { API_BASE as API } from '@/lib/api/config'
 
 interface ProductFeatureShape { title_en?: string; title_ar?: string; description_en?: string; description_ar?: string }
 type ProductPlanShape = Pick<ProductPlanRow, 'name_en' | 'name_ar' | 'pricing_type' | 'currency' | 'billing_cycle' | 'is_featured'> & { price?: string | null }

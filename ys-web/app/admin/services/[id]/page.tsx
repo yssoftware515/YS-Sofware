@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react'
 import { useParams } from 'next/navigation'
 import { ServiceForm, type ServiceFormData } from '@/components/admin/ServiceForm'
 
-const API = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:8000/api/v1'
+import { API_BASE as API } from '@/lib/api/config'
 
 export default function EditServicePage() {
   const params = useParams()

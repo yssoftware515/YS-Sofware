@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import { ArrowLeft, Clock } from 'lucide-react'
+import { API_BASE as API } from '@/lib/api/config'
 import { buildMetadata } from '@/lib/seo'
 import { sanitizeHtml } from '@/lib/utils/sanitizeHtml'
 import { Breadcrumb } from '@/components/shared/Breadcrumb'
@@ -28,7 +29,6 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { locale, slug } = await params
   try {
-    const API = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:8000/api/v1'
     const res = await fetch(`${API}/public/docs/${slug}`, { headers: { 'Accept-Language': locale } })
     const body = await res.json()
     if (body.success) {
@@ -63,7 +63,6 @@ export default async function DocArticlePage({
 
   let article: ArticleData
   try {
-    const API = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:8000/api/v1'
     const res  = await fetch(`${API}/public/docs/${slug}`, { headers: { 'Accept-Language': locale }, next: { revalidate: 60 } })
     const body = await res.json()
     if (!body.success) notFound()

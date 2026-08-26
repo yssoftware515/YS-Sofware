@@ -1,4 +1,5 @@
 import { ensureXsrfToken, readXsrfToken } from '@/lib/csrf'
+import { API_BASE } from '@/lib/api/config'
 import type {
   ApiResponse, Product, ProductDetail,
   Service, ServiceDetail,
@@ -6,8 +7,6 @@ import type {
   Career, TimelineEntry, SearchResult,
   StaticPage, FaqItem, Menu, HomepageSection,
 } from '@/types'
-
-const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:8000/api/v1'
 
 export interface SearchResponse {
   results: SearchResult[]

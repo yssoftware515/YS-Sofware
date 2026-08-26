@@ -6,7 +6,7 @@ import { Mail, ArrowLeft } from 'lucide-react'
 import { Button } from '@/components/ui/Button'
 import { ensureXsrfToken, readXsrfToken } from '@/lib/csrf'
 
-const API = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:8000/api/v1'
+import { API_BASE as API } from '@/lib/api/config'
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 

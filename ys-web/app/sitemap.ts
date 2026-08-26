@@ -1,5 +1,6 @@
 import type { MetadataRoute } from 'next'
 import { api } from '@/lib/api/client'
+import { API_BASE } from '@/lib/api/config'
 
 const APP_URL   = process.env.NEXT_PUBLIC_APP_URL ?? 'https://ys-systems.com'
 const LOCALES   = ['en', 'ar'] as const
@@ -94,7 +95,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
   // ── Dynamic: Documentation articles ─────────────────────────────────
   try {
-    const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:8000/api/v1'
     const res  = await fetch(`${API_BASE}/public/docs`, { next: { revalidate: 3600 } })
     const body = await res.json()
 

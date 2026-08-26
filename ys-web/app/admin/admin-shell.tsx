@@ -13,7 +13,7 @@ import { ensureXsrfToken, readXsrfToken } from '@/lib/csrf'
 
 const CommandPalette = lazy(() => import('@/components/admin/CommandPalette').then(m => ({ default: m.CommandPalette })))
 
-const API = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:8000/api/v1'
+import { API_BASE as API } from '@/lib/api/config'
 
 function SidebarNav({ isOpen, onClose, locale }: { isOpen: boolean; onClose: () => void; locale: string }) {
   const { hasPermission } = useAuth()

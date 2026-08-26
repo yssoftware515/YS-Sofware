@@ -4,7 +4,7 @@ import { buildMetadata } from '@/lib/seo'
 import { PageHero } from '@/components/shared/PageHero'
 
 const locales = ['en', 'ar'] as const
-const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:8000/api/v1'
+import { API_BASE } from '@/lib/api/config'
 
 interface HealthData {
   status: 'ok' | 'degraded'

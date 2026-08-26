@@ -9,7 +9,7 @@ import TurnstileWidget, { type TurnstileHandle } from '@/components/TurnstileWid
 import { cn } from '@/lib/utils/cn'
 import { ensureXsrfToken, readXsrfToken } from '@/lib/csrf'
 
-const API = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:8000/api/v1'
+import { API_BASE as API } from '@/lib/api/config'
 // CAPTCHA is enabled only when a site key is configured (GAP-01).
 const TURNSTILE_ENABLED = Boolean(process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY)
 

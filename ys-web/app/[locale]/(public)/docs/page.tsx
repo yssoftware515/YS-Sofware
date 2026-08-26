@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import { api } from '@/lib/api/client'
+import { API_BASE as API } from '@/lib/api/config'
 import { buildMetadata } from '@/lib/seo'
 import { EmptyState } from '@/components/ui/EmptyState'
 import { PageHero } from '@/components/shared/PageHero'
@@ -34,7 +35,6 @@ export default async function DocsPage({ params }: { params: Promise<{ locale: s
 
   let categories: DocCategory[] = []
   try {
-    const API = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:8000/api/v1'
     const res = await fetch(`${API}/public/docs`, { headers: { 'Accept-Language': locale }, next: { revalidate: 60 } })
     const body = await res.json()
     if (body.success) categories = body.data

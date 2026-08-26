@@ -1,7 +1,6 @@
 import type { ZodType } from 'zod'
 import { ensureXsrfToken, readXsrfToken } from '@/lib/csrf'
-
-const API = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:8000/api/v1'
+import { API_BASE as API } from '@/lib/api/config'
 
 interface FetchOptions<T> {
   method?: string

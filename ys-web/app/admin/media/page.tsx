@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/Button'
 import { useToast } from '@/components/admin/Toast'
 import { useAdminList, useAdminDelete } from '@/lib/hooks/useAdminResource'
 
-const API = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:8000/api/v1'
+import { API_BASE as API } from '@/lib/api/config'
 const RESOURCE = '/admin/media'
 
 interface MediaItem {

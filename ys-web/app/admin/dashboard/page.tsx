@@ -11,7 +11,7 @@ import { usePlatform } from '@/lib/platform/PlatformProvider'
 import { formatDateTime, formatDate, formatMoney } from '@/lib/admin/format'
 import type { WidgetDefinition } from '@/lib/platform/registries/WidgetRegistry'
 
-const API = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:8000/api/v1'
+import { API_BASE as API } from '@/lib/api/config'
 const fetchOpts: RequestInit = { credentials: 'include', headers: { Accept: 'application/json' } }
 
 // Widget id → key in the backend stats payload. Missing keys mean the
