@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/Button'
 import { Field, Input, Textarea, Select } from '@/components/admin/FormElements'
 import { useToast } from '@/components/admin/Toast'
 import { adminGet, adminUpdate, API } from '@/lib/admin/api'
+import { ensureXsrfToken, readXsrfToken } from '@/lib/csrf'
 import type { StaticPage } from '@/types'
 
 interface PageData {
@@ -81,10 +82,12 @@ export default function EditStaticPage({ params }: { params: Promise<{ id: strin
     try {
       const url = isNew ? `${API}/admin/static-pages` : `${API}/admin/static-pages/${id}`
       const method = isNew ? 'POST' : 'PUT'
+      await ensureXsrfToken(API)
+      const xsrf = readXsrfToken()
       const res = await fetch(url, {
         method,
         credentials: 'include',
-        headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+        headers: { 'Content-Type': 'application/json', Accept: 'application/json', ...(xsrf ? { 'X-XSRF-TOKEN': xsrf } : {}) },
         body: JSON.stringify(form),
       })
       const body = await res.json()

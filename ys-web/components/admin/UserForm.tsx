@@ -9,6 +9,7 @@ import { Field, Input, Select, Checkbox, FormSection } from '@/components/admin/
 import { useToast } from '@/components/admin/Toast'
 
 import { API_BASE as API } from '@/lib/api/config'
+import { ensureXsrfToken, readXsrfToken } from '@/lib/csrf'
 
 export interface UserFormData {
   name: string
@@ -79,10 +80,12 @@ export function UserForm({
     if (!userId) return
     setSavingAccess(true)
     try {
+      await ensureXsrfToken(API)
+      const xsrf = readXsrfToken()
       const res  = await fetch(`${API}/admin/users/${userId}/products`, {
         method: 'PUT',
         credentials: 'include',
-        headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+        headers: { 'Content-Type': 'application/json', Accept: 'application/json', ...(xsrf ? { 'X-XSRF-TOKEN': xsrf } : {}) },
         body: JSON.stringify({ product_ids: productIds }),
       })
       const body = await res.json()
@@ -142,10 +145,12 @@ export function UserForm({
         }
 
     try {
+      await ensureXsrfToken(API)
+      const xsrf = readXsrfToken()
       const res  = await fetch(url, {
         method,
         credentials: 'include',
-        headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+        headers: { 'Content-Type': 'application/json', Accept: 'application/json', ...(xsrf ? { 'X-XSRF-TOKEN': xsrf } : {}) },
         body: JSON.stringify(payload),
       })
       const body = await res.json()

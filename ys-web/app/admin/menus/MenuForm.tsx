@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/Button'
 import { Field, Input, Checkbox } from '@/components/admin/FormElements'
 import { useToast } from '@/components/admin/Toast'
 import { adminGet, API } from '@/lib/admin/api'
+import { ensureXsrfToken, readXsrfToken } from '@/lib/csrf'
 import { buildMenuSavePlan, flattenMenuItems, type MenuItemDraft } from '@/lib/admin/menuItems'
 
 interface MenuFormData {
@@ -22,9 +23,11 @@ interface MenuFormProps {
 }
 
 async function requestJson(url: string, init: RequestInit): Promise<any> {
+  await ensureXsrfToken(API)
+  const xsrf = readXsrfToken()
   const res = await fetch(url, {
     credentials: 'include',
-    headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+    headers: { 'Content-Type': 'application/json', Accept: 'application/json', ...(xsrf ? { 'X-XSRF-TOKEN': xsrf } : {}) },
     ...init,
   })
   const body = await res.json().catch(() => ({}))

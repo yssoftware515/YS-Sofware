@@ -9,6 +9,7 @@ import { useToast } from '@/components/admin/Toast'
 import { useAdminList, useAdminDelete } from '@/lib/hooks/useAdminResource'
 
 import { API_BASE as API } from '@/lib/api/config'
+import { ensureXsrfToken, readXsrfToken } from '@/lib/csrf'
 const RESOURCE = '/admin/media'
 
 interface MediaItem {
@@ -53,7 +54,9 @@ export default function MediaLibraryPage() {
         const formData = new FormData()
         formData.append('file', file)
 
-        const res = await fetch(`${API}${RESOURCE}`, { method: 'POST', credentials: 'include', headers: { Accept: 'application/json' }, body: formData })
+        await ensureXsrfToken(API)
+        const xsrf = readXsrfToken()
+        const res = await fetch(`${API}${RESOURCE}`, { method: 'POST', credentials: 'include', headers: { Accept: 'application/json', ...(xsrf ? { 'X-XSRF-TOKEN': xsrf } : {}) }, body: formData })
         const body = await res.json()
         if (body.success) successCount++
         else show('error', `${file.name}: ${body.message ?? 'upload failed'}`)

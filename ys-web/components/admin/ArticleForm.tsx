@@ -9,6 +9,7 @@ import { Field, Input, Textarea, Select, Checkbox, FormSection } from '@/compone
 import { useToast } from '@/components/admin/Toast'
 
 import { API_BASE as API } from '@/lib/api/config'
+import { ensureXsrfToken, readXsrfToken } from '@/lib/csrf'
 
 export interface ArticleFormData {
   category_id: string
@@ -91,10 +92,12 @@ export function ArticleForm({ articleId, initialData }: ArticleFormProps) {
     const payload = { ...form, version_tag: form.version_tag || null }
 
     try {
+      await ensureXsrfToken(API)
+      const xsrf = readXsrfToken()
       const res  = await fetch(url, {
         method,
         credentials: 'include',
-        headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+        headers: { 'Content-Type': 'application/json', Accept: 'application/json', ...(xsrf ? { 'X-XSRF-TOKEN': xsrf } : {}) },
         body: JSON.stringify(payload),
       })
       const body = await res.json()

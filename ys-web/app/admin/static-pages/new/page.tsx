@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/Button'
 import { Field, Input, Textarea, Select } from '@/components/admin/FormElements'
 import { useToast } from '@/components/admin/Toast'
 import { API } from '@/lib/admin/api'
+import { ensureXsrfToken, readXsrfToken } from '@/lib/csrf'
 
 interface PageData {
   slug: string
@@ -55,10 +56,12 @@ export default function NewStaticPage() {
 
     setSaving(true)
     try {
+      await ensureXsrfToken(API)
+      const xsrf = readXsrfToken()
       const res = await fetch(`${API}/admin/static-pages`, {
         method: 'POST',
         credentials: 'include',
-        headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+        headers: { 'Content-Type': 'application/json', Accept: 'application/json', ...(xsrf ? { 'X-XSRF-TOKEN': xsrf } : {}) },
         body: JSON.stringify(form),
       })
       const body = await res.json()

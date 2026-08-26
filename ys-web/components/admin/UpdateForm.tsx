@@ -9,6 +9,7 @@ import { Field, Input, Textarea, Select, Checkbox, FormSection } from '@/compone
 import { useToast } from '@/components/admin/Toast'
 
 import { API_BASE as API } from '@/lib/api/config'
+import { ensureXsrfToken, readXsrfToken } from '@/lib/csrf'
 
 export interface UpdateFormData {
   product_id: string | null
@@ -117,7 +118,9 @@ export function UpdateForm({ updateId, initialData, isPublished }: UpdateFormPro
     if (!id) { setPublishing(false); return }
 
     try {
-      const res   = await fetch(`${API}/admin/updates/${id}/publish`, { method: 'POST', credentials: 'include', headers: { Accept: 'application/json' } })
+      await ensureXsrfToken(API)
+      const xsrf = readXsrfToken()
+      const res   = await fetch(`${API}/admin/updates/${id}/publish`, { method: 'POST', credentials: 'include', headers: { Accept: 'application/json', ...(xsrf ? { 'X-XSRF-TOKEN': xsrf } : {}) } })
       const body  = await res.json()
       if (body.success) {
         show('success', 'Update published successfully.')

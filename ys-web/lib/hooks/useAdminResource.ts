@@ -3,6 +3,7 @@ import { useToast } from '@/components/admin/Toast'
 import type { ZodType } from 'zod'
 
 import { API_BASE as API } from '@/lib/api/config'
+import { ensureXsrfToken, readXsrfToken } from '@/lib/csrf'
 
 /**
  * useAdminList — the single place list pages fetch admin resources from.
@@ -87,10 +88,12 @@ export function useAdminDelete(resource: string) {
 
   return useMutation({
     mutationFn: async (id: string) => {
+      await ensureXsrfToken(API)
+      const xsrf = readXsrfToken()
       const res = await fetch(`${API}${path}/${id}`, {
         method: 'DELETE',
         credentials: 'include',
-        headers: { Accept: 'application/json' },
+        headers: { Accept: 'application/json', ...(xsrf ? { 'X-XSRF-TOKEN': xsrf } : {}) },
       })
       if (!res.ok) {
         const body = await res.json().catch(() => ({}))

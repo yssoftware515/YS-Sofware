@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/Button'
 import { Field, Input, Textarea, Select, Checkbox } from '@/components/admin/FormElements'
 import { useToast } from '@/components/admin/Toast'
 import { adminGet, API } from '@/lib/admin/api'
+import { ensureXsrfToken, readXsrfToken } from '@/lib/csrf'
 import type { HomepageSection } from '@/types'
 
 interface SectionFormData {
@@ -94,10 +95,12 @@ export function HomepageSectionForm({ sectionId }: HomepageSectionFormProps) {
     setSaving(true)
     try {
       const url = isEdit ? `${API}/admin/homepage-sections/${sectionId}` : `${API}/admin/homepage-sections`
+      await ensureXsrfToken(API)
+      const xsrf = readXsrfToken()
       const res = await fetch(url, {
         method: isEdit ? 'PUT' : 'POST',
         credentials: 'include',
-        headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+        headers: { 'Content-Type': 'application/json', Accept: 'application/json', ...(xsrf ? { 'X-XSRF-TOKEN': xsrf } : {}) },
         body: JSON.stringify({
           type: form.type,
           title_en: form.title_en,

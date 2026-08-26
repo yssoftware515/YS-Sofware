@@ -9,6 +9,7 @@ import { Field, Input, Textarea, Select, Checkbox, FormSection } from '@/compone
 import { useToast } from '@/components/admin/Toast'
 
 import { API_BASE as API } from '@/lib/api/config'
+import { ensureXsrfToken, readXsrfToken } from '@/lib/csrf'
 
 export interface RoadmapFormData {
   product_id: string | null
@@ -79,10 +80,12 @@ export function RoadmapForm({ itemId, initialData }: RoadmapFormProps) {
     }
 
     try {
+      await ensureXsrfToken(API)
+      const xsrf = readXsrfToken()
       const res  = await fetch(url, {
         method,
         credentials: 'include',
-        headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+        headers: { 'Content-Type': 'application/json', Accept: 'application/json', ...(xsrf ? { 'X-XSRF-TOKEN': xsrf } : {}) },
         body: JSON.stringify(payload),
       })
       const body = await res.json()
