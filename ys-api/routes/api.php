@@ -43,6 +43,7 @@ use App\Http\Controllers\Public\StaticPageController as PublicStaticPageControll
 use App\Http\Controllers\Public\TimelineController as PublicTimelineController;
 use App\Http\Controllers\Public\UpdateController as PublicUpdateController;
 use Illuminate\Support\Facades\Route;
+use Laravel\Sanctum\Http\Middleware\EnsureFrontendRequestsAreStateful;
 
 // ── Health Check ───────────────────────────────────────────────────────────
 // Single source of truth for the health block: HealthCheckService (the
@@ -111,9 +112,15 @@ Route::prefix('public')->name('public.')->middleware('throttle:public')->group(f
         ->middleware('throttle:search')
         ->name('search');
 
-    // Contact — strictest rate limit
+    // Contact — strictest rate limit.
+    // Exempt from Sanctum's stateful pipeline (session + CSRF): this is a
+    // public, unauthenticated endpoint. The stateful middleware sets
+    // XSRF-TOKEN with SameSite=Lax, which the browser does NOT attach on
+    // cross-origin fetch() POSTs — causing a guaranteed 403 on every
+    // submission from the Vercel frontend.
     Route::post('contact', [ContactController::class, 'store'])
         ->withoutMiddleware('throttle:public')
+        ->withoutMiddleware(EnsureFrontendRequestsAreStateful::class)
         ->middleware('throttle:contact')
         ->name('contact.store');
 });
