@@ -46,8 +46,8 @@ services:
   backend:
     <<: *common
     build:
-      context: .
-      dockerfile: ys-api/Dockerfile
+      context: ./ys-api
+      dockerfile: Dockerfile
       target: ${DOCKER_TARGET:-runner}
     image: ys-systems/backend:${APP_VERSION:-latest}
     ports:
@@ -180,12 +180,12 @@ services:
           memory: 64M
           cpus: "0.1"
 
-# ------------------------------- QUEUE WORKER --------------------------
+  # ------------------------------- QUEUE WORKER --------------------------
   queue-worker:
     <<: *common
     build:
-      context: .
-      dockerfile: ys-api/Dockerfile
+      context: ./ys-api
+      dockerfile: Dockerfile
     image: ys-systems/backend:${APP_VERSION:-latest}
     command: php artisan queue:work --sleep=3 --tries=3 --max-time=3600
     environment:
@@ -223,12 +223,12 @@ services:
           memory: 128M
           cpus: "0.25"
 
-# ------------------------------- SCHEDULER ------------------------------
+  # ------------------------------- SCHEDULER ------------------------------
   scheduler:
     <<: *common
     build:
-      context: .
-      dockerfile: ys-api/Dockerfile
+      context: ./ys-api
+      dockerfile: Dockerfile
     image: ys-systems/backend:${APP_VERSION:-latest}
     command: php artisan schedule:work
     environment:

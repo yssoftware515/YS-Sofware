@@ -12,6 +12,7 @@ services:
     name: ys-api
     runtime: docker
     dockerfilePath: ys-api/Dockerfile
+    dockerContext: ys-api
     healthCheckPath: /up
     autoDeploy: true
     envVars:

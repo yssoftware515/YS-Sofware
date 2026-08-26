@@ -1,19 +1,13 @@
-# Root .dockerignore — used when build context is the repo root
-# (Render Web Service, and updated Docker Compose backend service).
-# Only ys-api/ is needed for the backend Docker build.
+# Root .dockerignore — legacy file, no longer used by any active build.
+# Backend build context: ./ys-api  (uses ys-api/.dockerignore)
+# Frontend build context: ./ys-web (uses ys-web/.dockerignore)
+#
+# Kept as a safety net in case someone accidentally builds from repo root.
 *
 !ys-api/
-# Exclude host vendor/ — the deps stage builds a clean production-only
-# vendor/. Including the host vendor/ overwrites it with dev packages
-# (Sail, Faker, etc.) causing package:discover failures.
+!ys-web/
 ys-api/vendor/
-# Exclude development-only artifacts not needed in the production image.
-# (ys-api/.dockerignore also lists these, but is NOT consulted when
-# the build context is the repo root.)
-ys-api/.git
 ys-api/tests
-ys-api/phpunit.xml
-ys-api/node_modules
-# Exclude secrets — .env files contain APP_KEY, DB_PASSWORD, etc.
+ys-web/.next
 **/.env
 **/.env.*

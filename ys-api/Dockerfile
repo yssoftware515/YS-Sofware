@@ -9,7 +9,7 @@ RUN apk add --no-cache \
 
 COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 WORKDIR /app
-COPY ys-api/composer.json ys-api/composer.lock ./
+COPY composer.json composer.lock ./
 RUN composer install --no-dev --no-scripts --no-autoloader --prefer-dist
 
 # Stage 2: Production
@@ -26,7 +26,7 @@ RUN apk add --no-cache \
 WORKDIR /app
 COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 COPY --from=deps /app/vendor ./vendor
-COPY ys-api/ .
+COPY . .
 
 # Discard any runtime caches that exist in the repo (a git-tracked stale
 # route cache would otherwise be baked into the image), regenerate the
@@ -40,10 +40,10 @@ RUN composer dump-autoload --no-dev --optimize --no-scripts \
 # sessions) stays writable by the application.
 RUN sed -i 's/^user = .*/user = appuser/; s/^group = .*/group = appgroup/' /usr/local/etc/php-fpm.d/www.conf
 
-COPY ys-api/docker/nginx/nginx.conf /etc/nginx/nginx.conf
-COPY ys-api/docker/php/opcache.ini /usr/local/etc/php/conf.d/zz-opcache.ini
-COPY ys-api/docker/php/security.ini /usr/local/etc/php/conf.d/zz-security.ini
-COPY ys-api/docker/entrypoint.sh /usr/local/bin/entrypoint.sh
+COPY docker/nginx/nginx.conf /etc/nginx/nginx.conf
+COPY docker/php/opcache.ini /usr/local/etc/php/conf.d/zz-opcache.ini
+COPY docker/php/security.ini /usr/local/etc/php/conf.d/zz-security.ini
+COPY docker/entrypoint.sh /usr/local/bin/entrypoint.sh
 RUN chmod +x /usr/local/bin/entrypoint.sh
 
 # nginx needs writable dirs for temp files and error log.
