@@ -8,14 +8,15 @@ if [ "$#" -gt 0 ]; then
 fi
 
 # ── Resolve HTTP port ──────────────────────────────────────────
-# Render sets $PORT dynamically. Docker Compose sets $BACKEND_PORT.
-# Fallback to 8000 for bare `docker run` and local development.
+# Railway / Render set $PORT dynamically. Docker Compose sets
+# $BACKEND_PORT. Fallback to 8000 for bare `docker run` and local
+# development.
 HTTP_PORT="${PORT:-${BACKEND_PORT:-8000}}"
 
 # Template the nginx listen directive with the resolved port.
 # nginx.conf ships with a hardcoded `listen 8000;` — sed replaces
-# it at startup so the same image works on Render (dynamic port),
-# Docker Compose (BACKEND_PORT), and bare docker run (8000).
+# it at startup so the same image works on Railway/Render (dynamic
+# port), Docker Compose (BACKEND_PORT), and bare docker run (8000).
 sed -i "s/listen 8000/listen ${HTTP_PORT}/" /etc/nginx/nginx.conf
 
 # ── Startup migrations (idempotent, safe to repeat) ────────────

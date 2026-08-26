@@ -54,7 +54,7 @@ RUN mkdir -p /var/lib/nginx/logs /var/lib/nginx/tmp \
     && chown -R appuser:appgroup /app/storage /app/bootstrap/cache /etc/nginx/ /var/lib/nginx/
 USER appuser
 
-# Render: container must bind to $PORT (provided by Render).
+# Railway/Render: container must bind to $PORT (provided by host).
 # Local Docker Compose: defaults to 8000 via entrypoint.sh.
 # nginx.conf port is templated at startup by entrypoint.sh.
 EXPOSE 8000
