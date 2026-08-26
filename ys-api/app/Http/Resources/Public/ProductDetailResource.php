@@ -78,9 +78,9 @@ class ProductDetailResource extends JsonResource
                 ];
             }),
             'seo' => [
-                'title' => $this->seo_meta['title_'.$locale]
+                'title' => ($this->seo_meta ?? [])['title_'.$locale]
                     ?? ($locale === 'ar' ? $this->name_ar : $this->name_en),
-                'description' => $this->seo_meta['description_'.$locale]
+                'description' => ($this->seo_meta ?? [])['description_'.$locale]
                     ?? ($locale === 'ar' ? $this->short_desc_ar : $this->short_desc_en),
             ],
         ];

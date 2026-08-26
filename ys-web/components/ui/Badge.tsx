@@ -36,7 +36,7 @@ const statusConfig: Record<ProductStatus, { label: string; variant: BadgeProps['
 }
 
 export function StatusBadge({ status }: { status: ProductStatus }) {
-  const config = statusConfig[status]
+  const config = statusConfig[status] ?? statusConfig.planned
   return (
     <Badge variant={config.variant}>
       <span className={cn('w-1.5 h-1.5 rounded-full shrink-0', config.dot)} />
