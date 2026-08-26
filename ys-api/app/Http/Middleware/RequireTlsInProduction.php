@@ -32,6 +32,18 @@ class RequireTlsInProduction
             return $next($request);
         }
 
+        // CORS preflight requests (OPTIONS with Access-Control-Request-Method)
+        // are handled by HandleCors BEFORE this middleware in the global stack.
+        // If HandleCors didn't match the path, the preflight falls through here.
+        // Rejecting it with 403 prevents the browser from ever seeing CORS headers,
+        // even when the origin is valid. Exempt preflights: the browser discards
+        // the response anyway if CORS headers are absent, so there is no security
+        // downside to letting them pass through to the router (which returns 404/405).
+        if ($request->isMethod('OPTIONS')
+            && $request->headers->has('Access-Control-Request-Method')) {
+            return $next($request);
+        }
+
         if (! $request->secure()) {
             return response()->json([
                 'success' => false,
