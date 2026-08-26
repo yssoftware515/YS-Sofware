@@ -81,9 +81,28 @@ Route::prefix('auth')->name('auth.')->group(function () {
 });
 
 // ══════════════════════════════════════════════════════════════════════
-// PUBLIC API
+// PUBLIC API — stateless, unauthenticated
+//
+// These routes live OUTSIDE the Sanctum stateful pipeline. They run
+// only the global middleware stack (SecurityHeaders, ForceJsonResponse,
+// ResolveLocale, RequireTlsInProduction) plus explicit throttle
+// layers — no session, no CSRF, no cookie encryption, no auth.
+//
+// WHY: The `api` middleware group (applied by bootstrap/app.php via
+// withRouting(api:)) injects EnsureFrontendRequestsAreStateful when
+// statefulApi() is enabled. That middleware wraps requests in a
+// session + CSRF pipeline. The XSRF-TOKEN cookie has SameSite=Lax
+// (config/session.php), so the browser never attaches it on
+// cross-origin fetch() POSTs — causing a guaranteed 403 on every
+// unauthenticated POST from the Vercel frontend.
+//
+// Instead of fighting this with per-route withoutMiddleware()
+// exclusions (which are fragile and non-obvious), public routes
+// use a standalone `api` group that bypasses statefulApi() entirely.
 // ══════════════════════════════════════════════════════════════════════
-Route::prefix('public')->name('public.')->middleware('throttle:public')->group(function () {
+Route::prefix('public')->name('public.')->middleware('throttle:public')
+    ->withoutMiddleware(EnsureFrontendRequestsAreStateful::class)
+    ->group(function () {
 
     Route::get('settings', [PublicSettingController::class, 'index'])->name('settings');
     Route::get('products', [PublicProductController::class, 'index'])->name('products.index');
@@ -112,15 +131,9 @@ Route::prefix('public')->name('public.')->middleware('throttle:public')->group(f
         ->middleware('throttle:search')
         ->name('search');
 
-    // Contact — strictest rate limit.
-    // Exempt from Sanctum's stateful pipeline (session + CSRF): this is a
-    // public, unauthenticated endpoint. The stateful middleware sets
-    // XSRF-TOKEN with SameSite=Lax, which the browser does NOT attach on
-    // cross-origin fetch() POSTs — causing a guaranteed 403 on every
-    // submission from the Vercel frontend.
+    // Contact — strictest rate limit, POST-only, stateless.
     Route::post('contact', [ContactController::class, 'store'])
         ->withoutMiddleware('throttle:public')
-        ->withoutMiddleware(EnsureFrontendRequestsAreStateful::class)
         ->middleware('throttle:contact')
         ->name('contact.store');
 });
