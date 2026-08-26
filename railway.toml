@@ -1,0 +1,11 @@
+[build]
+builder = "dockerfile"
+# IMPORTANT: Railway service root MUST be set to "ys-api" in the dashboard
+# (Settings > Service > Source > Root Directory). If root is the repo root,
+# Nixpacks takes over and ignores this file entirely.
+dockerfilePath = "Dockerfile"
+
+[deploy]
+healthcheckPath = "/up"
+restartPolicyType = "on_failure"
+restartPolicyMaxRetries = 5
