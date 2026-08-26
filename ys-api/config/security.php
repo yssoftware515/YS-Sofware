@@ -164,11 +164,20 @@ return [
     | X-Forwarded-For. Kept in configuration (instead of a raw env() call
     | in bootstrap) so it survives `php artisan config:cache` and is
     | inspectable/testable like the rest of the security surface.
-    | Empty string means no proxy is trusted (direct connections only).
+    |
+    | Default: 'private_ranges' — trusts RFC 1918 / RFC 4193 proxies
+    | (10.0.0.0/8, 172.16.0.0/12, 192.168.0.0/16, fc00::/7). This is
+    | the correct default for containerized deployments (Railway, Render,
+    | Docker Compose, k8s) where the reverse proxy lives on a private
+    | network and announces X-Forwarded-Proto: https.
+    |
+    | Set TRUSTED_PROXIES to override (comma-separated CIDRs or
+    | 'private_ranges'). Set to empty string to trust NO proxy
+    | (direct connections only — breaks containerized deployments).
     |
     */
     'proxy' => [
-        'trusted_cidrs' => env('TRUSTED_PROXIES', ''),
+        'trusted_cidrs' => env('TRUSTED_PROXIES', 'private_ranges'),
     ],
 
     /*

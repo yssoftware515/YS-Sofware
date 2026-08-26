@@ -31,6 +31,23 @@ php artisan config:cache --quiet 2>/dev/null || true
 php artisan route:cache --quiet 2>/dev/null || true
 php artisan view:cache --quiet 2>/dev/null || true
 
+# ── Startup diagnostics ────────────────────────────────────────
+# Log critical env var status at boot so misconfigurations are
+# visible in deploy logs immediately, not after a user reports a 403.
+if [ -n "$TRUSTED_PROXIES" ]; then
+  echo "[boot] TRUSTED_PROXIES=$TRUSTED_PROXIES"
+else
+  echo "[boot] TRUSTED_PROXIES not set — using config default (private_ranges)"
+fi
+if [ -n "$FRONTEND_URL" ]; then
+  echo "[boot] FRONTEND_URL=$FRONTEND_URL"
+else
+  echo "[boot] WARNING: FRONTEND_URL not set — CORS and Sanctum stateful domains may be wrong"
+fi
+if [ -n "$SANCTUM_STATEFUL_DOMAINS" ]; then
+  echo "[boot] SANCTUM_STATEFUL_DOMAINS=$SANCTUM_STATEFUL_DOMAINS"
+fi
+
 # ── HTTP layer ─────────────────────────────────────────────────
 # php-fpm daemonizes; nginx stays in the foreground as PID 1.
 # This is the same production nginx+php-fpm architecture used in

@@ -144,8 +144,10 @@ $app = Application::configure(basePath: dirname(__DIR__))
 // P6-03 (config-cache hygiene): TRUSTED_PROXIES lives in
 // config/security.php (proxy.trusted_cidrs) and is resolved here after
 // the providers boot, when the 'config' binding is available. TrustProxies
-// consumes the static state on every request, so the behavior is identical
-// to the previous bootstrap-time env() read (empty => trust no proxy).
+// consumes the static state on every request. Default is 'private_ranges'
+// (RFC 1918/4193) — the correct default for containerized deployments
+// where the reverse proxy lives on a private network. Set TRUSTED_PROXIES=''
+// to override and trust no proxy (breaks containerized deployments).
 $app->booted(function () {
     $trustedProxies = array_values(array_filter(array_map(
         'trim',

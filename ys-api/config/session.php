@@ -74,7 +74,7 @@ return [
 
     'domain' => env('SESSION_DOMAIN'),
 
-    'secure' => env('SESSION_SECURE_COOKIE', false),
+    'secure' => env('SESSION_SECURE_COOKIE', app()->isProduction()),
 
     'http_only' => true,
 
