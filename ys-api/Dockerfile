@@ -36,9 +36,12 @@ RUN composer dump-autoload --no-dev --optimize --no-scripts \
     && mkdir -p storage/app/public storage/framework/cache/data storage/framework/sessions storage/framework/views storage/logs bootstrap/cache \
     && ln -sfn /app/storage/app/public public/storage
 
-# php-fpm workers must run as appuser so /app/storage (uploads, logs,
-# sessions) stays writable by the application.
-RUN sed -i 's/^user = .*/user = appuser/; s/^group = .*/group = appgroup/' /usr/local/etc/php-fpm.d/www.conf
+# php-fpm workers inherit the master process user (appuser) automatically.
+# Setting these env vars tells the php-fpm Docker entrypoint the correct
+# user/group — avoids the "user directive is ignored" warning that occurs
+# when the master process is non-root and www.conf sets user= nobody.
+ENV PHP_FPM_USER=appuser
+ENV PHP_FPM_GROUP=appgroup
 
 COPY docker/nginx/nginx.conf /etc/nginx/nginx.conf
 COPY docker/php/opcache.ini /usr/local/etc/php/conf.d/zz-opcache.ini
@@ -46,11 +49,10 @@ COPY docker/php/security.ini /usr/local/etc/php/conf.d/zz-security.ini
 COPY docker/entrypoint.sh /usr/local/bin/entrypoint.sh
 RUN chmod +x /usr/local/bin/entrypoint.sh
 
-# nginx needs writable dirs for temp files and error log.
-# These must be created and chowned BEFORE switching to appuser
-# because the alpine nginx package creates /var/lib/nginx with
-# root ownership, and appuser cannot create subdirs there.
-RUN mkdir -p /var/lib/nginx/logs /var/lib/nginx/tmp \
+# nginx needs writable dirs for temp files (pid, client body, proxy, etc.).
+# /var/lib/nginx is NOT used for logs (error_log -> stderr) — only for
+# nginx's internal temp/cache dirs. chown before switching to appuser.
+RUN mkdir -p /var/lib/nginx/tmp \
     && chown -R appuser:appgroup /app/storage /app/bootstrap/cache /etc/nginx/ /var/lib/nginx/
 USER appuser
 
