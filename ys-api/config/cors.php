@@ -12,7 +12,11 @@ return [
     |
     */
 
-    'paths' => ['api/*'],
+    // api/*       — all versioned API routes (/api/v1/...)
+    // sanctum/*   — CSRF cookie handshake (GET /sanctum/csrf-cookie)
+    //               lives outside the /api/v1 prefix; the browser needs
+    //               CORS headers to read the XSRF-TOKEN cookie it sets.
+    'paths' => ['api/*', 'sanctum/*'],
 
     'allowed_methods' => ['*'],
 
