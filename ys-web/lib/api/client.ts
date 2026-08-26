@@ -30,6 +30,7 @@ async function request<T>(endpoint: string, options: RequestInit = {}, locale = 
 
   const res = await fetch(`${API_BASE}${endpoint}`, {
     ...options,
+    credentials: 'include',
     headers: {
       'Content-Type':   'application/json',
       'Accept':         'application/json',

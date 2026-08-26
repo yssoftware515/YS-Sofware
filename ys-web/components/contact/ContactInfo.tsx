@@ -28,7 +28,7 @@ export function ContactInfo({ locale, settings }: ContactInfoProps) {
   // only as a last-resort fallback so the section never renders empty.
   const brandEmail = settings?.brand?.contact_email
   const salesEmail = settings?.contacts?.sales_email
-  const whatsapp = settings?.contacts?.whatsapp_number
+  const whatsapp = (settings?.contacts?.whatsapp_number ?? "").replace(/[^\d]/g, "")
   const whatsappDisplay = settings?.contacts?.whatsapp_display ?? whatsapp
 
   const cards: InfoCard[] = [

@@ -66,7 +66,7 @@ export default async function ServiceDetailPage({ params }: Props) {
     // Non-critical — WhatsApp links fall back to number-less wa.me
   }
 
-  const whatsappNumber = settings?.contacts?.whatsapp_number ?? ""
+  const whatsappNumber = (settings?.contacts?.whatsapp_number ?? "").replace(/[^\d]/g, "")
   const waText = encodeURIComponent(
     isAr ? "مرحباً، أود الاستفسار عن خدمة " + service.name : "Hi, I'd like to inquire about " + service.name
   )

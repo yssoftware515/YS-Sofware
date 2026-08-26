@@ -14,7 +14,7 @@ interface ContactClientPageProps {
 
 export function ContactClientPage({ locale, serviceSlug, serviceName, settings }: ContactClientPageProps) {
   const isAr = locale === "ar"
-  const whatsappNumber = settings?.contacts?.whatsapp_number ?? ""
+  const whatsappNumber = (settings?.contacts?.whatsapp_number ?? "").replace(/[^\d]/g, "")
 
   return (
     <main style={{ backgroundColor: "var(--color-background)" }}>
