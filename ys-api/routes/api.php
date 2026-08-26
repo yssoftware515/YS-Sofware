@@ -104,39 +104,39 @@ Route::prefix('public')->name('public.')->middleware('throttle:public')
     ->withoutMiddleware(EnsureFrontendRequestsAreStateful::class)
     ->group(function () {
 
-    Route::get('settings', [PublicSettingController::class, 'index'])->name('settings');
-    Route::get('products', [PublicProductController::class, 'index'])->name('products.index');
-    Route::get('products/{slug}', [PublicProductController::class, 'show'])->name('products.show');
-    Route::get('services', [PublicServiceController::class, 'index'])->name('services.index');
-    Route::get('services/{slug}', [PublicServiceController::class, 'show'])->name('services.show');
-    Route::get('docs', [PublicDocumentationController::class, 'index'])->name('docs.index');
-    Route::get('docs/{slug}', [PublicDocumentationController::class, 'show'])->name('docs.show');
-    Route::get('roadmap', [PublicRoadmapController::class, 'index'])->name('roadmap.index');
-    Route::get('updates', [PublicUpdateController::class, 'index'])->name('updates.index');
-    Route::get('careers', [PublicCareerController::class, 'index'])->name('careers.index');
-    Route::get('careers/{career}', [PublicCareerController::class, 'show'])->name('careers.show');
-    Route::get('timeline', [PublicTimelineController::class, 'index'])->name('timeline.index');
+        Route::get('settings', [PublicSettingController::class, 'index'])->name('settings');
+        Route::get('products', [PublicProductController::class, 'index'])->name('products.index');
+        Route::get('products/{slug}', [PublicProductController::class, 'show'])->name('products.show');
+        Route::get('services', [PublicServiceController::class, 'index'])->name('services.index');
+        Route::get('services/{slug}', [PublicServiceController::class, 'show'])->name('services.show');
+        Route::get('docs', [PublicDocumentationController::class, 'index'])->name('docs.index');
+        Route::get('docs/{slug}', [PublicDocumentationController::class, 'show'])->name('docs.show');
+        Route::get('roadmap', [PublicRoadmapController::class, 'index'])->name('roadmap.index');
+        Route::get('updates', [PublicUpdateController::class, 'index'])->name('updates.index');
+        Route::get('careers', [PublicCareerController::class, 'index'])->name('careers.index');
+        Route::get('careers/{career}', [PublicCareerController::class, 'show'])->name('careers.show');
+        Route::get('timeline', [PublicTimelineController::class, 'index'])->name('timeline.index');
 
-    // CMS
-    Route::get('pages/{slug}', [PublicStaticPageController::class, 'show'])->name('pages.show');
-    Route::get('pages', [PublicStaticPageController::class, 'index'])->name('pages.index');
-    Route::get('faqs', [PublicFaqController::class, 'index'])->name('faqs.index');
-    Route::get('menus', [PublicMenuController::class, 'index'])->name('menus.index');
-    Route::get('menus/{location}', [PublicMenuController::class, 'show'])->name('menus.show');
-    Route::get('homepage-sections', [PublicHomepageSectionController::class, 'index'])->name('homepagesections.index');
+        // CMS
+        Route::get('pages/{slug}', [PublicStaticPageController::class, 'show'])->name('pages.show');
+        Route::get('pages', [PublicStaticPageController::class, 'index'])->name('pages.index');
+        Route::get('faqs', [PublicFaqController::class, 'index'])->name('faqs.index');
+        Route::get('menus', [PublicMenuController::class, 'index'])->name('menus.index');
+        Route::get('menus/{location}', [PublicMenuController::class, 'show'])->name('menus.show');
+        Route::get('homepage-sections', [PublicHomepageSectionController::class, 'index'])->name('homepagesections.index');
 
-    // Global Search — separate rate limit
-    Route::get('search', SearchController::class)
-        ->withoutMiddleware('throttle:public')
-        ->middleware('throttle:search')
-        ->name('search');
+        // Global Search — separate rate limit
+        Route::get('search', SearchController::class)
+            ->withoutMiddleware('throttle:public')
+            ->middleware('throttle:search')
+            ->name('search');
 
-    // Contact — strictest rate limit, POST-only, stateless.
-    Route::post('contact', [ContactController::class, 'store'])
-        ->withoutMiddleware('throttle:public')
-        ->middleware('throttle:contact')
-        ->name('contact.store');
-});
+        // Contact — strictest rate limit, POST-only, stateless.
+        Route::post('contact', [ContactController::class, 'store'])
+            ->withoutMiddleware('throttle:public')
+            ->middleware('throttle:contact')
+            ->name('contact.store');
+    });
 
 // ══════════════════════════════════════════════════════════════════════
 // ADMIN API
