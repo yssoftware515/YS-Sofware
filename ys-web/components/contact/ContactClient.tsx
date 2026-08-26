@@ -140,7 +140,7 @@ export default function ContactClient({ locale, settings }: ContactClientProps) 
 
   const contactEmail = settings?.contacts?.support_email ?? 'cantactys@gmail.com'
   const salesEmail   = settings?.contacts?.sales_email ?? undefined
-  const waNumber     = waDigits(settings?.contacts?.whatsapp_number)
+  const waNumber     = waDigits(settings?.contacts?.whatsapp_number) ?? '201008920677'
   const waDisplay    = settings?.contacts?.whatsapp_display ?? waNumber ?? '—'
   const emailValue   = salesEmail || contactEmail
 
@@ -152,7 +152,7 @@ export default function ContactClient({ locale, settings }: ContactClientProps) 
   const set   = (patch: Partial<FormState>) => setForm(p => ({ ...p, ...patch }))
   const questions = form.request_type ? CONTEXTUAL_QUESTIONS[form.request_type] : undefined
 
-  const waHref  = (text: string) => (waDigits(settings?.contacts?.whatsapp_number) ? `https://wa.me/${waDigits(settings?.contacts?.whatsapp_number)}?text=${encodeURIComponent(text)}` : null)
+  const waHref  = (text: string) => (waNumber ? `https://wa.me/${waNumber}?text=${encodeURIComponent(text)}` : null)
   const talkHref = waHref(ar ? TALK_WA_TEXT_AR : TALK_WA_TEXT_EN)
   const followUpHref = waHref(ar ? 'مرحباً! أودّ متابعة طلبي المتعلّق بمشروع.' : 'Hello! I would like to follow up on my project request.')
 

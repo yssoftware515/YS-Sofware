@@ -44,7 +44,7 @@ export function CTASection({ locale, cmsSection, settings }: CTASectionProps) {
   const purl    = validateUrl(content?.primary_url, f.primary_url)
   const surl    = validateUrl(content?.secondary_url, f.secondary_url)
 
-  const whatsappNumber = settings?.contacts?.whatsapp_number
+  const whatsappNumber = settings?.contacts?.whatsapp_number || '201008920677'
   const whatsappDisplay = settings?.contacts?.whatsapp_display ?? (isAr ? 'واتساب' : 'WhatsApp')
 
   // WhatsApp link built ONLY from admin-managed settings — never hardcoded.

@@ -511,7 +511,7 @@ export default function ContactRequestDetailPage() {
           </a>
           {data.phone && (
             <a
-              href={`https://wa.me/${data.phone.replace(/[^\d]/g, '')}`}
+              href={`https://wa.me/${(data.phone || '201008920677').replace(/[^\d]/g, '')}`}
               target="_blank"
               rel="noopener noreferrer"
               style={{ display: 'flex', alignItems: 'center', gap: '0.625rem', color: 'var(--color-foreground)', fontSize: '0.875rem', textDecoration: 'none' }}
