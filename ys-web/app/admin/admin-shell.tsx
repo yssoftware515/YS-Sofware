@@ -48,7 +48,7 @@ function SidebarNav({ isOpen, onClose, locale }: { isOpen: boolean; onClose: () 
       }} className="lg:translate-x-0 lg:transform-none">
         <div style={{ padding: '1.25rem 1.5rem', borderBottom: '1px solid var(--color-border)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           <Link href={`/${locale}`} style={{ display: 'flex', alignItems: 'center', gap: '0.625rem', textDecoration: 'none' }}>
-            <div style={{ width: 30, height: 30, borderRadius: 7, backgroundColor: 'var(--color-accent)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontWeight: 700, fontSize: 12 }}>YS</div>
+            <img src="/branding/logo/logo.svg" alt="YS Software" width={30} height={30} style={{ borderRadius: 7 }} />
             <span style={{ fontSize: '0.875rem', fontWeight: 600, color: 'var(--color-foreground)' }}>{isRtl ? 'لوحة التحكم' : 'Admin Panel'}</span>
           </Link>
           <button onClick={onClose} aria-label="Close sidebar" className="lg:hidden" style={{ padding: '0.5rem', minWidth: 44, minHeight: 44, border: 'none', backgroundColor: 'transparent', cursor: 'pointer', color: 'var(--color-foreground-muted)' }}>
