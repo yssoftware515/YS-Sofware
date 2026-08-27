@@ -52,6 +52,7 @@ jobs:
           php-version: ${{ env.PHP_VERSION }}
           tools: composer:v2
           extensions: pdo_pgsql, pdo_mysql, zip
+      - run: cp .env.example .env
       - run: composer install --prefer-dist --no-progress
       # Real code-style gate: `php artisan lint` does not exist and phpstan is
       # not in composer.json, so the previous `|| echo "placeholder"` chain
