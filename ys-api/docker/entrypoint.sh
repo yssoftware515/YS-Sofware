@@ -28,7 +28,11 @@ php artisan migrate --force 2>/dev/null || true
 
 # ── Production caches ──────────────────────────────────────────
 php artisan config:cache --quiet 2>/dev/null || true
-php artisan route:cache --quiet 2>/dev/null || true
+# NOTE: route:cache is intentionally skipped — Sanctum registers its
+# /sanctum/csrf-cookie route dynamically via the service provider.
+# When routes are cached, the provider sees routesAreCached() === true
+# and skips registration, so the CSRF cookie endpoint disappears and
+# every SPA auth flow breaks (CORS errors on /sanctum/csrf-cookie).
 php artisan view:cache --quiet 2>/dev/null || true
 
 # ── Startup diagnostics ────────────────────────────────────────
