@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, lazy, Suspense } from 'react'
+import { useState, useEffect, useCallback, lazy, Suspense } from 'react'
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
@@ -14,6 +14,16 @@ import { ensureXsrfToken, readXsrfToken } from '@/lib/csrf'
 const CommandPalette = lazy(() => import('@/components/admin/CommandPalette').then(m => ({ default: m.CommandPalette })))
 
 import { API_BASE as API } from '@/lib/api/config'
+
+function getLocaleCookie(): string {
+  if (typeof document === 'undefined') return 'en'
+  const match = document.cookie.match(/(?:^|;\s*)ys_admin_locale=(en|ar)/)
+  return match ? match[1] : 'en'
+}
+
+function setLocaleCookie(locale: string) {
+  document.cookie = `ys_admin_locale=${locale};path=/;max-age=31536000;SameSite=Lax`
+}
 
 function SidebarNav({ isOpen, onClose, locale }: { isOpen: boolean; onClose: () => void; locale: string }) {
   const { hasPermission } = useAuth()
@@ -190,7 +200,22 @@ function Breadcrumb({ locale }: { locale: string }) {
 export default function AdminShell({ children }: { children: React.ReactNode }) {
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const [commandOpen, setCommandOpen] = useState(false)
-  const locale = 'en' as string
+  const [locale, setLocaleState] = useState(getLocaleCookie)
+
+  const toggleLocale = useCallback(() => {
+    setLocaleState(prev => {
+      const next = prev === 'en' ? 'ar' : 'en'
+      setLocaleCookie(next)
+      document.documentElement.dir = next === 'ar' ? 'rtl' : 'ltr'
+      document.documentElement.lang = next
+      return next
+    })
+  }, [])
+
+  useEffect(() => {
+    document.documentElement.dir = locale === 'ar' ? 'rtl' : 'ltr'
+    document.documentElement.lang = locale
+  }, [locale])
 
   // Created once per component instance (not per render) via useState's
   // lazy initializer — the standard TanStack Query + Next.js App Router
@@ -234,13 +259,24 @@ export default function AdminShell({ children }: { children: React.ReactNode }) 
     <div style={{ display: 'flex', minHeight: '100dvh', backgroundColor: 'var(--color-background)' }}>
       <SidebarNav isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} locale={locale} />
 
-      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0 }} className="lg:ml-60">
+      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0 }} className={locale === 'ar' ? 'lg:mr-60' : 'lg:ml-60'}>
         <header style={{ position: 'sticky', top: 0, zIndex: 20, height: 56, borderBottom: '1px solid var(--color-border)', backgroundColor: 'var(--color-surface)', display: 'flex', alignItems: 'center', padding: '0 1.5rem', gap: '1rem' }}>
           <button onClick={() => setSidebarOpen(true)} aria-label="Open sidebar navigation" className="lg:hidden" style={{ padding: '0.375rem', minWidth: 44, minHeight: 44, border: 'none', backgroundColor: 'transparent', cursor: 'pointer', color: 'var(--color-foreground-muted)' }}>
             <Menu size={20} aria-hidden="true" />
           </button>
           <Breadcrumb locale={locale} />
           <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+            <button
+              onClick={toggleLocale}
+              aria-label={locale === 'ar' ? 'Switch to English' : 'التبديل إلى العربية'}
+              style={{
+                fontSize: '0.8125rem', color: 'var(--color-foreground-muted)', backgroundColor: 'transparent',
+                border: '1px solid var(--color-border)', borderRadius: 6, cursor: 'pointer',
+                padding: '0.375rem 0.75rem', transition: 'all 150ms',
+              }}
+            >
+              {locale === 'ar' ? 'EN' : 'عربي'}
+            </button>
             <Link href={`/${locale}`} style={{ fontSize: '0.8125rem', color: 'var(--color-foreground-muted)', textDecoration: 'none', padding: '0.375rem 0.75rem', borderRadius: 6, border: '1px solid var(--color-border)' }}>
               {locale === 'ar' ? '→ عرض الموقع' : '← View Site'}
             </Link>
