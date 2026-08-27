@@ -112,10 +112,11 @@ class DeploymentConfigConsistencyTest extends TestCase
         $this->assertArrayHasKey('trusted_cidrs', $security['proxy']);
         $this->assertIsString($security['proxy']['trusted_cidrs']);
 
-        // Bound to the env override with an empty default (deterministic
-        // string check — the resolved value depends on the runtime env).
+        // Bound to the env override with 'private_ranges' as default
+        // (RFC 1918/4193 — correct for containerized deployments where
+        // the reverse proxy lives on a private network).
         $this->assertStringContainsString(
-            "'trusted_cidrs' => env('TRUSTED_PROXIES', '')",
+            "'trusted_cidrs' => env('TRUSTED_PROXIES', 'private_ranges')",
             file_get_contents(__DIR__.'/../../config/security.php')
         );
     }
