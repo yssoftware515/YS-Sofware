@@ -19,8 +19,9 @@ class LoginRequest extends FormRequest
             'remember' => ['sometimes', 'boolean'],
             // GAP-01: opaque Cloudflare Turnstile widget token. Optional
             // in the request — enforcement happens in LoginAction when
-            // TURNSTILE_ENABLED=true.
-            'turnstile_token' => ['sometimes', 'string', 'max:4096'],
+            // TURNSTILE_ENABLED=true. nullable: ConvertEmptyStringsToNull
+            // middleware converts "" to null before validation runs.
+            'turnstile_token' => ['sometimes', 'nullable', 'string', 'max:4096'],
         ];
     }
 

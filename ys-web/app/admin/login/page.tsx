@@ -57,19 +57,18 @@ export default function AdminLoginPage() {
       await ensureXsrfToken(API)
       const xsrf = readXsrfToken()
 
-      const params = new URLSearchParams()
-      params.append('email', email)
-      params.append('password', password)
-      if (remember) params.append('remember', '1')
-      params.append('turnstile_token', turnstileToken)
+      const payload: Record<string, unknown> = { email, password }
+      if (remember) payload.remember = true
+      if (turnstileToken) payload.turnstile_token = turnstileToken
 
       const res = await fetch(`${API}/auth/login`, {
         method: 'POST',
         headers: {
+          'Content-Type': 'application/json',
           'Accept': 'application/json',
           ...(xsrf ? { 'X-XSRF-TOKEN': xsrf } : {}),
         },
-        body: params,
+        body: JSON.stringify(payload),
         credentials: 'include',
       })
 
