@@ -4,22 +4,16 @@ namespace App\Domains\System\Services;
 
 use App\Domains\Auth\Models\User;
 use App\Domains\Billing\Models\Customer;
-use App\Domains\Cms\Models\Faq;
-use App\Domains\Cms\Models\HomepageSection;
-use App\Domains\Cms\Models\Menu;
-use App\Domains\Cms\Models\StaticPage;
-use App\Domains\Content\Models\Career;
 use App\Domains\Operations\Models\ContactRequest;
 use App\Domains\Operations\Models\Milestone;
 use App\Domains\Operations\Models\Project;
 use App\Domains\Operations\Models\Task;
 use App\Domains\Product\Models\Product;
 use App\Domains\Product\Models\ProductRelease;
-use App\Domains\Services\Models\Service;
 use App\Domains\System\Models\AuditLog;
-use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\DB;
 
 /**
  * DashboardService — real, permission-filtered operational metrics.
@@ -53,13 +47,8 @@ final class DashboardService
         $counts = [];
         $attention = [];
 
-        // Content modules with a real reader permission (view_*) — the
-        // dashboard treats viewer and manager identically, just like the
-        // module screens do. Modules WITHOUT a view_* permission
-        // (contact requests, careers, CMS) stay manage-only below.
+        // ── 1. Product counts (2 queries — scoping prevents collapse) ────
         if ($user->hasAnyPermission(['view_products', 'manage_products'])) {
-            // Product-scoping: a scoped admin only ever sees counts for
-            // products they are explicitly granted (see User::canAccessProduct).
             if ($user->isSuperAdmin()) {
                 $counts['products'] = Product::count();
                 $counts['releases'] = ProductRelease::count();
@@ -69,94 +58,121 @@ final class DashboardService
                 $counts['releases'] = ProductRelease::whereIn('product_id', $productIds)->count();
             }
         }
+
+        // ── 2. Simple module counts — 6 tables in 1 query (scalar subqueries) ──
+        $simpleParts = [];
         if ($user->hasAnyPermission(['view_services', 'manage_services'])) {
-            $counts['services'] = Service::count();
+            $simpleParts[] = '(SELECT COUNT(*)::bigint FROM services WHERE deleted_at IS NULL) AS "services"';
         }
         if ($user->hasPermission('manage_careers')) {
-            $counts['careers'] = Career::count();
+            $simpleParts[] = '(SELECT COUNT(*)::bigint FROM careers WHERE deleted_at IS NULL) AS "careers"';
         }
+        if ($user->hasPermission('manage_static_pages')) {
+            $simpleParts[] = '(SELECT COUNT(*)::bigint FROM static_pages WHERE deleted_at IS NULL) AS "static_pages"';
+        }
+        if ($user->hasPermission('manage_faqs')) {
+            $simpleParts[] = '(SELECT COUNT(*)::bigint FROM faqs WHERE deleted_at IS NULL) AS "faqs"';
+        }
+        if ($user->hasPermission('manage_menus')) {
+            $simpleParts[] = '(SELECT COUNT(*)::bigint FROM menus) AS "menus"';
+        }
+        if ($user->hasPermission('manage_homepage')) {
+            $simpleParts[] = '(SELECT COUNT(*)::bigint FROM homepage_sections) AS "homepage_sections"';
+        }
+        if ($simpleParts !== []) {
+            $row = DB::select('SELECT '.implode(', ', $simpleParts))[0];
+            foreach (['services', 'careers', 'static_pages', 'faqs', 'menus', 'homepage_sections'] as $key) {
+                if (isset($row->$key)) {
+                    $counts[$key] = (int) $row->$key;
+                }
+            }
+        }
+
+        // ── 3. Contact requests — 2 → 1 (conditional aggregation) ──
         if ($user->hasPermission('manage_contact_requests')) {
-            $counts['contact_requests'] = ContactRequest::accessibleBy($user)->count();
-            $counts['new_contact_requests'] = ContactRequest::accessibleBy($user)->where('status', 'new')->count();
+            $cr = ContactRequest::accessibleBy($user)
+                ->selectRaw("COUNT(*) AS total, SUM(CASE WHEN status = 'new' THEN 1 ELSE 0 END) AS new_count")
+                ->first();
+            $counts['contact_requests'] = (int) $cr->total;
+            $counts['new_contact_requests'] = (int) $cr->new_count;
         }
+
+        // ── 4. Audit logs (cached) ──
         if ($user->hasPermission('view_audit_logs')) {
-            // Phase 4A (P2-06): the global audit count is the one
-            // unbounded COUNT on the dashboard — cache it (60s) so the
-            // exact metric survives without scanning a growing table on
-            // every dashboard visit. The audit LIST endpoint remains
-            // paginated and orders by the new created_at index.
             $counts['audit_logs'] = Cache::remember(
                 'ys:dashboard:audit_logs_count:'.($user->isSuperAdmin() ? 'all' : $user->getAuthIdentifier()),
                 60,
                 fn () => AuditLog::accessibleBy($user)->count(),
             );
         }
-        if ($user->hasPermission('manage_static_pages')) {
-            $counts['static_pages'] = StaticPage::count();
-        }
-        if ($user->hasPermission('manage_faqs')) {
-            $counts['faqs'] = Faq::count();
-        }
-        if ($user->hasPermission('manage_menus')) {
-            $counts['menus'] = Menu::count();
-        }
-        if ($user->hasPermission('manage_homepage')) {
-            $counts['homepage_sections'] = HomepageSection::count();
-        }
 
-        // Business operations — a user reading the module's screens may
-        // hold either the viewer or the manager flag, so either unlocks
-        // the corresponding operational numbers on the dashboard. All
-        // B2B queries are product-scoped through the customer anchor
-        // (see Customer::scopeAccessibleBy).
+        // ── 5. Customers — 2 → 1 ──
         if ($user->hasAnyPermission(['view_customers', 'manage_customers'])) {
-            $counts['customers'] = Customer::accessibleBy($user)->count();
-            $counts['active_customers'] = Customer::accessibleBy($user)->where('status', Customer::STATUS_ACTIVE)->count();
-        }
-        if ($user->hasAnyPermission(['view_projects', 'manage_projects'])) {
-            $counts['projects'] = Project::accessibleBy($user)->count();
-            $counts['active_projects'] = Project::accessibleBy($user)->where('status', Project::STATUS_ACTIVE)->count();
-            $counts['on_hold_projects'] = Project::accessibleBy($user)->where('status', Project::STATUS_ON_HOLD)->count();
-            $counts['completed_projects'] = Project::accessibleBy($user)->where('status', Project::STATUS_COMPLETED)->count();
+            $cu = Customer::accessibleBy($user)
+                ->selectRaw('COUNT(*) AS total, SUM(CASE WHEN status = ? THEN 1 ELSE 0 END) AS active_count', [Customer::STATUS_ACTIVE])
+                ->first();
+            $counts['customers'] = (int) $cu->total;
+            $counts['active_customers'] = (int) $cu->active_count;
         }
 
-        // Recorded commercial value is FINANCIAL data: only holders of
-        // the dedicated view_financials permission see the quoted-value
-        // sums, never every view_projects holder (VULN-10).
-        if ($user->can('view_financials')) {
-            // Explicitly "recorded", never presented as revenue or
-            // accounting data, and never summed across different
-            // currencies.
-            $counts['recorded_project_value_by_currency'] = $this->quotedValueByCurrency(
-                Project::accessibleBy($user)->where('status', '!=', Project::STATUS_CANCELLED)->where('status', '!=', Project::STATUS_DRAFT)
-            );
-            $counts['active_project_value_by_currency'] = $this->quotedValueByCurrency(
-                Project::accessibleBy($user)->where('status', Project::STATUS_ACTIVE)
-            );
-            $counts['completed_project_value_by_currency'] = $this->quotedValueByCurrency(
-                Project::accessibleBy($user)->where('status', Project::STATUS_COMPLETED)
-            );
-        }
-
+        // ── 6. Projects — 4 → 1 ──
         if ($user->hasAnyPermission(['view_projects', 'manage_projects'])) {
-            $attention['projects_overdue'] = $this->overdueProjects($user);
-            $attention['projects_on_hold'] = $this->onHoldProjects($user);
-            $attention['data_integrity'] = $this->integrityFlags($user);
+            $proj = Project::accessibleBy($user)
+                ->selectRaw('
+                    COUNT(*) AS total,
+                    SUM(CASE WHEN status = ? THEN 1 ELSE 0 END) AS active,
+                    SUM(CASE WHEN status = ? THEN 1 ELSE 0 END) AS on_hold,
+                    SUM(CASE WHEN status = ? THEN 1 ELSE 0 END) AS completed
+                ', [Project::STATUS_ACTIVE, Project::STATUS_ON_HOLD, Project::STATUS_COMPLETED])
+                ->first();
+            $counts['projects'] = (int) $proj->total;
+            $counts['active_projects'] = (int) $proj->active;
+            $counts['on_hold_projects'] = (int) $proj->on_hold;
+            $counts['completed_projects'] = (int) $proj->completed;
 
             // Delivery signals — deliberately small: execution blockers
             // and the closest future milestone. Not a BI report.
-            $counts['blocked_tasks'] = Task::accessibleBy($user)->where('status', Task::STATUS_BLOCKED)->count();
-            $counts['overdue_tasks'] = Task::accessibleBy($user)
-                ->whereIn('status', [Task::STATUS_TODO, Task::STATUS_IN_PROGRESS, Task::STATUS_BLOCKED])
-                ->whereNotNull('due_date')
-                ->whereDate('due_date', '<', Carbon::today())
-                ->count();
+            $taskCounts = Task::accessibleBy($user)
+                ->selectRaw('
+                    SUM(CASE WHEN status = ? THEN 1 ELSE 0 END) AS blocked,
+                    SUM(CASE WHEN status IN (?, ?, ?) AND due_date IS NOT NULL AND due_date < CURRENT_DATE THEN 1 ELSE 0 END) AS overdue
+                ', [Task::STATUS_BLOCKED, Task::STATUS_TODO, Task::STATUS_IN_PROGRESS, Task::STATUS_BLOCKED])
+                ->first();
+            $counts['blocked_tasks'] = (int) $taskCounts->blocked;
+            $counts['overdue_tasks'] = (int) $taskCounts->overdue;
+
+            $attention['projects_overdue'] = $this->overdueProjects($user);
+            $attention['projects_on_hold'] = $this->onHoldProjects($user);
+            $attention['data_integrity'] = $this->integrityFlags($user);
             $attention['tasks_overdue'] = $this->tasksOverdue($user);
             $attention['upcoming_milestone'] = $this->upcomingMilestone($user);
         }
-        // Contact requests have no viewer-only permission — reads and
-        // writes share the manage flag (see ContactRequestController),
-        // so the dashboard gate mirrors exactly that boundary.
+
+        // ── 7. Financials — 3 → 1 (single grouped query with CASE) ──
+        if ($user->can('view_financials')) {
+            $fin = Project::accessibleBy($user)
+                ->whereNotNull('quoted_value')
+                ->selectRaw('
+                    currency,
+                    SUM(CASE WHEN status NOT IN (?, ?) THEN quoted_value ELSE 0 END) AS recorded,
+                    SUM(CASE WHEN status = ? THEN quoted_value ELSE 0 END) AS active_val,
+                    SUM(CASE WHEN status = ? THEN quoted_value ELSE 0 END) AS completed_val
+                ', [Project::STATUS_CANCELLED, Project::STATUS_DRAFT, Project::STATUS_ACTIVE, Project::STATUS_COMPLETED])
+                ->groupBy('currency')
+                ->get();
+
+            $counts['recorded_project_value_by_currency'] = $fin->mapWithKeys(fn ($r) => [
+                $r->currency => number_format((float) $r->recorded, 2, '.', ''),
+            ])->all();
+            $counts['active_project_value_by_currency'] = $fin->mapWithKeys(fn ($r) => [
+                $r->currency => number_format((float) $r->active_val, 2, '.', ''),
+            ])->all();
+            $counts['completed_project_value_by_currency'] = $fin->mapWithKeys(fn ($r) => [
+                $r->currency => number_format((float) $r->completed_val, 2, '.', ''),
+            ])->all();
+        }
+
+        // ── 8. Attention detail queries (small, bounded result sets) ──
         if ($user->hasPermission('manage_contact_requests')) {
             $attention['new_contact_requests'] = $this->newContactRequests($user);
         }
@@ -176,22 +192,6 @@ final class DashboardService
         }
 
         return $data;
-    }
-
-    /**
-     * Sum quoted values grouped by currency, formatted as decimal strings.
-     * DB SUM already returns numeric precision; grouping keys stay stable
-     * per currency so the frontend can display "USD 45,000.00" without
-     * ever joining figures quoted in different currencies.
-     */
-    private function quotedValueByCurrency(Builder $query): array
-    {
-        return $query->whereNotNull('quoted_value')
-            ->selectRaw('currency, SUM(quoted_value) as total')
-            ->groupBy('currency')
-            ->pluck('total', 'currency')
-            ->map(fn ($total) => number_format((float) $total, 2, '.', ''))
-            ->all();
     }
 
     private function overdueProjects(User $user): array
