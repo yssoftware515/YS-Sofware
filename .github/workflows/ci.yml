@@ -121,6 +121,8 @@ jobs:
       # (phpunit.xml) exists on the service yet — without this step the
       # first CI run would fail at migrate with "database does not exist".
       - run: sed -i 's/^DB_USERNAME=.*/DB_USERNAME=ys_user/; s/^DB_PASSWORD=.*/DB_PASSWORD=secret/' .env
+      # CI runs over plain HTTP — disable the TLS gate so Feature tests pass.
+      - run: echo "REQUIRE_TLS=false" >> .env
       - name: Create application and test databases
         run: |
           php -r '
