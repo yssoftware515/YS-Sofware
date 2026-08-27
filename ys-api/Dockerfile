@@ -46,6 +46,7 @@ ENV PHP_FPM_GROUP=appgroup
 COPY docker/nginx/nginx.conf /etc/nginx/nginx.conf
 COPY docker/php/opcache.ini /usr/local/etc/php/conf.d/zz-opcache.ini
 COPY docker/php/security.ini /usr/local/etc/php/conf.d/zz-security.ini
+COPY docker/php/www.conf /usr/local/etc/php-fpm.d/zz-www.conf
 COPY docker/entrypoint.sh /usr/local/bin/entrypoint.sh
 RUN chmod +x /usr/local/bin/entrypoint.sh
 
