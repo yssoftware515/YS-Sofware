@@ -8,8 +8,12 @@ const isDev = process.env.NODE_ENV === 'development'
 // Same derivation as next.config.ts — single source of truth for the API
 // origin, used in the CSP connect-src/img-src directives.
 const apiUrl = (() => {
+  const raw = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:8000'
+  // Relative URLs (e.g. '/api/v1' on Vercel) — rewrites proxy everything,
+  // so 'self' in CSP is sufficient and no external origin is needed.
+  if (raw.startsWith('/')) return null
   try {
-    return new URL(process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:8000')
+    return new URL(raw)
   } catch {
     return new URL('http://localhost:8000')
   }
@@ -22,13 +26,14 @@ const apiUrl = (() => {
 // (React dev tooling). style-src keeps 'unsafe-inline' because the app sets
 // inline style attributes (nonces do not cover style attributes).
 function cspHeader(nonce: string): string {
+  const apiOrigin = apiUrl?.origin ?? ''
   const directives = [
     `default-src 'self'`,
     `script-src 'self' 'nonce-${nonce}' 'strict-dynamic'${isDev ? " 'unsafe-eval'" : ''}`,
     `style-src 'self' 'unsafe-inline' https://fonts.googleapis.com`,
     `font-src 'self' https://fonts.gstatic.com`,
-    `img-src 'self' ${apiUrl.origin} data: blob:`,
-    `connect-src 'self' ${apiUrl.origin}`,
+    `img-src 'self'${apiOrigin ? ' ' + apiOrigin : ''} data: blob:`,
+    `connect-src 'self'${apiOrigin ? ' ' + apiOrigin : ''}`,
     `frame-ancestors 'none'`,
     `form-action 'self'`,
     `base-uri 'self'`,

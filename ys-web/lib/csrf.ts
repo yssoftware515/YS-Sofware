@@ -32,12 +32,26 @@ export function readXsrfToken(): string | null {
   }
 }
 
-/** Derive the API origin root (where /sanctum/csrf-cookie lives). */
-export function apiOrigin(apiBase: string): string {
+/**
+ * Build the absolute or relative URL for the CSRF cookie endpoint.
+ *
+ * When API_BASE is relative (e.g. '/api/v1' on Vercel with rewrites),
+ * the CSRF endpoint is also relative: '/sanctum/csrf-cookie'. The
+ * browser resolves it against the current origin, and the Vercel
+ * rewrite proxies it to Railway.
+ *
+ * When API_BASE is absolute (e.g. 'http://localhost:8000/api/v1'),
+ * derive the origin and prefix the CSRF path.
+ */
+function csrfUrl(apiBase: string): string {
+  if (apiBase.startsWith('/')) {
+    // Relative — same-origin via Vercel rewrite
+    return CSRF_COOKIE_PATH
+  }
   try {
-    return new URL(apiBase).origin
+    return `${new URL(apiBase).origin}${CSRF_COOKIE_PATH}`
   } catch {
-    return apiBase
+    return CSRF_COOKIE_PATH
   }
 }
 
@@ -51,7 +65,7 @@ let inflight: Promise<void> | null = null
 export function ensureXsrfToken(apiBase: string): Promise<void> {
   if (!isBrowser() || readXsrfToken()) return Promise.resolve()
   if (inflight) return inflight
-  inflight = fetch(`${apiOrigin(apiBase)}${CSRF_COOKIE_PATH}`, {
+  inflight = fetch(csrfUrl(apiBase), {
     method: 'GET',
     credentials: 'include',
   })

@@ -16,9 +16,10 @@ interface FetchOptions<T> {
 }
 
 async function adminFetch<T>(endpoint: string, options: FetchOptions<T> = {}): Promise<T> {
-  const url = new URL(`${API}${endpoint}`)
+  let url = `${API}${endpoint}`
   if (options.params) {
-    Object.entries(options.params).forEach(([k, v]) => url.searchParams.set(k, v))
+    const qs = new URLSearchParams(options.params).toString()
+    url += (url.includes('?') ? '&' : '?') + qs
   }
 
   const method = options.method ?? 'GET'
@@ -30,7 +31,7 @@ async function adminFetch<T>(endpoint: string, options: FetchOptions<T> = {}): P
   }
   const xsrf = method !== 'GET' ? readXsrfToken() : null
 
-  const res = await fetch(url.toString(), {
+  const res = await fetch(url, {
     method,
     credentials: 'include',
     headers: {

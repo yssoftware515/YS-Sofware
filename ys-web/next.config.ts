@@ -54,6 +54,19 @@ const nextConfig: NextConfig = {
       },
     ]
   },
+
+  async rewrites() {
+    return [
+      {
+        source: '/api/:path*',
+        destination: `${apiOrigin}/api/:path*`,
+      },
+      {
+        source: '/sanctum/:path*',
+        destination: `${apiOrigin}/sanctum/:path*`,
+      },
+    ]
+  },
 }
 
 export default nextConfig
