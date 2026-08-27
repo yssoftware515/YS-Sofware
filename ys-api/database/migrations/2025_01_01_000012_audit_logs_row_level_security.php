@@ -27,9 +27,23 @@ use Illuminate\Support\Facades\DB;
  */
 return new class extends Migration
 {
+    private function appUser(): string
+    {
+        // config() returns the raw 'username' key from the cached config,
+        // which is 'root' when DB_USERNAME is not set — even though Laravel
+        // actually connects using the username parsed from DATABASE_URL.
+        // Parse the URL directly so the RLS policy targets the real role.
+        $url = env('DATABASE_URL');
+        if ($url && ($user = parse_url($url, PHP_URL_USER))) {
+            return $user;
+        }
+
+        return config('database.connections.pgsql.username', 'postgres');
+    }
+
     public function up(): void
     {
-        $appUser = config('database.connections.pgsql.username', 'postgres');
+        $appUser = $this->appUser();
 
         // Enable RLS on the table
         DB::statement('ALTER TABLE audit_logs ENABLE ROW LEVEL SECURITY');
@@ -64,7 +78,7 @@ return new class extends Migration
 
     public function down(): void
     {
-        $appUser = config('database.connections.pgsql.username', 'postgres');
+        $appUser = $this->appUser();
 
         DB::statement('DROP POLICY IF EXISTS audit_insert_only ON audit_logs');
         DB::statement('DROP POLICY IF EXISTS audit_select_all ON audit_logs');
