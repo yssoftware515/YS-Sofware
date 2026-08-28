@@ -109,9 +109,7 @@ export default function AdminLoginPage() {
       <div className="relative w-full max-w-sm">
         {/* Logo */}
         <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-12 h-12 rounded-2xl bg-accent text-white font-bold text-lg mb-4">
-            YS
-          </div>
+          <img src="/branding/logo/logo.svg" alt="YS Software" width={48} height={48} className="rounded-2xl mb-4" />
           <h1 className="font-display font-semibold text-xl text-foreground">
             Admin Portal
           </h1>
