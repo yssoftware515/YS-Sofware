@@ -2,9 +2,7 @@
 
 namespace App\Http\Controllers\Admin;
 
-use App\Domains\Cms\Models\StaticPage;
 use App\Domains\Product\Models\Product;
-use App\Domains\Product\Models\ProductMedia;
 use App\Domains\Services\Models\Service;
 use App\Domains\System\Models\Media;
 use App\Domains\System\Services\AuditService;
@@ -124,29 +122,26 @@ class MediaController extends Controller
      */
     private function referenceCounts(Media $medium): array
     {
+        $row = \DB::select('
+            SELECT
+                (SELECT COUNT(*)::bigint FROM products WHERE cover_image_id = ? OR logo_image_id = ?) AS products,
+                (SELECT COUNT(*)::bigint FROM services WHERE cover_image_id = ?) AS services,
+                (SELECT COUNT(*)::bigint FROM static_pages WHERE cover_media_id = ?) AS static_pages,
+                (SELECT COUNT(*)::bigint FROM product_media WHERE media_id = ?) AS product_media
+        ', [$medium->id, $medium->id, $medium->id, $medium->id, $medium->id])[0];
+
         $counts = [];
-
-        $productCount = Product::query()
-            ->where('cover_image_id', $medium->id)
-            ->orWhere('logo_image_id', $medium->id)
-            ->count();
-        if ($productCount > 0) {
-            $counts['products'] = $productCount;
+        if ((int) $row->products > 0) {
+            $counts['products'] = (int) $row->products;
         }
-
-        $serviceCount = Service::where('cover_image_id', $medium->id)->count();
-        if ($serviceCount > 0) {
-            $counts['services'] = $serviceCount;
+        if ((int) $row->services > 0) {
+            $counts['services'] = (int) $row->services;
         }
-
-        $pageCount = StaticPage::where('cover_media_id', $medium->id)->count();
-        if ($pageCount > 0) {
-            $counts['static_pages'] = $pageCount;
+        if ((int) $row->static_pages > 0) {
+            $counts['static_pages'] = (int) $row->static_pages;
         }
-
-        $galleryCount = ProductMedia::where('media_id', $medium->id)->count();
-        if ($galleryCount > 0) {
-            $counts['product_media'] = $galleryCount;
+        if ((int) $row->product_media > 0) {
+            $counts['product_media'] = (int) $row->product_media;
         }
 
         return $counts;

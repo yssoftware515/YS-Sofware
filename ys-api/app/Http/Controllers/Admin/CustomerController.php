@@ -87,14 +87,18 @@ class CustomerController extends Controller
         // "view_projects" gate (incl. manage_projects) see status counts
         // only.
         if ($request->user()->can('view_projects')) {
-            $data['active_projects_count'] = $customer->projects()->where('status', Project::STATUS_ACTIVE)->count();
-            $data['on_hold_projects_count'] = $customer->projects()->where('status', Project::STATUS_ON_HOLD)->count();
-            $data['completed_projects_count'] = $customer->projects()->where('status', Project::STATUS_COMPLETED)->count();
-            $data['overdue_projects_count'] = $customer->projects()
-                ->where('status', Project::STATUS_ACTIVE)
-                ->whereNotNull('expected_completion_date')
-                ->whereDate('expected_completion_date', '<', today())
-                ->count();
+            $projectCounts = $customer->projects()
+                ->selectRaw('
+                    SUM(CASE WHEN status = ? THEN 1 ELSE 0 END) AS active,
+                    SUM(CASE WHEN status = ? THEN 1 ELSE 0 END) AS on_hold,
+                    SUM(CASE WHEN status = ? THEN 1 ELSE 0 END) AS completed,
+                    SUM(CASE WHEN status = ? AND expected_completion_date IS NOT NULL AND expected_completion_date < CURRENT_DATE THEN 1 ELSE 0 END) AS overdue
+                ', [Project::STATUS_ACTIVE, Project::STATUS_ON_HOLD, Project::STATUS_COMPLETED, Project::STATUS_ACTIVE])
+                ->first();
+            $data['active_projects_count'] = (int) $projectCounts->active;
+            $data['on_hold_projects_count'] = (int) $projectCounts->on_hold;
+            $data['completed_projects_count'] = (int) $projectCounts->completed;
+            $data['overdue_projects_count'] = (int) $projectCounts->overdue;
         }
 
         // Recorded commercial value is FINANCIAL data — only holders of
