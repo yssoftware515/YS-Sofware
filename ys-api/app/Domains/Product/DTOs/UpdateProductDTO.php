@@ -43,8 +43,8 @@ readonly class UpdateProductDTO
             nameEn: $validated['name_en'] ?? null,
             nameAr: $validated['name_ar'] ?? null,
             status: $validated['status'] ?? null,
-            shortDescEn: $validated['short_desc_en'] ?? null,
-            shortDescAr: $validated['short_desc_ar'] ?? null,
+            shortDescEn: $sanitizer->sanitizeIfHtml($validated['short_desc_en'] ?? null),
+            shortDescAr: $sanitizer->sanitizeIfHtml($validated['short_desc_ar'] ?? null),
             longDescEn: $sanitizer->sanitize($validated['long_desc_en'] ?? null),
             longDescAr: $sanitizer->sanitize($validated['long_desc_ar'] ?? null),
             // VULN-04: sanitize markup-capable value_proposition /

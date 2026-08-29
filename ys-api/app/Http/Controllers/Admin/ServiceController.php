@@ -69,8 +69,8 @@ class ServiceController extends Controller
             'name_ar' => $validated['name_ar'],
             'category' => $validated['category'] ?? null,
             'service_class' => $validated['service_class'] ?? null,
-            'short_desc_en' => $validated['short_desc_en'] ?? null,
-            'short_desc_ar' => $validated['short_desc_ar'] ?? null,
+            'short_desc_en' => $sanitizer->sanitizeIfHtml($validated['short_desc_en'] ?? null),
+            'short_desc_ar' => $sanitizer->sanitizeIfHtml($validated['short_desc_ar'] ?? null),
             'description_en' => $sanitizer->sanitizeIfHtml($validated['description_en'] ?? null),
             'description_ar' => $sanitizer->sanitizeIfHtml($validated['description_ar'] ?? null),
             'cover_image_id' => $validated['cover_image_id'] ?? null,
@@ -139,6 +139,12 @@ class ServiceController extends Controller
         }
         if (array_key_exists('description_ar', $validated)) {
             $validated['description_ar'] = $sanitizer->sanitizeIfHtml($validated['description_ar']);
+        }
+        if (array_key_exists('short_desc_en', $validated)) {
+            $validated['short_desc_en'] = $sanitizer->sanitizeIfHtml($validated['short_desc_en']);
+        }
+        if (array_key_exists('short_desc_ar', $validated)) {
+            $validated['short_desc_ar'] = $sanitizer->sanitizeIfHtml($validated['short_desc_ar']);
         }
 
         $service->update($validated);

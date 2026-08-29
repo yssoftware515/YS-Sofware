@@ -12,6 +12,12 @@ class UpdateStaticPageAction
         // VULN-04: same JSON-aware sanitization as CreateStaticPageAction.
         $sanitizer = app(HtmlSanitizerService::class);
 
+        if (array_key_exists('excerpt_en', $data)) {
+            $data['excerpt_en'] = $sanitizer->sanitizeIfHtml($data['excerpt_en']);
+        }
+        if (array_key_exists('excerpt_ar', $data)) {
+            $data['excerpt_ar'] = $sanitizer->sanitizeIfHtml($data['excerpt_ar']);
+        }
         if (array_key_exists('content_en', $data)) {
             $data['content_en'] = $sanitizer->sanitizeJsonContent($data['content_en']);
         }

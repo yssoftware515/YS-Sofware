@@ -5,6 +5,7 @@ namespace App\Domains\Product\Actions;
 use App\Domains\Product\Models\Product;
 use App\Domains\Product\Models\ProductMedia;
 use App\Domains\Product\Models\ProductPricingPlan;
+use App\Domains\System\Services\HtmlSanitizerService;
 
 /**
  * Synchronizes the admin-maintained child lists of a product
@@ -18,12 +19,14 @@ class SyncProductRelationsAction
     {
         $product->features()->delete();
 
+        $sanitizer = app(HtmlSanitizerService::class);
+
         foreach ($items as $index => $item) {
             $product->features()->create([
                 'title_en' => $item['title_en'],
                 'title_ar' => $item['title_ar'],
-                'description_en' => $item['description_en'] ?? null,
-                'description_ar' => $item['description_ar'] ?? null,
+                'description_en' => $sanitizer->sanitizeIfHtml($item['description_en'] ?? null),
+                'description_ar' => $sanitizer->sanitizeIfHtml($item['description_ar'] ?? null),
                 'sort_order' => $item['sort_order'] ?? $index,
             ]);
         }

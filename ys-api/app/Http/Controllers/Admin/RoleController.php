@@ -39,6 +39,8 @@ class RoleController extends Controller
 
     public function store(CreateRoleRequest $request): JsonResponse
     {
+        $this->authorize('manage_admins');
+
         $validated = $request->validated();
 
         $role = Role::create($validated);

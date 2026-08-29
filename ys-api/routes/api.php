@@ -67,11 +67,14 @@ Route::prefix('auth')->name('auth.')->group(function () {
 
     // VULN-13: password reset flow — forgot is sprayed-protected at the
     // edge (per-IP throttle:forgot) AND per-email (3/hour, in the action);
-    // reset carries no route throttle — the 256-bit token is the guard.
+    // CSRF-02: reset now has a route-layer throttle (5/min per IP) to
+    // prevent volumetric DoS and timing side-channel analysis.
     Route::post('forgot-password', [AuthController::class, 'forgotPassword'])
         ->middleware('throttle:forgot')
         ->name('forgot-password');
-    Route::post('reset-password', [AuthController::class, 'resetPassword'])->name('reset-password');
+    Route::post('reset-password', [AuthController::class, 'resetPassword'])
+        ->middleware('throttle:reset')
+        ->name('reset-password');
 
     Route::middleware(['auth:sanctum', 'active', 'idle'])->group(function () {
         Route::post('logout', [AuthController::class, 'logout'])->name('logout');

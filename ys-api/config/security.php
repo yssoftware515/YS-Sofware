@@ -28,6 +28,9 @@ return [
         // stronger per-email budget enforced inside the action.
         'forgot' => env('RATE_LIMIT_FORGOT', 5),
         'forgot_per_email' => env('RATE_LIMIT_FORGOT_PER_EMAIL', 3),
+        // CSRF-02: reset-password spray guard — the 256-bit token is the
+        // primary guard, but this prevents DoS and timing side-channel.
+        'reset' => env('RATE_LIMIT_RESET', 5),
         // VULN-27: per authenticated admin user (not per IP). 300/min
         // is a generous ceiling for real panel work while capping
         // scripted scraping. Revisit with lower caps on audit-logs /

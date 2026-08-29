@@ -101,6 +101,22 @@ class AppServiceProvider extends ServiceProvider
             )->by($request->ip());
         });
 
+        // Reset-password — 5/min per IP. The 256-bit token is the primary
+        // security guard, but this throttle prevents volumetric DoS and
+        // timing side-channel analysis (measuring response times to infer
+        // token validity).
+        RateLimiter::for('reset', function (Request $request) {
+            return Limit::perMinute(
+                (int) config('security.rate_limits.reset', 5)
+            )->by($request->ip())->response(function () {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Too many password reset attempts. Please try again later.',
+                    'code' => 'RATE_LIMIT_EXCEEDED',
+                ], 429);
+            });
+        });
+
         // Admin API (VULN-27) — per authenticated user, not per IP:
         // the admin panel is a small trusted team behind shared egress
         // NAT, so IP-keying would either starve them or be trivially

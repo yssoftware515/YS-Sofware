@@ -45,8 +45,8 @@ readonly class CreateProductDTO
             nameEn: $v['name_en'],
             nameAr: $v['name_ar'],
             status: $v['status'] ?? 'planned',
-            shortDescEn: $v['short_desc_en'] ?? null,
-            shortDescAr: $v['short_desc_ar'] ?? null,
+            shortDescEn: $sanitizer->sanitizeIfHtml($v['short_desc_en'] ?? null),
+            shortDescAr: $sanitizer->sanitizeIfHtml($v['short_desc_ar'] ?? null),
             // long_desc is rich-text HTML from the admin editor — sanitize
             // here, once, so every consumer of this DTO downstream never
             // has to think about it again.
