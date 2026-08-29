@@ -1,8 +1,9 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import type { ReactNode } from 'react'
 import Link from 'next/link'
+import { useQuery } from '@tanstack/react-query'
 import { FileText, ScrollText, Mail, AlertTriangle, Briefcase, CalendarClock } from 'lucide-react'
 import { StatCard } from '@/components/admin/StatCard'
 import { DashboardWidget } from '@/components/admin/DashboardWidget'
@@ -12,7 +13,6 @@ import { formatDateTime, formatDate, formatMoney } from '@/lib/admin/format'
 import type { WidgetDefinition } from '@/lib/platform/registries/WidgetRegistry'
 
 import { API_BASE as API } from '@/lib/api/config'
-const fetchOpts: RequestInit = { credentials: 'include', headers: { Accept: 'application/json' } }
 
 // Widget id → key in the backend stats payload. Missing keys mean the
 // caller has no permission for that module — render "—", never 0.
@@ -90,49 +90,29 @@ const REQUEST_STATUS_COLORS: Record<string, string> = {
 }
 
 export default function DashboardPage() {
-  const [data, setData] = useState<StatsData | null>(null)
-  const [loading, setLoading] = useState(true)
-  const [loadError, setLoadError] = useState(false)
-  const [retryKey, setRetryKey] = useState(0)
   const { user, hasPermission } = useAuth()
   const { kernel, loaded: platformLoaded } = usePlatform()
+
+  const { data, isLoading, isError, refetch } = useQuery<StatsData>({
+    queryKey: ['dashboard-stats'],
+    queryFn: async () => {
+      const res = await fetch(`${API}/admin/dashboard/stats`, {
+        credentials: 'include',
+        headers: { Accept: 'application/json' },
+      })
+      const body = await res.json()
+      if (!res.ok || !body?.success) {
+        throw new Error(body?.message ?? 'Failed to load dashboard stats')
+      }
+      return body.data as StatsData
+    },
+    staleTime: 30_000,
+    retry: 1,
+  })
 
   const widgets: WidgetDefinition[] = platformLoaded && kernel
     ? kernel.getRegistry('widgets').getFilteredWidgets(hasPermission)
     : []
-
-  useEffect(() => {
-    let cancelled = false
-
-    fetch(`${API}/admin/dashboard/stats`, fetchOpts)
-      .then(async r => {
-        const body = await r.json()
-        if (cancelled) return
-        if (r.ok && body?.success) {
-          setData(body.data as StatsData)
-          setLoadError(false)
-        } else {
-          // 401/403/5xx or a `success:false` body — never render the
-          // dashboard as an empty, healthy panel over a failed request.
-          setData(null)
-          setLoadError(true)
-        }
-      })
-      .catch(() => {
-        if (!cancelled) setLoadError(true)
-      })
-      .finally(() => {
-        if (!cancelled) setLoading(false)
-      })
-
-    return () => { cancelled = true }
-  }, [retryKey])
-
-  const retry = () => {
-    setLoading(true)
-    setLoadError(false)
-    setRetryKey(k => k + 1)
-  }
 
   const visibleLinks = quickLinks.filter(l => !l.permission || hasPermission(l.permission))
 
@@ -144,7 +124,7 @@ export default function DashboardPage() {
     ? 'All systems operational'
     : healthDegraded
       ? 'System degraded'
-      : loadError ? 'Health check unavailable' : 'Checking...'
+      : isError ? 'Health check unavailable' : 'Checking...'
 
   const recentRequests = data?.recent_contact_requests ?? []
   const recentLogs = data?.recent_audit_logs ?? []
@@ -166,14 +146,14 @@ export default function DashboardPage() {
     <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
       <div>
         <h1 className="font-display font-semibold" style={{ fontSize: '1.5rem', color: 'var(--color-foreground)', marginBottom: '0.25rem' }}>
-          {loading ? 'Loading...' : `Welcome back${user ? `, ${user.name.split(' ')[0]}` : ''}!`}
+          {isLoading ? 'Loading...' : `Welcome back${user ? `, ${user.name.split(' ')[0]}` : ''}!`}
         </h1>
         <p style={{ fontSize: '0.875rem', color: 'var(--color-foreground-muted)' }}>
           {user ? `${user.role.name} · YS Systems & Software` : 'YS Systems & Software Admin Panel'}
         </p>
       </div>
 
-      {loadError && (
+      {isError && (
         <div style={{
           display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '0.75rem',
           padding: '0.875rem 1rem', borderRadius: 10,
@@ -184,8 +164,8 @@ export default function DashboardPage() {
             Unable to load dashboard statistics — the numbers below are not current.
           </span>
           <button
-            onClick={retry}
-            disabled={loading}
+            onClick={() => refetch()}
+            disabled={isLoading}
             style={{ padding: '0.375rem 0.875rem', borderRadius: 8, border: '1px solid var(--color-error)', backgroundColor: 'transparent', color: 'var(--color-error)', fontSize: '0.8125rem', fontWeight: 500, cursor: 'pointer' }}
           >
             Retry

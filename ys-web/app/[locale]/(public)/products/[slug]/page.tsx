@@ -144,8 +144,7 @@ export default async function ProductDetailPage({
             <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
                 {product.logo_image && (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img src={product.logo_image.url} alt={product.logo_image.alt ?? product.name} width={40} height={40} style={{ borderRadius: 10, objectFit: 'contain' }} />
+                  <Image src={product.logo_image.url} alt={product.logo_image.alt ?? product.name} width={40} height={40} style={{ borderRadius: 10, objectFit: 'contain' }} />
                 )}
                 <StatusBadge status={product.status} />
                 {product.current_version && (
