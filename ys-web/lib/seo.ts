@@ -2,8 +2,10 @@ import type { Metadata } from 'next'
 import { SeoRegistry } from '@/lib/platform/registries/SeoRegistry'
 
 const APP_URL      = process.env.NEXT_PUBLIC_APP_URL ?? 'https://ys-systems.com'
-const DEFAULT_OG      = '/branding/social/og-image.webp'
-const DEFAULT_TWITTER = '/branding/social/twitter-card.webp'
+// JPEG (not WebP) — Facebook/LinkedIn/WhatsApp scrapers don't reliably
+// render WebP OG assets. Visually 1200×800 (no-text-crop 3:2 source).
+const DEFAULT_OG      = '/branding/social/og-image.jpg'
+const DEFAULT_TWITTER = '/branding/social/twitter-card.jpg'
 const SITE_NAME_EN = 'YS Systems & Software'
 const SITE_NAME_AR = 'واي إس سيستمز آند سوفتوير'
 
@@ -71,7 +73,7 @@ export function buildMetadata({
   const canonicalUrl = `${APP_URL}/${locale}${path}`
   const ogImage      = image ?? DEFAULT_OG
   const ogImageUrl   = ogImage.startsWith('http') ? ogImage : `${APP_URL}${ogImage}`
-  // Twitter/X gets its own dedicated card asset by default (twitter-card.webp,
+  // Twitter/X gets its own dedicated card asset by default (twitter-card.jpg,
   // sized/cropped for its card format) rather than silently reusing the OG
   // image. A page-specific `image` override still applies to both, since
   // that's a real asset for that exact page (e.g. a product cover).
@@ -105,7 +107,7 @@ export function buildMetadata({
       siteName,
       locale: isAr ? 'ar_AR' : 'en_US',
       type,
-      images: [{ url: ogImageUrl, width: 1200, height: 630, alt: title }],
+      images: [{ url: ogImageUrl, width: 1200, height: 800, alt: title }],
       ...(type === 'article' && publishedTime ? { publishedTime } : {}),
     },
     twitter: {

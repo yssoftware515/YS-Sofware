@@ -17,10 +17,7 @@ import { API_BASE as API } from '@/lib/api/config'
 // Widget id → key in the backend stats payload. Missing keys mean the
 // caller has no permission for that module — render "—", never 0.
 const COUNT_KEYS: Record<string, string> = {
-  products:      'products',
-  releases:      'releases',
   services:      'services',
-  careers:       'careers',
   inquiries:     'contact_requests',
   customers:     'customers',
   projects:      'projects',
@@ -74,7 +71,7 @@ interface StatsData {
 }
 
 const quickLinks = [
-  { label: 'Add Product',  href: '/admin/products',  icon: FileText, permission: 'manage_products' },
+  { label: 'Add Service', href: '/admin/services', icon: FileText, permission: 'manage_services' },
   { label: 'Static Pages', href: '/admin/static-pages', icon: FileText, permission: 'manage_static_pages' },
   { label: 'FAQ',          href: '/admin/faq',       icon: FileText, permission: 'manage_faqs' },
   { label: 'Menus',        href: '/admin/menus',     icon: FileText, permission: 'manage_menus' },
@@ -368,9 +365,6 @@ export default function DashboardPage() {
                 {Object.entries(health?.checks ?? {}).map(([k, v]) => `${k}: ${v}`).join(' · ')}
               </span>
             )}
-            <Link href="/en/status" style={{ fontSize: '0.8125rem', color: 'var(--color-accent)', textDecoration: 'none' }}>
-              View Status Page →
-            </Link>
           </div>
         </div>
       </DashboardWidget>

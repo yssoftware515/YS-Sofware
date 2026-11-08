@@ -89,21 +89,28 @@ export function proxy(request: NextRequest) {
     return nextWithSecurity(request)
   }
 
-  // /ecosystem was removed — old URLs (both locales + bare form, plus any
-  // sub-path) permanently redirect to /products instead of 404ing.
-  const localeEcosystem = pathname.match(/^\/(en|ar)\/ecosystem(\/.*)?$/)
-  if (localeEcosystem) {
-    return NextResponse.redirect(
-      new URL(`/${localeEcosystem[1]}/products${localeEcosystem[2] ?? ''}`, request.url),
-      308
-    )
+  // Legacy public routes removed during the 2026 cleanup (products, docs,
+  // updates, releases, roadmap, changelog, status, careers). Old live links,
+  // search indexes and bookmarks are 308-redirected to the closest surviving
+  // page instead of 404ing.
+  const locale = pathname.match(/^\/(en|ar)(?:\/|$)/)?.[1] ?? defaultLocale
+  const rest = pathname.replace(/^\/(en|ar)(?=\/|$)/, '') || '/'
+
+  const legacyRedirect = (): string | null => {
+    // /products/* and /ecosystem/* → /services
+    if (/^\/(products|ecosystem)(\/.*)?$/.test(rest)) return `/${locale}/services`
+    // /docs/* → /faq
+    if (/^\/docs(\/.*)?$/.test(rest)) return `/${locale}/faq`
+    // /careers → /contact (applications went straight to /contact anyway)
+    if (/^\/careers(\/.*)?$/.test(rest)) return `/${locale}/contact`
+    // /updates, /releases, /changelog, /roadmap, /status → /about
+    if (/^\/(updates|releases|changelog|roadmap|status)$/.test(rest)) return `/${locale}/about`
+    return null
   }
-  const bareEcosystem = pathname.match(/^\/ecosystem(\/.*)?$/)
-  if (bareEcosystem) {
-    return NextResponse.redirect(
-      new URL(`/en/products${bareEcosystem[1] ?? ''}`, request.url),
-      308
-    )
+
+  const legacy = legacyRedirect()
+  if (legacy) {
+    return NextResponse.redirect(new URL(legacy, request.url), 308)
   }
 
   // Check if already has locale prefix

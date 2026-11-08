@@ -15,6 +15,12 @@ services:
     dockerContext: ys-api
     healthCheckPath: /up
     autoDeploy: true
+    # Persistent disk — without it, uploaded media (service covers, brand
+    # logos) live on Render's ephemeral FS and are lost on every redeploy.
+    disk:
+      name: ys-api-storage
+      mountPath: /app/storage
+      sizeGB: 1
     envVars:
       # ── Application ──────────────────────────────────────────
       - key: APP_ENV
@@ -26,7 +32,7 @@ services:
       - key: APP_URL
         value: https://ys-api.onrender.com
       - key: FRONTEND_URL
-        value: https://ys-sofware.vercel.app
+        value: https://ys-software.vercel.app
 
       # ── Database (Neon PostgreSQL) ───────────────────────────
       - key: DB_CONNECTION
@@ -78,7 +84,7 @@ services:
       - key: TRUSTED_PROXIES
         value: "private_ranges"
       - key: SANCTUM_STATEFUL_DOMAINS
-        value: localhost,localhost:3000,127.0.0.1,127.0.0.1:8000,::1,ys-sofware.vercel.app
+        value: localhost,localhost:3000,127.0.0.1,127.0.0.1:8000,::1,ys-software.vercel.app
       - key: AUTH_COOKIE_PARTITIONED
         value: "true"
 

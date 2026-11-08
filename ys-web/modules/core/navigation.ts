@@ -1,9 +1,9 @@
 import {
-  LayoutDashboard, Package, FileText, Map, Megaphone,
-  Briefcase, Image, Users, Settings, ScrollText,
+  LayoutDashboard, FileText,
+  Image, Users, Settings, ScrollText,
   ToggleLeft, History, BookOpen, HelpCircle, Menu,
   Home, UserCog,
-  Tags, Wrench, Mail, FolderKanban,
+  Wrench, Mail, FolderKanban, Briefcase,
 } from 'lucide-react'
 import type { NavGroup } from '@/lib/platform/registries/NavigationRegistry'
 
@@ -20,16 +20,12 @@ export const coreNavGroups: NavGroup[] = [
   },
   {
     id: 'products-services',
-    labelEn: 'Products & Services',
-    labelAr: 'المنتجات والخدمات',
+    labelEn: 'Services & Content',
+    labelAr: 'الخدمات والمحتوى',
     moduleId: 'core',
     order: 1,
     items: [
-      { href: '/admin/products',  labelEn: 'Products',  labelAr: 'المنتجات',  icon: Package,   permission: 'manage_products',  moduleId: 'core' },
       { href: '/admin/services',  labelEn: 'Services',  labelAr: 'الخدمات',   icon: Wrench,    permission: 'manage_services',  moduleId: 'core' },
-      { href: '/admin/releases',  labelEn: 'Releases',  labelAr: 'الإصدارات',  icon: Tags,      permission: 'manage_products',  moduleId: 'core' },
-      { href: '/admin/roadmap',   labelEn: 'Roadmap',   labelAr: 'خارطة الطريق', icon: Map,   permission: 'manage_roadmap',  moduleId: 'core' },
-      { href: '/admin/updates',   labelEn: 'Updates',   labelAr: 'المستجدات',  icon: Megaphone, permission: 'manage_updates',  moduleId: 'core' },
       { href: '/admin/timeline',  labelEn: 'Timeline',  labelAr: 'الجدول الزمني', icon: History, permission: 'manage_timeline', moduleId: 'core' },
     ],
   },
@@ -44,7 +40,6 @@ export const coreNavGroups: NavGroup[] = [
       { href: '/admin/faq',          labelEn: 'FAQ',          labelAr: 'الأسئلة الشائعة', icon: HelpCircle, permission: 'manage_faqs',        moduleId: 'core' },
       { href: '/admin/menus',        labelEn: 'Menus',        labelAr: 'القوائم',         icon: Menu,       permission: 'manage_menus',       moduleId: 'core' },
       { href: '/admin/homepage',     labelEn: 'Homepage',     labelAr: 'الصفحة الرئيسية', icon: Home,       permission: 'manage_homepage',    moduleId: 'core' },
-      { href: '/admin/docs',         labelEn: 'Documentation',labelAr: 'التوثيق',         icon: FileText,   permission: 'manage_documentation', moduleId: 'core' },
     ],
   },
   {
@@ -54,8 +49,7 @@ export const coreNavGroups: NavGroup[] = [
     moduleId: 'core',
     order: 3,
     items: [
-      { href: '/admin/contact-requests', labelEn: 'Inquiries', labelAr: 'الاستفسارات', icon: Mail,      permission: 'manage_contact_requests', moduleId: 'core' },
-      { href: '/admin/careers',          labelEn: 'Careers',   labelAr: 'الوظائف',     icon: Briefcase, permission: 'manage_careers',          moduleId: 'core' },
+      { href: '/admin/contact-requests', labelEn: 'Inquiries', labelAr: 'الاستفسارات', icon: Mail, permission: 'manage_contact_requests', moduleId: 'core' },
     ],
   },
   {

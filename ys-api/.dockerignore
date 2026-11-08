@@ -2,8 +2,10 @@
 .env
 .gitignore
 node_modules
+vendor
 tests
 phpunit.xml
+.phpunit.result.cache
 .dockerignore
 bootstrap/cache/*.php
 storage/framework/cache/data/*
@@ -12,3 +14,5 @@ storage/framework/testing/*
 storage/framework/views/*
 storage/logs/*
 storage/app/public/*
+storage/app/private/*
+storage/app/media/*

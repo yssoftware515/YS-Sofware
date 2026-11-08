@@ -15,17 +15,14 @@ export interface CorePermissionGroup {
  * Keep this file in sync with Permission.php whenever either one changes.
  */
 export const corePermissionGroups: CorePermissionGroup[] = [
+  // 'Products' stays even though its admin UI was retired — the backend
+  // routes and user↔product access feature remain (dormant backend).
   { group: 'Products',          permissions: ['manage_products'] },
   { group: 'Services',          permissions: ['manage_services', 'view_services'] },
-  { group: 'Releases',          permissions: ['manage_products'] },
-  { group: 'Documentation',     permissions: ['manage_documentation'] },
   { group: 'Static Pages',      permissions: ['manage_static_pages'] },
   { group: 'FAQ',               permissions: ['manage_faqs'] },
   { group: 'Menus',             permissions: ['manage_menus'] },
   { group: 'Homepage',          permissions: ['manage_homepage'] },
-  { group: 'Careers',           permissions: ['manage_careers'] },
-  { group: 'Roadmap',           permissions: ['manage_roadmap'] },
-  { group: 'Updates',           permissions: ['manage_updates'] },
   { group: 'Timeline',          permissions: ['manage_timeline'] },
   { group: 'Feature Flags',     permissions: ['manage_feature_flags'] },
   { group: 'Media',             permissions: ['manage_media'] },

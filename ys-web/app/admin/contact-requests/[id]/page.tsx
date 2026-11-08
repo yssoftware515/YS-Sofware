@@ -14,6 +14,7 @@ import { adminGet, adminPatch, adminCreate, adminDelete } from '@/lib/admin/api'
 import { formatMoney } from '@/lib/admin/format'
 import { STATUS_LABELS, type ProjectStatus } from '@/components/admin/ProjectForm'
 import { REQUEST_TYPES, type RequestType } from '@/types'
+import { buildWhatsAppHref } from '@/lib/utils/whatsapp'
 
 interface LinkedCustomer {
   id: string
@@ -511,7 +512,7 @@ export default function ContactRequestDetailPage() {
           </a>
           {data.phone && (
             <a
-              href={`https://wa.me/${(data.phone || '201008920677').replace(/[^\d]/g, '')}`}
+              href={buildWhatsAppHref(data.phone) ?? undefined}
               target="_blank"
               rel="noopener noreferrer"
               style={{ display: 'flex', alignItems: 'center', gap: '0.625rem', color: 'var(--color-foreground)', fontSize: '0.875rem', textDecoration: 'none' }}

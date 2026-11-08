@@ -11,13 +11,13 @@ const content = {
     title: 'Page not found',
     body: "The page you're looking for doesn't exist or has been moved.",
     home: '← Back to Home',
-    products: 'Browse Products',
+    services: 'Explore Our Services',
   },
   ar: {
     title: 'الصفحة غير موجودة',
     body: 'الصفحة التي تبحث عنها غير موجودة أو تم نقلها.',
     home: '→ العودة للرئيسية',
-    products: 'تصفح المنتجات',
+    services: 'اكتشف خدماتنا',
   },
 }
 
@@ -57,12 +57,12 @@ export default async function NotFound() {
             }}>
               {t.home}
             </Link>
-            <Link href={`/${locale}/products`} style={{
+            <Link href={`/${locale}/services`} style={{
               display: 'inline-flex', alignItems: 'center', gap: '0.5rem',
               padding: '0.875rem 2rem', borderRadius: 8, fontSize: '0.9375rem', fontWeight: 500,
               border: '1px solid var(--color-border)', color: 'var(--color-foreground)', textDecoration: 'none',
             }}>
-              {t.products}
+              {t.services}
             </Link>
           </div>
         </div>

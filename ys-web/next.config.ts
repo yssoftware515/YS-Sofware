@@ -49,6 +49,9 @@ const nextConfig: NextConfig = {
       },
     ],
     formats: ['image/avif', 'image/webp'],
+    // Optimized variants are immutable — cache them for a week instead of
+    // revalidating every 60s (the default), cutting repeat optimizer work.
+    minimumCacheTTL: 604800,
   },
 
   async headers() {

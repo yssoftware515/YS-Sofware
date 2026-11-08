@@ -5,3 +5,15 @@ backups/
 .env
 .env.local
 .env.production
+
+# Belt-and-suspenders (also ignored per-subdir) — build/runtime artifacts
+node_modules/
+.next/
+vendor/
+dist/
+*.tsbuildinfo
+*.phpunit.result.cache
+.phpunit.result.cache
+storage/logs/
+storage/framework/
+bootstrap/cache/*.php

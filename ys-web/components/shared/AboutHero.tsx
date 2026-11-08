@@ -73,7 +73,7 @@ export function AboutHero({
       {/* Mobile full-bleed background */}
       <div className="lg:hidden absolute inset-0 z-0 pointer-events-none" aria-hidden="true">
         <Image
-          src="/branding/about/mobile%20about.webp"
+          src="/branding/about/about-mobile.webp"
           alt=""
           fill
           className="object-cover"
