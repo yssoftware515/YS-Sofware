@@ -3,12 +3,26 @@ import { Metadata } from "next"
 import Image from "next/image"
 import Link from "next/link"
 import { ArrowRight, ArrowLeft, CheckCircle2, Wallet, MessageCircle } from "lucide-react"
-import { formatPrice, type CurrencyCode } from "@/lib/utils/services-utils"
+import { formatPrice, getCategoryLabel, type CurrencyCode } from "@/lib/utils/services-utils"
 import { ServiceRequestForm } from "@/components/services/ServiceRequestForm"
 import { PricingCalculator } from "@/components/services/PricingCalculator"
 import { ServiceTestimonials } from "@/components/services/ServiceTestimonials"
 import { api } from "@/lib/api/client"
-import type { Service, PublicSettings } from "@/types"
+import type { Service, ServiceDetail, PublicSettings } from "@/types"
+import { normalizeWhatsAppNumber, WHATSAPP_NUMBER_DEFAULT, buildWhatsAppHref } from "@/lib/utils/whatsapp"
+
+/**
+ * The long description is authored as plain text (paragraphs separated by
+ * a blank line) in the admin panel. React escapes it by default — no HTML
+ * injection surface; we only split it into <p> blocks for readability.
+ */
+function descriptionParagraphs(description: string | null): string[] {
+  if (!description?.trim()) return []
+  return description
+    .split(/\n\s*\n/)
+    .map((p) => p.trim())
+    .filter(Boolean)
+}
 
 interface Props {
   params: Promise<{ locale: string; slug: string }>
@@ -28,7 +42,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   }
 }
 
-async function getService(slug: string, locale: string): Promise<Service | null> {
+async function getService(slug: string, locale: string): Promise<ServiceDetail | null> {
   try {
     return await api.service(slug, locale)
   } catch {
@@ -62,14 +76,19 @@ export default async function ServiceDetailPage({ params }: Props) {
   let settings: PublicSettings | null = null
   try {
     settings = await api.settings(locale)
-  } catch {
-    // Non-critical — WhatsApp links fall back to number-less wa.me
+    } catch {
+    // Non-critical — WhatsApp links fall back to the code default number
   }
 
-  const whatsappNumber = (settings?.contacts?.whatsapp_number || "201008920677").replace(/[^\d]/g, "")
-  const waText = encodeURIComponent(
-    isAr ? "مرحباً، أود الاستفسار عن خدمة " + service.name : "Hi, I'd like to inquire about " + service.name
+  const whatsappNumber =
+    normalizeWhatsAppNumber(settings?.contacts?.whatsapp_number) ?? WHATSAPP_NUMBER_DEFAULT
+  const waHref = buildWhatsAppHref(
+    whatsappNumber,
+    isAr
+      ? "مرحباً، أود الاستفسار عن خدمة " + service.name
+      : "Hi, I'd like to inquire about " + service.name,
   )
+  const paragraphs = descriptionParagraphs(service.description ?? null)
 
   return (
     <main style={{ backgroundColor: "var(--color-background)" }}>
@@ -99,7 +118,7 @@ export default async function ServiceDetailPage({ params }: Props) {
                   className="text-xs font-semibold uppercase tracking-wider mb-4 block"
                   style={{ color: "var(--color-accent)" }}
                 >
-                  {service.category}
+                  {getCategoryLabel(service.category, locale)}
                 </span>
               )}
               <h1
@@ -118,6 +137,27 @@ export default async function ServiceDetailPage({ params }: Props) {
               >
                 {service.short_desc}
               </p>
+
+              {/* Long description — authored paragraphs from the admin panel */}
+              {paragraphs.length > 0 && (
+                <div
+                  className="mb-8 flex flex-col gap-4 rounded-2xl p-6"
+                  style={{
+                    background: "var(--surface-subtle)",
+                    border: "1px solid var(--border-card)",
+                  }}
+                >
+                  {paragraphs.map((paragraph) => (
+                    <p
+                      key={paragraph.slice(0, 32)}
+                      className="text-sm lg:text-base leading-relaxed"
+                      style={{ color: "var(--color-foreground-muted)" }}
+                    >
+                      {paragraph}
+                    </p>
+                  ))}
+                </div>
+              )}
 
               {/* Pricing Card */}
               <div
@@ -166,7 +206,7 @@ export default async function ServiceDetailPage({ params }: Props) {
                   <Arrow size={16} />
                 </a>
                 <a
-                  href={`https://wa.me/${whatsappNumber}?text=${waText}`}
+                  href={waHref ?? undefined}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl text-sm font-semibold transition-all duration-300"

@@ -31,13 +31,13 @@ class CmsSeeder extends Seeder
                 'subtitle_en' => 'Scalable, secure, and production-grade SaaS platforms for real business problems.',
                 'subtitle_ar' => 'منصات SaaS قابلة للتوسع وآمنة ومُنتجة لحل مشكلات الأعمال الحقيقية.',
                 'content' => json_encode([
-                    'badge_en' => 'Digital Technology Company',
-                    'badge_ar' => 'شركة تقنيات رقمية',
-                    'cta_primary_en' => 'Start a Project',
-                    'cta_primary_ar' => 'ابدأ مشروعك',
+                    'badge_en' => 'Digital Products & Services Company',
+                    'badge_ar' => 'شركة منتجات رقمية متكاملة',
+                    'cta_primary_en' => 'Get a Free Consultation',
+                    'cta_primary_ar' => 'اطلب استشارة مجانية',
                     'cta_primary_url' => '/contact',
-                    'cta_secondary_en' => 'View Our Services',
-                    'cta_secondary_ar' => 'استكشف خدماتنا',
+                    'cta_secondary_en' => 'Explore Our Services',
+                    'cta_secondary_ar' => 'اكتشف خدماتنا',
                     'cta_secondary_url' => '/services',
                 ]),
                 'is_enabled' => true,
@@ -88,28 +88,30 @@ class CmsSeeder extends Seeder
                 'sort_order' => 30,
             ],
             [
+                // Products section retired — the company is positioned as a
+                // services/products agency until YS-Matrix launches.
                 'type' => 'products',
                 'title_en' => 'Our Products',
                 'title_ar' => 'منتجاتنا',
                 'subtitle_en' => 'A growing ecosystem of software solutions.',
                 'subtitle_ar' => 'منظومة متنامية من الحلول البرمجية.',
                 'content' => null,
-                'is_enabled' => true,
+                'is_enabled' => false,
                 'sort_order' => 40,
             ],
             [
                 'type' => 'cta',
                 'title_en' => 'Have an idea? Let’s build it.',
                 'title_ar' => 'لديك فكرة؟ لنبنها معاً.',
-                'subtitle_en' => 'Tell us what you need — a product, a custom platform, or a complete system — and we’ll help you scope it.',
-                'subtitle_ar' => 'أخبرنا بما تحتاجه — منتجاً أو منصة مخصصة أو نظاماً متكاملاً — وسنساعدك في تحديد النطاق.',
+                'subtitle_en' => 'Tell us what you need — a website, a store, a platform, or a complete business system — and we’ll help you scope it.',
+                'subtitle_ar' => 'أخبرنا بما تحتاجه — موقعاً أو متجراً أو منصة أو نظاماً متكاملاً لعملك — وسنساعدك في تحديد النطاق.',
                 'content' => json_encode([
                     'primary_text_en' => 'Start a Project',
                     'primary_text_ar' => 'ابدأ مشروعك',
                     'primary_url' => '/contact',
-                    'secondary_text_en' => 'Browse Products',
-                    'secondary_text_ar' => 'استعرض المنتجات',
-                    'secondary_url' => '/products',
+                    'secondary_text_en' => 'Explore Our Services',
+                    'secondary_text_ar' => 'اكتشف خدماتنا',
+                    'secondary_url' => '/services',
                 ]),
                 'is_enabled' => true,
                 'sort_order' => 50,
@@ -328,11 +330,11 @@ The two sides strengthen each other: the challenges businesses actually face sha
         );
 
         $headerItems = [
-            ['title_en' => 'Products',     'title_ar' => 'المنتجات',     'url' => '/products',  'sort_order' => 10],
-            ['title_en' => 'Docs',         'title_ar' => 'التوثيق',     'url' => '/docs',      'sort_order' => 20],
-            ['title_en' => 'Updates',      'title_ar' => 'المستجدات',   'url' => '/updates',   'sort_order' => 30],
-            ['title_en' => 'About',        'title_ar' => 'عن الشركة',   'url' => '/about',     'sort_order' => 40],
-            ['title_en' => 'FAQ',          'title_ar' => 'الأسئلة الشائعة', 'url' => '/faq',  'sort_order' => 50],
+            ['title_en' => 'Home',     'title_ar' => 'الرئيسية',        'url' => '/',           'sort_order' => 0],
+            ['title_en' => 'Services', 'title_ar' => 'الخدمات',         'url' => '/services',   'sort_order' => 10],
+            ['title_en' => 'About',    'title_ar' => 'عن الشركة',       'url' => '/about',      'sort_order' => 20],
+            ['title_en' => 'FAQ',      'title_ar' => 'الأسئلة الشائعة', 'url' => '/faq',        'sort_order' => 30],
+            ['title_en' => 'Contact',  'title_ar' => 'تواصل معنا',      'url' => '/contact',    'sort_order' => 40],
         ];
 
         foreach ($headerItems as $item) {
@@ -342,30 +344,44 @@ The two sides strengthen each other: the challenges businesses actually face sha
             );
         }
 
-        // Footer — Products
-        $footerProducts = Menu::updateOrCreate(
+        // Retire items pointing at removed public routes (products, docs,
+        // updates, releases, roadmap, status, changelog, careers).
+        MenuItem::where('menu_id', $header->id)
+            ->where(function ($q) {
+                $q->where('url', 'like', '/products%')
+                  ->orWhere('url', 'like', '/docs%')
+                  ->orWhere('url', 'like', '/updates%')
+                  ->orWhere('url', 'like', '/releases%')
+                  ->orWhere('url', 'like', '/roadmap%')
+                  ->orWhere('url', 'like', '/status%')
+                  ->orWhere('url', 'like', '/changelog%')
+                  ->orWhere('url', 'like', '/careers%');
+            })
+            ->delete();
+
+        // Footer — Services
+        $footerServices = Menu::updateOrCreate(
             ['location' => 'footer_products'],
-            ['name' => 'Footer Products', 'is_active' => true]
+            ['name' => 'Footer Services', 'is_active' => true]
         );
 
-        $footerProductItems = [
-            ['title_en' => 'YS-Matrix',       'title_ar' => 'YS-Matrix',       'url' => '/products/ys-matrix',       'sort_order' => 10],
-            ['title_en' => 'YS-Sports',       'title_ar' => 'YS-Sports',       'url' => '/products/ys-sports',       'sort_order' => 20],
-            ['title_en' => 'YS-Care',         'title_ar' => 'YS-Care',         'url' => '/products/ys-care',         'sort_order' => 30],
+        $footerServiceItems = [
+            ['title_en' => 'All Services',              'title_ar' => 'جميع الخدمات',             'url' => '/services', 'sort_order' => 10],
+            ['title_en' => 'Web Platforms & Apps',      'title_ar' => 'مواقع ومتاجر ومنصات وتطبيقات', 'url' => '/services', 'sort_order' => 20],
+            ['title_en' => 'UI/UX & Brand Design',      'title_ar' => 'تصميم UI/UX وهوية',        'url' => '/services', 'sort_order' => 30],
+            ['title_en' => 'AI Automation & ERP',       'title_ar' => 'أتمتة AI وأنظمة ERP',      'url' => '/services', 'sort_order' => 40],
         ];
 
-        foreach ($footerProductItems as $item) {
+        foreach ($footerServiceItems as $item) {
             MenuItem::updateOrCreate(
-                ['menu_id' => $footerProducts->id, 'url' => $item['url']],
+                ['menu_id' => $footerServices->id, 'title_en' => $item['title_en']],
                 array_merge($item, ['is_active' => true, 'target' => '_self'])
             );
         }
 
-        // Remove any fabricated/retired product entries that no longer exist
-        // (e.g. legacy "Vortex Trader_Y" placeholder links).
-        MenuItem::where('menu_id', $footerProducts->id)
-            ->where('url', 'like', '/products/%')
-            ->whereNotIn('url', array_column($footerProductItems, 'url'))
+        // Remove retired product links from this menu group.
+        MenuItem::where('menu_id', $footerServices->id)
+            ->where('url', 'like', '/products%')
             ->delete();
 
         // Footer — Company
@@ -376,8 +392,7 @@ The two sides strengthen each other: the challenges businesses actually face sha
 
         $footerCompanyItems = [
             ['title_en' => 'About',   'title_ar' => 'عن الشركة',   'url' => '/about',  'sort_order' => 10],
-            ['title_en' => 'Careers', 'title_ar' => 'الوظائف',     'url' => '/careers', 'sort_order' => 20],
-            ['title_en' => 'Contact', 'title_ar' => 'تواصل معنا',  'url' => '/contact', 'sort_order' => 30],
+            ['title_en' => 'Contact', 'title_ar' => 'تواصل معنا',  'url' => '/contact', 'sort_order' => 20],
         ];
 
         foreach ($footerCompanyItems as $item) {
@@ -387,6 +402,19 @@ The two sides strengthen each other: the challenges businesses actually face sha
             );
         }
 
+        // Retire removed routes from footer groups as well.
+        MenuItem::whereIn('menu_id', [$footerCompany->id, $footerResources->id ?? 0])
+            ->where(function ($q) {
+                $q->where('url', 'like', '/docs%')
+                  ->orWhere('url', 'like', '/updates%')
+                  ->orWhere('url', 'like', '/roadmap%')
+                  ->orWhere('url', 'like', '/status%')
+                  ->orWhere('url', 'like', '/releases%')
+                  ->orWhere('url', 'like', '/changelog%')
+                  ->orWhere('url', 'like', '/careers%');
+            })
+            ->delete();
+
         // Footer — Resources
         $footerResources = Menu::updateOrCreate(
             ['location' => 'footer_resources'],
@@ -394,12 +422,9 @@ The two sides strengthen each other: the challenges businesses actually face sha
         );
 
         $footerResourceItems = [
-            ['title_en' => 'Docs',          'title_ar' => 'التوثيق',          'url' => '/docs',      'sort_order' => 10],
-            ['title_en' => 'Roadmap',       'title_ar' => 'خارطة الطريق',     'url' => '/roadmap',   'sort_order' => 20],
-            ['title_en' => 'Updates',       'title_ar' => 'المستجدات',        'url' => '/updates',   'sort_order' => 30],
-            ['title_en' => 'Status',        'title_ar' => 'حالة النظام',      'url' => '/status',    'sort_order' => 40],
-            ['title_en' => 'FAQ',           'title_ar' => 'الأسئلة الشائعة',  'url' => '/faq',       'sort_order' => 50],
-            ['title_en' => 'Security',      'title_ar' => 'الأمان',           'url' => '/security',  'sort_order' => 60],
+            ['title_en' => 'FAQ',           'title_ar' => 'الأسئلة الشائعة',  'url' => '/faq',       'sort_order' => 10],
+            ['title_en' => 'Security',      'title_ar' => 'الأمان',           'url' => '/security',  'sort_order' => 20],
+            ['title_en' => 'About Us',      'title_ar' => 'من نحن',           'url' => '/about',     'sort_order' => 30],
         ];
 
         foreach ($footerResourceItems as $item) {

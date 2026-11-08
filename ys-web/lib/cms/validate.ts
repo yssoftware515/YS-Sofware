@@ -9,6 +9,7 @@ const SAFE_PROTOCOLS = ['https:', 'http:', 'mailto:', 'tel:']
 // hosts, and anything with embedded credentials.
 const SOCIAL_ALLOWLIST = [
   'github.com',
+  'instagram.com',
   'linkedin.com',
   'x.com',
   'twitter.com',

@@ -4,62 +4,59 @@ import Link from "next/link"
 import Image from "next/image"
 import {
   Github,
+  Instagram,
   Linkedin,
   Twitter,
   Globe,
   ArrowUp,
   ArrowRight,
   ArrowLeft,
+  Mail,
+  MessageCircle,
   type LucideIcon,
 } from "lucide-react"
-import type { PublicSettings, Menu, Product } from "@/types"
+import type { PublicSettings, Menu } from "@/types"
 import { validateSocialUrl } from "@/lib/cms/validate"
+import {
+  buildWhatsAppHref,
+  WHATSAPP_DISPLAY_DEFAULT,
+  WHATSAPP_NUMBER_DEFAULT,
+  normalizeWhatsAppNumber,
+} from "@/lib/utils/whatsapp"
 
 interface FooterProps {
   locale: string
   settings?: PublicSettings
   menus?: Record<string, Menu>
-  products?: Product[]
 }
 
 const content = {
   en: {
-    products: "Products",
+    services: "Services",
     company: "Company",
     resources: "Resources",
     legal: "Legal",
-    newsletter_title: "Stay in the loop",
-    newsletter_subtitle:
-      "Get product updates, engineering insights, and company news — no spam.",
-    newsletter_placeholder: "Enter your email",
-    newsletter_button: "Subscribe",
     privacy: "Privacy Policy",
     terms: "Terms of Service",
     cookies: "Cookie Policy",
     copyright: "All rights reserved.",
-    tagline: "Building the next generation of business software.",
-    viewAllProducts: "View All Products",
-    backToTop: "Back to top",
-    systemStatus: "All Systems Operational",
+    tagline: "Your integrated digital products company — one partner for everything digital.",    backToTop: "Back to top",
+    contactUs: "Contact Us",
+    company_email: "cantactys@gmail.com",
   },
   ar: {
-    products: "المنتجات",
+    services: "الخدمات",
     company: "الشركة",
     resources: "الموارد",
     legal: "قانوني",
-    newsletter_title: "ابقَ على اطلاع",
-    newsletter_subtitle:
-      "احصل على تحديثات المنتجات، ورؤى هندسية، وأخبار الشركة — بدون رسائل مزعجة.",
-    newsletter_placeholder: "أدخل بريدك الإلكتروني",
-    newsletter_button: "اشترك",
     privacy: "سياسة الخصوصية",
     terms: "شروط الخدمة",
     cookies: "سياسة ملفات تعريف الارتباط",
     copyright: "جميع الحقوق محفوظة.",
-    tagline: "نبني الجيل القادم من برمجيات الأعمال.",
-    viewAllProducts: "عرض كل المنتجات",
+    tagline: "شركة منتجات رقمية متكاملة — شريك واحد لكل احتياجاتك الرقمية.",
     backToTop: "العودة للأعلى",
-    systemStatus: "جميع الأنظمة تعمل",
+    contactUs: "تواصل معنا",
+    company_email: "cantactys@gmail.com",
   },
 }
 
@@ -78,7 +75,7 @@ function menuLinks(
 // ═══════════════════════════════════════════════════════════════════════════════
 // FOOTER — premium multi-tier design matching the platform's strength
 // ═══════════════════════════════════════════════════════════════════════════════
-export function Footer({ locale, settings, menus, products }: FooterProps) {
+export function Footer({ locale, settings, menus }: FooterProps) {
   const isAr = locale === "ar"
   const t = content[locale as keyof typeof content] ?? content.en
   const companyName =
@@ -90,14 +87,18 @@ export function Footer({ locale, settings, menus, products }: FooterProps) {
 
   const Arrow = isAr ? ArrowLeft : ArrowRight
 
-  // Product links from live data
-  const productsLinks = (products ?? [])
-    .filter((p) => p.status !== "archived")
-    .map((p) => ({ href: `/products/${p.slug}`, label: p.name }))
+  const contactEmail = settings?.brand?.contact_email ?? t.company_email
 
-  if (productsLinks.length === 0) {
-    productsLinks.push({ href: "/products", label: t.viewAllProducts })
-  }
+  const whatsappNumber =
+    normalizeWhatsAppNumber(settings?.contacts?.whatsapp_number) ?? WHATSAPP_NUMBER_DEFAULT
+  const whatsappDisplay =
+    settings?.contacts?.whatsapp_display ?? WHATSAPP_DISPLAY_DEFAULT
+  const whatsappHref = buildWhatsAppHref(
+    whatsappNumber,
+    isAr
+      ? 'مرحباً، أريد الاستفسار عن خدمات YS Systems.'
+      : "Hi, I'd like to inquire about YS Systems services.",
+  )
 
   const companyLinks = menuLinks(menus?.footer_company, locale, [
     {
@@ -105,35 +106,42 @@ export function Footer({ locale, settings, menus, products }: FooterProps) {
       label: locale === "ar" ? "عن الشركة" : "About",
     },
     {
-      href: "/careers",
-      label: locale === "ar" ? "الوظائف" : "Careers",
-    },
-    {
       href: "/contact",
       label: locale === "ar" ? "تواصل معنا" : "Contact",
     },
   ])
 
+  const servicesLinks = menuLinks(menus?.footer_products, locale, [
+    {
+      href: "/services",
+      label: locale === "ar" ? "جميع الخدمات" : "All Services",
+    },
+    {
+      href: "/services",
+      label: locale === "ar" ? "مواقع ومتاجر ومنصات وتطبيقات" : "Web Platforms & Apps",
+    },
+    {
+      href: "/services",
+      label: locale === "ar" ? "تصميم UI/UX وهوية" : "UI/UX & Brand Design",
+    },
+    {
+      href: "/services",
+      label: locale === "ar" ? "أتمتة AI وأنظمة ERP" : "AI Automation & ERP",
+    },
+  ])
+
   const resourcesLinks = menuLinks(menus?.footer_resources, locale, [
-    {
-      href: "/docs",
-      label: locale === "ar" ? "التوثيق" : "Docs",
-    },
-    {
-      href: "/roadmap",
-      label: locale === "ar" ? "خارطة الطريق" : "Roadmap",
-    },
-    {
-      href: "/updates",
-      label: locale === "ar" ? "المستجدات" : "Updates",
-    },
-    {
-      href: "/status",
-      label: locale === "ar" ? "حالة النظام" : "Status",
-    },
     {
       href: "/faq",
       label: locale === "ar" ? "الأسئلة الشائعة" : "FAQ",
+    },
+    {
+      href: "/security",
+      label: locale === "ar" ? "الأمان" : "Security",
+    },
+    {
+      href: "/about",
+      label: locale === "ar" ? "من نحن" : "About Us",
     },
   ])
 
@@ -154,6 +162,12 @@ export function Footer({ locale, settings, menus, products }: FooterProps) {
       label: "GitHub",
       url: settings?.social?.github_url ?? undefined,
       icon: Github,
+    },
+    {
+      key: "instagram",
+      label: "Instagram",
+      url: settings?.social?.instagram_url ?? undefined,
+      icon: Instagram,
     },
     {
       key: "linkedin",
@@ -247,6 +261,42 @@ export function Footer({ locale, settings, menus, products }: FooterProps) {
               >
                 {tagline}
               </p>
+
+              {/* Direct contact — email + WhatsApp, right where visitors read */}
+              <div className="flex flex-col gap-2 mt-4 text-sm">
+                <a
+                  href={`mailto:${contactEmail}`}
+                  className="inline-flex items-center gap-2 w-fit transition-colors duration-200"
+                  style={{ color: "var(--color-foreground-muted)" }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.color = "var(--color-foreground)"
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.color = "var(--color-foreground-muted)"
+                  }}
+                >
+                  <Mail size={15} aria-hidden="true" />
+                  <span dir="ltr">{contactEmail}</span>
+                </a>
+                {whatsappHref && (
+                  <a
+                    href={whatsappHref}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-2 w-fit transition-colors duration-200"
+                    style={{ color: "var(--color-foreground-muted)" }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.color = "#25D366"
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.color = "var(--color-foreground-muted)"
+                    }}
+                  >
+                    <MessageCircle size={15} aria-hidden="true" />
+                    <span dir="ltr">{whatsappDisplay}</span>
+                  </a>
+                )}
+              </div>
             </div>
           </div>
         </div>
@@ -259,8 +309,8 @@ export function Footer({ locale, settings, menus, products }: FooterProps) {
           style={{ borderBottom: "1px solid var(--divider)" }}
         >
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8 lg:gap-10">
-            {/* Products */}
-            <FooterColumn title={t.products} locale={locale} links={productsLinks} />
+            {/* Services */}
+            <FooterColumn title={t.services} locale={locale} links={servicesLinks} />
 
             {/* Company */}
             <FooterColumn title={t.company} locale={locale} links={companyLinks} />
@@ -277,23 +327,10 @@ export function Footer({ locale, settings, menus, products }: FooterProps) {
             TIER 3: Bottom Bar
         ═══════════════════════════════════════════════════════════════ */}
         <div className="py-6 flex flex-col sm:flex-row items-center justify-between gap-4">
-          {/* Left: Copyright + Status */}
+          {/* Left: Copyright */}
           <div className="flex flex-wrap items-center gap-3 text-xs">
             <span style={{ color: "var(--color-foreground-muted)" }}>
               &copy; {new Date().getFullYear()} {companyName}. {t.copyright}
-            </span>
-
-            {/* System status indicator */}
-            <span
-              className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[10px] font-semibold"
-              style={{
-                background: "rgba(16,185,129,0.1)",
-                border: "1px solid rgba(16,185,129,0.2)",
-                color: "#34D399",
-              }}
-            >
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-              {t.systemStatus}
             </span>
           </div>
 

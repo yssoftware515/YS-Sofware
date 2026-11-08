@@ -3,6 +3,12 @@ import { MessageCircle } from 'lucide-react'
 import type { HomepageSection, PublicSettings } from '@/types'
 import { ctaContentSchema, type CtaContent } from '@/lib/cms/schemas'
 import { validateCmsContent, validateUrl } from '@/lib/cms/validate'
+import {
+  buildWhatsAppHref,
+  normalizeWhatsAppNumber,
+  WHATSAPP_DISPLAY_DEFAULT,
+  WHATSAPP_NUMBER_DEFAULT,
+} from '@/lib/utils/whatsapp'
 
 interface CTASectionProps {
   locale: string
@@ -13,20 +19,20 @@ interface CTASectionProps {
 const fallback = {
   en: {
     heading: 'Have an idea? Let\u2019s build it.',
-    body: 'Tell us what you need \u2014 a product, a custom platform, or a complete system. We\u2019ll help you scope it and give you a clear path forward.',
+    body: 'Tell us what you need \u2014 a website, a store, a platform, or a complete business system. We\u2019ll help you scope it and give you a clear path forward.',
     primary: 'Start a Project',
     primary_url: '/contact',
-    secondary: 'Browse Products',
-    secondary_url: '/products',
+    secondary: 'Explore Our Services',
+    secondary_url: '/services',
     whatsapp_label: 'Chat on WhatsApp',
   },
   ar: {
     heading: 'لديك فكرة؟ لنبنها معاً.',
-    body: 'أخبرنا بما تحتاجه \u2014 منتجاً أو منصة مخصصة أو نظاماً متكاملاً. سنساعدك في تحديد النطاق ونمنحك مساراً واضحاً للأمام.',
+    body: 'أخبرنا بما تحتاجه \u2014 موقعاً أو متجراً أو منصة أو نظاماً متكاملاً لعملك. سنساعدك في تحديد النطاق ونمنحك مساراً واضحاً للأمام.',
     primary: 'ابدأ مشروعك',
     primary_url: '/contact',
-    secondary: 'استعرض المنتجات',
-    secondary_url: '/products',
+    secondary: 'اكتشف خدماتنا',
+    secondary_url: '/services',
     whatsapp_label: 'تواصل عبر واتساب',
   },
 }
@@ -44,13 +50,15 @@ export function CTASection({ locale, cmsSection, settings }: CTASectionProps) {
   const purl    = validateUrl(content?.primary_url, f.primary_url)
   const surl    = validateUrl(content?.secondary_url, f.secondary_url)
 
-  const whatsappNumber = settings?.contacts?.whatsapp_number || '201008920677'
-  const whatsappDisplay = settings?.contacts?.whatsapp_display ?? (isAr ? 'واتساب' : 'WhatsApp')
-
-  // WhatsApp link built ONLY from admin-managed settings — never hardcoded.
-  const whatsappHref = whatsappNumber
-    ? `https://wa.me/${whatsappNumber.replace(/[^0-9]/g, '')}${isAr ? '?text=' + encodeURIComponent('مرحباً، أريد مناقشة مشروع مع YS Systems.') : '?text=' + encodeURIComponent("Hi, I'd like to discuss a project with YS Systems.")}`
-    : null
+  // WhatsApp link built ONLY from the shared helper — settings number first,
+  // code default as the guarded fallback, digits normalized via helper.
+  const whatsappHref = buildWhatsAppHref(
+    normalizeWhatsAppNumber(settings?.contacts?.whatsapp_number) ?? WHATSAPP_NUMBER_DEFAULT,
+    isAr
+      ? 'مرحباً، أريد مناقشة مشروع مع YS Systems.'
+      : "Hi, I'd like to discuss a project with YS Systems.",
+  )
+  const whatsappDisplay = settings?.contacts?.whatsapp_display ?? WHATSAPP_DISPLAY_DEFAULT
 
   return (
     <section className="section-sm section-divider-top" style={{ backgroundColor: 'var(--color-background)' }}>

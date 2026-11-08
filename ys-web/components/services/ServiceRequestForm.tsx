@@ -233,8 +233,13 @@ export function ServiceRequestForm({ locale, serviceSlug, serviceName }: Service
               border: "1px solid var(--border-input)",
               color: "var(--color-foreground)",
             }}
-            placeholder={isAr ? "+20 1XX XXX XXXX" : "+1 (555) 000-0000"}
+            placeholder={isAr ? "+20 10XX XXX XXXX" : "+20 10XX XXX XXXX"}
           />
+          <p className="text-[11px] mt-1.5" style={{ color: "var(--color-foreground-subtle)" }}>
+            {isAr
+              ? "بأي صيغة دولية — مثال: السعودية +966 5X، الإمارات +971 5X"
+              : "Any international format — e.g. Saudi +966 5X, UAE +971 5X"}
+          </p>
         </div>
 
         {/* Budget */}
@@ -331,6 +336,14 @@ export function ServiceRequestForm({ locale, serviceSlug, serviceName }: Service
             </>
           )}
         </button>
+
+        {status !== "error" && (
+          <p className="text-[11px] text-center" style={{ color: "var(--color-foreground-subtle)" }}>
+            {isAr
+              ? "بنرد عليك خلال 24 ساعة وغالباً أسرع — وبعدها استشارتك المجانية: ملف كامل بتفاصيل مشروعك والسعر، بدون أي التزام."
+              : "We reply within 24 hours, usually faster — then comes your free consultation: a complete project file with all details and the price, no obligation."}
+          </p>
+        )}
 
         {status === "error" && (
           <motion.p

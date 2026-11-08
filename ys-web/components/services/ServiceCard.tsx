@@ -6,7 +6,7 @@ import Image from "next/image"
 import { motion, useInView } from "framer-motion"
 import { ArrowRight, ArrowLeft, Zap, Layers, Box, Code2, Palette, Globe, BrainCircuit } from "lucide-react"
 import type { Service } from "@/types"
-import { formatPrice, type CurrencyCode } from "@/lib/utils/services-utils"
+import { formatPrice, getCategoryLabel, type CurrencyCode } from "@/lib/utils/services-utils"
 import { cn } from "@/lib/utils/cn"
 
 const ICONS = [Zap, Layers, Code2, Palette, Globe, BrainCircuit, Box]
@@ -132,7 +132,7 @@ export function ServiceCard({ service, locale, index, featured = false, budgetCu
                 className="text-[10px] font-semibold uppercase tracking-wider mb-1.5 block"
                 style={{ color: colorSet.accent }}
               >
-                {service.category}
+                {getCategoryLabel(service.category, locale)}
               </span>
             )}
             <h3

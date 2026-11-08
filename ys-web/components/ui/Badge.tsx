@@ -1,5 +1,4 @@
 import { cn } from '@/lib/utils/cn'
-import type { ProductStatus } from '@/types'
 
 interface BadgeProps {
   children: React.ReactNode
@@ -25,22 +24,5 @@ export function Badge({ children, variant = 'default', className }: BadgeProps) 
     )}>
       {children}
     </span>
-  )
-}
-
-const statusConfig: Record<ProductStatus, { label: string; variant: BadgeProps['variant']; dot: string }> = {
-  active:   { label: 'Active',   variant: 'success', dot: 'bg-green-500' },
-  beta:     { label: 'Beta',     variant: 'warning', dot: 'bg-amber-500' },
-  planned:  { label: 'Planned',  variant: 'default', dot: 'bg-foreground-muted' },
-  archived: { label: 'Archived', variant: 'outline', dot: 'bg-border-strong' },
-}
-
-export function StatusBadge({ status }: { status: ProductStatus }) {
-  const config = statusConfig[status] ?? statusConfig.planned
-  return (
-    <Badge variant={config.variant}>
-      <span className={cn('w-1.5 h-1.5 rounded-full shrink-0', config.dot)} />
-      {config.label}
-    </Badge>
   )
 }

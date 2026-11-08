@@ -4,6 +4,11 @@ import { motion, useInView } from "framer-motion"
 import { useRef } from "react"
 import { Mail, Phone, MapPin, Clock, ArrowUpRight } from "lucide-react"
 import type { PublicSettings } from "@/types"
+import {
+  normalizeWhatsAppNumber,
+  WHATSAPP_DISPLAY_DEFAULT,
+  WHATSAPP_NUMBER_DEFAULT,
+} from "@/lib/utils/whatsapp"
 
 interface ContactInfoProps {
   locale: string
@@ -28,8 +33,8 @@ export function ContactInfo({ locale, settings }: ContactInfoProps) {
   // only as a last-resort fallback so the section never renders empty.
   const brandEmail = settings?.brand?.contact_email
   const salesEmail = settings?.contacts?.sales_email
-  const whatsapp = (settings?.contacts?.whatsapp_number || "201008920677").replace(/[^\d]/g, "")
-  const whatsappDisplay = settings?.contacts?.whatsapp_display ?? whatsapp
+  const whatsapp = normalizeWhatsAppNumber(settings?.contacts?.whatsapp_number) ?? WHATSAPP_NUMBER_DEFAULT
+  const whatsappDisplay = settings?.contacts?.whatsapp_display ?? WHATSAPP_DISPLAY_DEFAULT
 
   const cards: InfoCard[] = [
     {

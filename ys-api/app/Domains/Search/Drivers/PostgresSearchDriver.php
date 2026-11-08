@@ -9,31 +9,33 @@ use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 
 /**
- * PostgreSQL Full-Text Search Driver.
+ * PostgreSQL search driver for the public site search.
  *
- * Uses GENERATED ALWAYS AS tsvector columns per locale.
- * Uses websearch_to_tsquery() — production-safe, handles arbitrary user input.
- * Uses ts_rank_cd() — cover density ranking, better than ts_rank for short texts.
+ * Searches only the publicly reachable content: services, static pages
+ * and FAQs. Retired type batches (products, documentation articles,
+ * careers, updates) were removed together with their public routes in
+ * the 2026 cleanup — searching them would return 308-redirect mirrors.
  *
- * Query complexity: O(log n) via GIN indexes on tsvector columns.
+ * The three surviving tables are tiny (dozens of rows), so bounded
+ * ILIKE matching is the right tool: no tsvector columns needed, and a
+ * trigram index can be added later if the content grows.
+ *
+ * Contract preserved from the FTS driver era:
+ * - Bounded per-type candidate queries before PHP hydration
+ * - Deterministic, URL-based tie-breaking (F-004)
+ * - Parameter binding everywhere + escaped LIKE patterns (VULN-19)
  */
 class PostgresSearchDriver implements SearchDriver
 {
     /**
      * VULN-19: per-type result queries are bounded in SQL to
      * $limit + margin BEFORE hydration, so a single type with thousands
-     * of matches never drags its full result set into PHP. The margin
-     * guarantees the merged global top-$limit is always a subset of the
-     * hydrated candidates: each type contributes at most its top
-     * (limit + margin) rows, and we only ever keep $limit.
+     * of matches never drags its full result set into PHP.
      */
     private const PER_TYPE_MARGIN = 5;
 
-    // Map locale to PostgreSQL text search configuration
-    private const LOCALE_CONFIG = [
-        'en' => 'english',
-        'ar' => 'arabic',
-    ];
+    /** Locale whitelist — used to build SQL column names safely. */
+    private const LOCALES = ['en', 'ar'];
 
     public function search(
         string $query,
@@ -45,62 +47,49 @@ class PostgresSearchDriver implements SearchDriver
 
         // Defense-in-depth: the locale interpolates into SQL column
         // names, so it must be a whitelisted value — never a fallback.
-        if (! isset(self::LOCALE_CONFIG[$locale])) {
+        if (! in_array($locale, self::LOCALES, true)) {
             throw new \InvalidArgumentException("Unsupported search locale '{$locale}'.");
         }
-        $pgConf = self::LOCALE_CONFIG[$locale];
 
-        // Sanitize — websearch_to_tsquery handles injection + syntax errors
         $sanitized = $this->sanitizeQuery($query);
         if (empty($sanitized)) {
             return $this->emptyCollection($query, $start);
         }
 
+        $allowed = ['service', 'page', 'faq'];
+        $active = empty($types)
+            ? $allowed
+            : array_values(array_intersect($allowed, $types));
+
+        if ($active === []) {
+            return $this->emptyCollection($query, $start);
+        }
+
         $all = collect();
         $total = 0;
-        $active = empty($types)
-            ? ['product', 'article', 'career', 'update']
-            : $types;
 
         // Batch by type — one bounded query per type, then merge + rank.
-        // This avoids N+1 and allows per-type eager loading. Each batch
-        // is already SQL-limited to limit + margin (VULN-19).
         foreach ($active as $type) {
             $batch = match ($type) {
-                'product' => $this->searchProducts($sanitized, $pgConf, $locale, $limit),
-                'article' => $this->searchArticles($sanitized, $pgConf, $locale, $limit),
-                'career' => $this->searchCareers($sanitized, $pgConf, $locale, $limit),
-                'update' => $this->searchUpdates($sanitized, $pgConf, $locale, $limit),
-                default => ['results' => collect(), 'count' => 0],
+                'service' => $this->searchServices($sanitized, $locale, $limit),
+                'page'    => $this->searchPages($sanitized, $locale, $limit),
+                'faq'     => $this->searchFaqs($sanitized, $locale, $limit),
+                default   => ['results' => collect(), 'count' => 0],
             };
 
             $all = $all->merge($batch['results']);
             $total += $batch['count'];
         }
 
-        // Global rank sort across the bounded per-type candidates.
-        // ts_rank_cd frequently produces identical scores (e.g. every
-        // single-term match scores 1.0), so ties must break
-        // deterministically or the result order is scan-order dependent.
-        // Ties keep the documented per-type order (the $active merge
-        // order — products first) and then fall back to URL so the
-        // output is stable across runs (F-004 stabilization).
-        $typeOrder = array_flip(array_values($active));
+        // Merge + rank: identical rank values (1.0) for LIKE matches, so
+        // deterministic order comes from the per-type order then URL
+        // comparison — stable across runs (F-004).
+        $typeOrder = array_flip($active);
         $sorted = $all->sort(function (array $a, array $b) use ($typeOrder): int {
-            // ts_rank_cd is float4 — rows that "tie" for ranking purposes
-            // can still differ in the 10th+ decimal, which would make the
-            // tiebreak depend on noise. Compare rounded ranks so practical
-            // ties break deterministically below.
-            $byRank = round((float) $b['rank'], 6) <=> round((float) $a['rank'], 6);
-            if ($byRank !== 0) {
-                return $byRank;
-            }
-
             $byType = ($typeOrder[$a['type']] ?? 0) <=> ($typeOrder[$b['type']] ?? 0);
             if ($byType !== 0) {
                 return $byType;
             }
-
             return strcmp($a['url'], $b['url']);
         })->values()->take($limit);
 
@@ -112,14 +101,8 @@ class PostgresSearchDriver implements SearchDriver
                 excerpt: $row['excerpt'] ?? null,
                 url: $row['url'],
                 rank: (float) $row['rank'],
-                // json_build_object() returns the json type, which PDO
-                // hands to PHP as a STRING — decode it back to an array
-                // for the DTO contract.
-                meta: json_decode((string) ($row['meta'] ?? '[]'), true) ?: [],
+                meta: is_array($row['meta'] ?? null) ? $row['meta'] : [],
             )),
-            // VULN-19: the total comes from real COUNT queries against
-            // the same filtered tables — never from hydrating the full
-            // match set into PHP.
             total: $total,
             query: $query,
             driver: 'postgres',
@@ -132,28 +115,27 @@ class PostgresSearchDriver implements SearchDriver
     /**
      * @return array{results: Collection, count: int}
      */
-    private function searchProducts(string $q, string $conf, string $locale, int $limit): array
+    private function searchServices(string $q, string $locale, int $limit): array
     {
-        $col = "search_vector_{$locale}";
-
-        // Filters only — shared by the bounded SELECT and the COUNT
-        // below (both hit the GIN index on the tsvector column).
-        $base = DB::table('products')
-            ->whereRaw("{$col} @@ websearch_to_tsquery('{$conf}', ?)", [$q])
-            ->whereIn('status', ['active', 'beta'])
+        $base = DB::table('services')
+            ->where(function ($w) use ($q, $locale) {
+                $w->where('name_' . $locale, 'ilike', $this->likePattern($q))
+                  ->orWhere('short_desc_' . $locale, 'ilike', $this->likePattern($q));
+            })
+            ->where('status', 'active')
             ->whereNull('deleted_at');
 
         $results = (clone $base)
             ->selectRaw("
-                'product'           AS type,
-                id::text            AS id,
-                name_{$locale}      AS title,
-                short_desc_{$locale} AS excerpt,
-                slug                AS url,
-                ts_rank_cd({$col}, websearch_to_tsquery('{$conf}', ?)) AS rank,
-                json_build_object('status', status, 'version', current_version) AS meta
-            ", [$q])
-            ->orderByDesc('rank')
+                'service'             AS type,
+                id::text              AS id,
+                name_{$locale}        AS title,
+                short_desc_{$locale}  AS excerpt,
+                ? || slug             AS url,
+                1.0                   AS rank,
+                json_build_object('category', category) AS meta
+            ", ["/{$locale}/services/"])
+            ->orderBy('name_' . $locale)
             ->limit($limit + self::PER_TYPE_MARGIN)
             ->get()
             ->map(fn ($r) => (array) $r);
@@ -164,91 +146,59 @@ class PostgresSearchDriver implements SearchDriver
     /**
      * @return array{results: Collection, count: int}
      */
-    private function searchArticles(string $q, string $conf, string $locale, int $limit): array
+    private function searchPages(string $q, string $locale, int $limit): array
     {
-        $col = "search_vector_{$locale}";
-
-        $base = DB::table('documentation_articles as a')
-            ->join('documentation_categories as c', 'a.category_id', '=', 'c.id')
-            ->whereRaw("a.{$col} @@ websearch_to_tsquery('{$conf}', ?)", [$q])
-            ->where('a.is_published', true)
-            ->whereNull('a.deleted_at');
-
-        $results = (clone $base)
-            ->selectRaw("
-                'article'                   AS type,
-                a.id::text                  AS id,
-                a.title_{$locale}           AS title,
-                LEFT(a.content_{$locale}, 200) AS excerpt,
-                a.slug                      AS url,
-                ts_rank_cd(a.{$col}, websearch_to_tsquery('{$conf}', ?)) AS rank,
-                json_build_object(
-                    'category', c.title_{$locale},
-                    'reading_time', a.reading_time_minutes
-                ) AS meta
-            ", [$q])
-            ->orderByDesc('rank')
-            ->limit($limit + self::PER_TYPE_MARGIN)
-            ->get()
-            ->map(fn ($r) => (array) $r);
-
-        return ['results' => $results, 'count' => $base->count()];
-    }
-
-    /**
-     * @return array{results: Collection, count: int}
-     */
-    private function searchCareers(string $q, string $conf, string $locale, int $limit): array
-    {
-        $col = "search_vector_{$locale}";
-
-        $base = DB::table('careers')
-            ->whereRaw("{$col} @@ websearch_to_tsquery('{$conf}', ?)", [$q])
-            ->where('status', 'open')
-            ->whereNull('deleted_at');
-
-        $results = (clone $base)
-            ->selectRaw("
-                'career'             AS type,
-                id::text             AS id,
-                title_{$locale}      AS title,
-                description_{$locale} AS excerpt,
-                id::text             AS url,
-                ts_rank_cd({$col}, websearch_to_tsquery('{$conf}', ?)) AS rank,
-                json_build_object('department', department, 'type', type) AS meta
-            ", [$q])
-            ->orderByDesc('rank')
-            ->limit($limit + self::PER_TYPE_MARGIN)
-            ->get()
-            ->map(fn ($r) => (array) $r);
-
-        return ['results' => $results, 'count' => $base->count()];
-    }
-
-    /**
-     * @return array{results: Collection, count: int}
-     */
-    private function searchUpdates(string $q, string $conf, string $locale, int $limit): array
-    {
-        $col = "search_vector_{$locale}";
-
-        $base = DB::table('updates')
-            ->whereRaw("{$col} @@ websearch_to_tsquery('{$conf}', ?)", [$q])
+        $base = DB::table('static_pages')
+            ->where(function ($w) use ($q, $locale) {
+                $w->where('title_' . $locale, 'ilike', $this->likePattern($q))
+                  ->orWhere('excerpt_' . $locale, 'ilike', $this->likePattern($q));
+            })
+            ->where('status', 'published')
             ->whereNotNull('published_at')
-            ->where('published_at', '<=', now())
             ->whereNull('deleted_at');
 
         $results = (clone $base)
             ->selectRaw("
-                'update'             AS type,
-                id::text             AS id,
-                title_{$locale}      AS title,
-                LEFT(content_{$locale}, 200) AS excerpt,
-                id::text             AS url,
-                ts_rank_cd({$col}, websearch_to_tsquery('{$conf}', ?)) AS rank,
-                json_build_object('type', type) AS meta
-            ", [$q])
-            ->orderByDesc('rank')
+                'page'                AS type,
+                id::text              AS id,
+                title_{$locale}       AS title,
+                excerpt_{$locale}     AS excerpt,
+                ? || slug             AS url,
+                1.0                   AS rank,
+                '{}'::json            AS meta
+            ", ["/{$locale}/"])
+            ->orderBy('title_' . $locale)
+            ->limit($limit + self::PER_TYPE_MARGIN)
+            ->get()
+            ->map(fn ($r) => (array) $r);
+
+        return ['results' => $results, 'count' => $base->count()];
+    }
+
+    /**
+     * @return array{results: Collection, count: int}
+     */
+    private function searchFaqs(string $q, string $locale, int $limit): array
+    {
+        $base = DB::table('faqs')
+            ->where(function ($w) use ($q, $locale) {
+                $w->where('question_' . $locale, 'ilike', $this->likePattern($q))
+                  ->orWhere('answer_' . $locale, 'ilike', $this->likePattern($q));
+            })
+            ->where('status', 'published')
+            ->whereNull('deleted_at');
+
+        $results = (clone $base)
+            ->selectRaw("
+                'faq'                 AS type,
+                id::text              AS id,
+                question_{$locale}    AS title,
+                LEFT(answer_{$locale}, 200) AS excerpt,
+                ?                     AS url,
+                1.0                   AS rank,
+                json_build_object('category', category) AS meta
+            ", ["/{$locale}/faq"])
+            ->orderBy('sort_order')
             ->limit($limit + self::PER_TYPE_MARGIN)
             ->get()
             ->map(fn ($r) => (array) $r);
@@ -259,16 +209,25 @@ class PostgresSearchDriver implements SearchDriver
     // ── Helpers ──────────────────────────────────────────────────────
 
     /**
-     * Sanitize user input before passing to websearch_to_tsquery.
-     * websearch_to_tsquery is already injection-safe, but we strip
-     * control characters and limit length.
+     * ILIKE pattern with escaped LIKE wildcards (% and _) so arbitrary
+     * user input can never widen the match set beyond the intended
+     * literal substring. Bound as a parameter — never interpolated.
+     */
+    private function likePattern(string $q): string
+    {
+        $escaped = str_replace(['\\', '%', '_'], ['\\\\', '\%', '\_'], $q);
+        return '%' . $escaped . '%';
+    }
+
+    /**
+     * Strip control characters and limit length before matching.
      */
     private function sanitizeQuery(string $query): string
     {
         $clean = preg_replace('/[\x00-\x1F\x7F]/u', '', $query);
-        $clean = trim($clean);
+        $clean = trim((string) $clean);
 
-        return mb_substr($clean, 0, 500);
+        return mb_substr($clean, 0, 200);
     }
 
     private function emptyCollection(string $query, float $start): SearchResultCollection

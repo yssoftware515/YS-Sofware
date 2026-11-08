@@ -1,10 +1,8 @@
 import { ensureXsrfToken, readXsrfToken } from '@/lib/csrf'
 import { API_BASE } from '@/lib/api/config'
 import type {
-  ApiResponse, Product, ProductDetail,
-  Service, ServiceDetail,
-  PublicSettings, RoadmapItem, Update,
-  Career, TimelineEntry, SearchResult,
+  ApiResponse, Service, ServiceDetail,
+  PublicSettings, TimelineEntry, SearchResult,
   StaticPage, FaqItem, Menu, HomepageSection,
 } from '@/types'
 
@@ -54,26 +52,11 @@ export const api = {
   settings: (locale = 'en') =>
     request<PublicSettings>('/public/settings', {}, locale),
 
-  products: (locale = 'en') =>
-    request<Product[]>('/public/products', {}, locale),
-
-  product: (slug: string, locale = 'en') =>
-    request<ProductDetail>(`/public/products/${slug}`, {}, locale),
-
   services: (locale = 'en') =>
     request<Service[]>('/public/services', {}, locale),
 
   service: (slug: string, locale = 'en') =>
     request<ServiceDetail>(`/public/services/${slug}`, {}, locale),
-
-  roadmap: (locale = 'en') =>
-    request<RoadmapItem[]>('/public/roadmap', {}, locale),
-
-  updates: (locale = 'en') =>
-    request<Update[]>('/public/updates', {}, locale),
-
-  careers: (locale = 'en') =>
-    request<Career[]>('/public/careers', {}, locale),
 
   timeline: (locale = 'en') =>
     request<TimelineEntry[]>('/public/timeline', {}, locale),

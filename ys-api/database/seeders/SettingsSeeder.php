@@ -69,6 +69,13 @@ class SettingsSeeder extends Seeder
                 'description' => 'TikTok profile URL.',
                 'is_public' => true,
             ],
+            [
+                'group' => 'social',
+                'key' => 'instagram_url',
+                'value' => 'https://www.instagram.com/ys.software',
+                'description' => 'Instagram profile URL.',
+                'is_public' => true,
+            ],
             // Future: x_url, linkedin_url, facebook_url (null until ready)
             [
                 'group' => 'social',
@@ -89,14 +96,14 @@ class SettingsSeeder extends Seeder
             [
                 'group' => 'seo',
                 'key' => 'default_og_title_en',
-                'value' => 'YS Systems & Software – Modern Software Products',
+                'value' => 'YS Systems & Software – Integrated Digital Products & Services',
                 'description' => 'Default Open Graph title for social sharing (English).',
                 'is_public' => true,
             ],
             [
                 'group' => 'seo',
                 'key' => 'default_og_title_ar',
-                'value' => 'YS Systems & Software – منتجات برمجية حديثة',
+                'value' => 'YS Systems & Software – شركة منتجات رقمية متكاملة',
                 'description' => 'Default Open Graph title for social sharing (Arabic).',
                 'is_public' => true,
             ],
@@ -140,14 +147,14 @@ class SettingsSeeder extends Seeder
             [
                 'group' => 'contacts',
                 'key' => 'whatsapp_number',
-                'value' => '201008920677',
+                'value' => '201000703581',
                 'description' => 'Primary WhatsApp number for service inquiries (international digits only, no leading + — consumed directly in wa.me links).',
                 'is_public' => true,
             ],
             [
                 'group' => 'contacts',
                 'key' => 'whatsapp_display',
-                'value' => '0100 892 0677',
+                'value' => '0100 070 3581',
                 'description' => 'Human-friendly WhatsApp number shown on the contact page.',
                 'is_public' => true,
             ],

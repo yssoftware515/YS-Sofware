@@ -36,6 +36,7 @@ class SettingController extends Controller
             // ── URL keys (absolute https only) ────────────────────────
             'github_url' => ['nullable', 'url', 'max:500', new SafeUrl(strictHttps: true)],
             'tiktok_url' => ['nullable', 'url', 'max:500', new SafeUrl(strictHttps: true)],
+            'instagram_url' => ['nullable', 'url', 'max:500', new SafeUrl(strictHttps: true)],
             'x_url' => ['nullable', 'url', 'max:500', new SafeUrl(strictHttps: true)],
             'linkedin_url' => ['nullable', 'url', 'max:500', new SafeUrl(strictHttps: true)],
 

@@ -4,11 +4,10 @@ import { useRef } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import { motion, useScroll, useTransform, useMotionValue, useSpring } from 'framer-motion'
-import { ArrowRight, ArrowLeft, Box, Heart, Globe, Layers, Zap } from 'lucide-react'
-import type { PublicSettings, HomepageSection, Product } from '@/types'
+import { ArrowRight, ArrowLeft, Box, Globe, Layers, Zap, Palette, Bot } from 'lucide-react'
+import type { PublicSettings, HomepageSection } from '@/types'
 import { cn } from '@/lib/utils/cn'
 import { buttonVariants } from '@/components/ui/Button'
-import { getProductIcon } from '@/lib/utils/productIcons'
 import { heroContentSchema } from '@/lib/cms/schemas'
 import { validateCmsContent, validateUrl } from '@/lib/cms/validate'
 
@@ -19,23 +18,6 @@ type IconComponentType = React.ComponentType<{
   className?: string
   'aria-hidden'?: boolean | 'true' | 'false'
 }>
-
-/* Custom runner glyph — matches the reference design (no Lucide runner). */
-function RunnerIcon({ size = 16, style, className, 'aria-hidden': ariaHidden }: {
-  size?: number; style?: React.CSSProperties; className?: string; 'aria-hidden'?: boolean | 'true' | 'false'
-}) {
-  return (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor"
-      strokeWidth={2} strokeLinecap="round" strokeLinejoin="round"
-      style={style} className={className} aria-hidden={ariaHidden ?? true}>
-      <circle cx="13.5" cy="4" r="2" fill="currentColor" stroke="none" />
-      <path d="M13.5 7.5 L11 12 L14.5 15 L15.5 20" />
-      <path d="M11 12 L8 14.5 L5.5 17" />
-      <path d="M13 8.5 L17 10 L19.5 9" />
-      <path d="M13 8.5 L9.5 9.5 L7 8" />
-    </svg>
-  )
-}
 
 /* Shield with the vertical notch — matches the reference Security glyph. */
 function ShieldLineIcon({ size = 16, style, className, 'aria-hidden': ariaHidden }: {
@@ -56,61 +38,57 @@ interface HeroSectionProps {
   settings?: PublicSettings
   cmsSection?: HomepageSection
   whyChooseSection?: HomepageSection
-  products?: Product[]
 }
 
 const fallback = {
   en: {
-    badge: 'SOFTWARE PRODUCTS COMPANY',
-    headline_l1: 'Building the Next',
-    headline_l2: 'Generation of',
-    headline_hl: 'Business Software',
-    subline: 'Scalable SaaS platforms and digital ecosystems designed to power modern businesses worldwide.',
-    cta_primary: 'Explore Ecosystem',
-    cta_secondary: 'View Products',
-    trust_prefix: 'Products',
-    trust_suffix: 'One Ecosystem',
+    badge: 'DIGITAL PRODUCTS & SERVICES COMPANY',
+    headline_l1: 'Have an Idea?',
+    headline_l2: 'We Build the',
+    headline_hl: 'Full Digital Version',
+    subline: 'Websites, apps, ERP and AI automation — one partner, secured delivery, on time.',
+    cta_primary: 'Get a Free Consultation',
+    cta_secondary: 'Explore Our Services',
+    trust_prefix: 'One Partner',
+    trust_suffix: 'For Everything Digital',
   },
   ar: {
-    badge: 'شركة منتجات برمجية',
-    headline_l1: 'نبني الجيل',
-    headline_l2: 'القادم من',
-    headline_hl: 'برمجيات الأعمال',
-    subline: 'منصات SaaS قابلة للتوسع وأنظمة بيئية رقمية مصممة لتشغيل الأعمال الحديثة في جميع أنحاء العالم.',
-    cta_primary: 'استكشف النظام البيئي',
-    cta_secondary: 'عرض المنتجات',
-    trust_prefix: 'منتجات',
-    trust_suffix: 'نظام بيئي واحد',
+    badge: 'شركة منتجات رقمية متكاملة',
+    headline_l1: 'عندك فكرة؟',
+    headline_l2: 'إحنا نبني',
+    headline_hl: 'النسخة الرقمية الكاملة',
+    subline: 'مواقع وتطبيقات وأنظمة ERP وأتمتة AI — شريك واحد، أمان عالي، وتسليم على الموعد.',
+    cta_primary: 'اطلب استشارة مجانية',
+    cta_secondary: 'اكتشف خدماتنا',
+    trust_prefix: 'شريك واحد',
+    trust_suffix: 'لكل حاجة رقمية',
   },
 } as const
 
-const fallbackHeroProducts = [
+const fallbackHeroServices = [
   {
-    slug: 'ys-matrix',
-    title: 'YS-Matrix',
-    desc_en: 'ERP & Business Management Platform',
-    desc_ar: 'منصة ERP وإدارة الأعمال',
-    icon: Box as IconComponentType,
+    title: 'Web & Apps',
+    desc_en: 'Websites & online stores',
+    desc_ar: 'مواقع ومتاجر إلكترونية',
+    icon: Globe,
     color: '#0A4FE7',
     cardBg: 'rgba(10,79,231,0.08)',
     borderColor: 'rgba(10,79,231,0.35)',
   },
   {
-    slug: 'ys-sports',
-    title: 'YS-Sports',
-    desc_en: 'Sports Coaching Marketplace & Management',
-    desc_ar: 'سوق تدريب رياضي وإدارة',
-    icon: RunnerIcon,
+    title: 'UI/UX Design',
+    desc_en: 'Interfaces, logos & identity',
+    desc_ar: 'واجهات ولوجوهات وهوية',
+    icon: Palette,
     color: '#8B5CF6',
     cardBg: 'rgba(139,92,246,0.10)',
     borderColor: 'rgba(139,92,246,0.45)',
   },
   {
-    slug: 'ys-care',
-    title: 'YS-Care',
-    desc_en: 'Healthcare Management & Service Platform',
-    desc_ar: 'إدارة وخدمات الرعاية الصحية',
-    icon: Heart as IconComponentType,
+    title: 'AI & ERP',
+    desc_en: 'Smart systems & automation',
+    desc_ar: 'أنظمة ذكية وأتمتة',
+    icon: Bot,
     color: '#10B981',
     cardBg: 'rgba(16,185,129,0.08)',
     borderColor: 'rgba(16,185,129,0.35)',
@@ -118,7 +96,6 @@ const fallbackHeroProducts = [
 ] as const
 
 type HeroCardData = {
-  slug: string
   title: string
   desc_en: string
   desc_ar: string
@@ -126,29 +103,6 @@ type HeroCardData = {
   color: string
   cardBg: string
   borderColor: string
-}
-
-function buildHeroCards(
-  liveProducts: Product[] | undefined,
-  fallbackCards: readonly HeroCardData[],
-): HeroCardData[] {
-  const featured = (liveProducts ?? []).filter(p => p.is_featured).slice(0, 3)
-  return fallbackCards.map((fallbackCard, i) => {
-    const real = featured[i]
-    if (!real) return fallbackCard
-    const Icon = (getProductIcon(real.icon_key) ?? fallbackCard.icon) as IconComponentType
-    const color = real.brand_color ?? fallbackCard.color
-    return {
-      slug: real.slug,
-      title: real.name,
-      desc_en: real.short_desc,
-      desc_ar: real.short_desc,
-      icon: Icon,
-      color,
-      cardBg: real.brand_color ? `${real.brand_color}14` : fallbackCard.cardBg,
-      borderColor: real.brand_color ? `${real.brand_color}59` : fallbackCard.borderColor,
-    }
-  })
 }
 
 const sizeMap = {
@@ -194,7 +148,7 @@ function ProductCard({
       style={style}
     >
       <Link
-        href={`/${locale}/products/${product.slug}`}
+        href={`/${locale}/services`}
         className="group block cursor-pointer rounded-2xl transition-all duration-200 hover:-translate-y-0.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/60 focus-visible:ring-offset-2 focus-visible:ring-offset-transparent"
         style={{
           padding: s.padding,
@@ -259,15 +213,16 @@ function ProductCard({
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// CONNECTOR LINES — like the reference: lines run FROM the Matrix card out to
-// Sports/Care tops and a blue trunk drops between the Y and S letters.
+// CONNECTOR LINES — anchored to the three service cards: the main card sits
+// centered on the Y/S gap; the two smaller cards hug the logo sides, and a
+// blue trunk drops between the Y and S letters.
 // NO tails below the cards (removed per design review).
 // preserveAspectRatio="none" + non-scaling-stroke keep anchors glued to the
 // %-positioned cards at any stage size.
 // Anchors (viewBox 1440×580):
-//   Matrix sm @71.5%: spans 948–1112, centerY 48, bottom ~100
-//   Sports mds @47%: centerX 772, top 220
-//   Care   mds @82%: centerX 1276, top 220
+//   Card 0 sm @71.5%: spans 948–1112, centerY 48, bottom ~100
+//   Card 1 mds @47%: centerX 772, top 220
+//   Card 2 mds @82%: centerX 1276, top 220
 // ═══════════════════════════════════════════════════════════════════════════════
 function ConnectorLines() {
   return (
@@ -303,11 +258,11 @@ function ConnectorLines() {
         </linearGradient>
       </defs>
 
-      {/* Blue trunk: Matrix bottom → down BETWEEN the Y and S letters */}
+      {/* Blue trunk: Card 0 bottom → down BETWEEN the Y and S letters */}
       <path d="M 1030 88 V 200" stroke="url(#blueGrad)" strokeWidth="2.5" strokeLinecap="round" vectorEffect="non-scaling-stroke" filter="url(#neonGlow)" />
-      {/* Purple: Matrix left edge → across → down into Sports top (stops there) */}
+      {/* Purple: Card 0 left edge → across → down into Card 1 top (stops there) */}
       <path d="M 1000 44 H 800 V 220" stroke="url(#purpleGrad)" strokeWidth="2" strokeLinecap="round" vectorEffect="non-scaling-stroke" filter="url(#neonGlow)" />
-      {/* Teal: Matrix right edge → across → down into Care top (stops there) */}
+      {/* Teal: Card 0 right edge → across → down into Card 2 top (stops there) */}
       <path d="M 1104 44 H 1320 V 220" stroke="url(#tealGrad)" strokeWidth="2" strokeLinecap="round" vectorEffect="non-scaling-stroke" filter="url(#neonGlow)" />
 
       {/* Glow nodes */}
@@ -445,16 +400,16 @@ function WhyChooseBar({ locale }: { locale: string }) {
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // HERO SECTION — reference-matched layout:
-// • Matrix sm centered on the Y/S gap (71.5%), top 0% → zero letter cover,
+// • Card 0 sm centered on the Y/S gap (71.5%), top 0% → zero letter cover,
 //   blue trunk drops between the letters
-// • Sports/Care mds (one degree smaller) hugging the logo sides
+// • Cards 1/2 mds (one degree smaller) hugging the logo sides
 // • Connector loops stop at card tops — no tails below
 // • Section locked to the viewport → hero + bar above the fold, no scroll
 // ═══════════════════════════════════════════════════════════════════════════════
-export function HeroSection({ locale, settings, cmsSection, whyChooseSection, products: liveProducts }: HeroSectionProps) {
+export function HeroSection({ locale, settings, cmsSection, whyChooseSection }: HeroSectionProps) {
   const isAr = locale === 'ar'
   const f = fallback[locale as keyof typeof fallback] ?? fallback.en
-  const products = buildHeroCards(liveProducts, fallbackHeroProducts)
+  const services = fallbackHeroServices
   const sectionRef = useRef<HTMLElement>(null)
   const { scrollYProgress } = useScroll({
     target: sectionRef,
@@ -487,8 +442,8 @@ export function HeroSection({ locale, settings, cmsSection, whyChooseSection, pr
   const ctaSecondaryText = isAr
     ? (cmsContent?.cta_secondary_ar || f.cta_secondary)
     : (cmsContent?.cta_secondary_en || f.cta_secondary)
-  const ctaPrimaryUrl = validateUrl(cmsContent?.cta_primary_url, `/${locale}/products`)
-  const ctaSecondaryUrl = validateUrl(cmsContent?.cta_secondary_url, `/${locale}/products`)
+  const ctaPrimaryUrl = validateUrl(cmsContent?.cta_primary_url, `/${locale}/contact`)
+  const ctaSecondaryUrl = validateUrl(cmsContent?.cta_secondary_url, `/${locale}/services`)
   const ArrowIcon = isAr ? ArrowLeft : ArrowRight
 
   return (
@@ -501,7 +456,7 @@ export function HeroSection({ locale, settings, cmsSection, whyChooseSection, pr
         data-hero-stage
         className="relative flex flex-col min-h-[calc(100dvh-4rem)] lg:min-h-0 lg:flex-1"
       >
-        {/* Background Layers — 58% keeps the letters low enough to clear Matrix */}
+        {/* Background Layers — 58% keeps the letters low enough to clear Card 0 */}
         <div className="hidden lg:block absolute inset-0 z-0 pointer-events-none" aria-hidden="true">
           <Image
             src="/branding/hero/hero.webp"
@@ -672,7 +627,7 @@ export function HeroSection({ locale, settings, cmsSection, whyChooseSection, pr
         >
           <ConnectorLines />
           <ProductCard
-            product={products[0]}
+            product={services[0]}
             isAr={isAr}
             locale={locale}
             index={0}
@@ -680,7 +635,7 @@ export function HeroSection({ locale, settings, cmsSection, whyChooseSection, pr
             style={{ top: '0%', left: 'calc(71.5% - 70px)' }}
           />
           <ProductCard
-            product={products[1]}
+            product={services[1]}
             isAr={isAr}
             locale={locale}
             index={1}
@@ -688,7 +643,7 @@ export function HeroSection({ locale, settings, cmsSection, whyChooseSection, pr
             style={{ top: '38%', left: 'min(60%, calc(65% - 200px))' }}
           />
           <ProductCard
-            product={products[2]}
+            product={services[2]}
             isAr={isAr}
             locale={locale}
             index={2}
@@ -717,7 +672,7 @@ export function HeroSection({ locale, settings, cmsSection, whyChooseSection, pr
             style={{ maxWidth: 340, height: 320 }}
           >
             <ProductCard
-              product={products[0]}
+              product={services[0]}
               isAr={isAr}
               locale={locale}
               index={0}
@@ -725,7 +680,7 @@ export function HeroSection({ locale, settings, cmsSection, whyChooseSection, pr
               style={{ top: '28%', left: '50%', marginLeft: -75 }}
             />
             <ProductCard
-              product={products[1]}
+              product={services[1]}
               isAr={isAr}
               locale={locale}
               index={1}
@@ -733,7 +688,7 @@ export function HeroSection({ locale, settings, cmsSection, whyChooseSection, pr
               style={{ top: '62%', left: '0%' }}
             />
             <ProductCard
-              product={products[2]}
+              product={services[2]}
               isAr={isAr}
               locale={locale}
               index={2}

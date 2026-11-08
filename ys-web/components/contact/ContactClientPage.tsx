@@ -4,6 +4,12 @@ import { ContactHero } from "./ContactHero"
 import { ContactForm } from "./ContactForm"
 import { ContactInfo } from "./ContactInfo"
 import type { PublicSettings } from "@/types"
+import {
+  buildWhatsAppHref,
+  normalizeWhatsAppNumber,
+  WHATSAPP_DISPLAY_DEFAULT,
+  WHATSAPP_NUMBER_DEFAULT,
+} from "@/lib/utils/whatsapp"
 
 interface ContactClientPageProps {
   locale: string
@@ -14,7 +20,9 @@ interface ContactClientPageProps {
 
 export function ContactClientPage({ locale, serviceSlug, serviceName, settings }: ContactClientPageProps) {
   const isAr = locale === "ar"
-  const whatsappNumber = (settings?.contacts?.whatsapp_number || "201008920677").replace(/[^\d]/g, "")
+  const whatsappNumber =
+    normalizeWhatsAppNumber(settings?.contacts?.whatsapp_number) ?? WHATSAPP_NUMBER_DEFAULT
+  const whatsappDisplay = settings?.contacts?.whatsapp_display ?? WHATSAPP_DISPLAY_DEFAULT
 
   return (
     <main style={{ backgroundColor: "var(--color-background)" }}>
@@ -45,7 +53,7 @@ export function ContactClientPage({ locale, serviceSlug, serviceName, settings }
                 {isAr ? "رد فوري خلال ساعات العمل" : "Instant reply during business hours"}
               </p>
               <a
-                href={`https://wa.me/${whatsappNumber}?text=${encodeURIComponent(isAr ? "مرحباً YS Systems" : "Hello YS Systems")}`}
+                href={buildWhatsAppHref(whatsappNumber, isAr ? "مرحباً YS Systems" : "Hello YS Systems") ?? undefined}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold transition-all"

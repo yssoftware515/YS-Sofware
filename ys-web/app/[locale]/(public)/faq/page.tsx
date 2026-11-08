@@ -11,6 +11,30 @@ const locales = ['en', 'ar'] as const
 const fallbackFaqs: Record<string, Array<{ q: string; a: string; h?: string }>> = {
   en: [
     {
+      q: 'How much will my project cost?',
+      h: 'Custom quote • No obligation • Free consultation',
+      a: `Every project is priced individually — because "a website" can mean anything from a single landing page to a full e-commerce platform, and every business works differently.
+
+Here's how it works — and it costs you nothing:
+
+• Free consultation — you tell us about your business; we listen, ask the right questions, and study your case.
+• Best solutions — we present the strongest options for your situation, including the best version of your own idea.
+• Project file — you receive a document with the full scope, features, timeline, and the price.
+
+No hidden fees, no pressure to proceed. If the numbers don't work for you yet, the file is yours to keep — and you can come back whenever you're ready.`,
+    },
+    {
+      q: 'How does the free consultation work — and how fast do you respond?',
+      h: 'Free consultation • Reply within 24 hours • Usually faster',
+      a: `Send us a message — the contact form, WhatsApp, and email all reach the same team.
+
+• We reply within 24 hours — usually much faster during business hours.
+• We set up a free consultation and study your business: what you do, who your customers are, and what you want to achieve.
+• We are committed to the consultation actually being free: we understand your business, propose the best solutions — including the best version of your idea — and prepare a complete project file with all the details and the price.
+
+You leave with a clear picture of what should be built and what it costs — whether you continue with us or not.`,
+    },
+    {
       q: 'What exactly does YS-SOFTWARE do?',
       h: 'Design • Build • Systems • Automate • Connect • Evolve',
       a: `YS-SOFTWARE is a digital technology partner — not a single-service agency.
@@ -96,6 +120,30 @@ The two sides strengthen each other: the challenges businesses actually face sha
     },
   ],
   ar: [
+    {
+      q: 'كام هيبقى سعر المشروع؟',
+      h: 'عرض مخصص • بدون التزام • استشارة مجانية',
+      a: `كل مشروع بيتم تسعيره على حدة — لأن كلمة "موقع" ممكن تعني أي حاجة من صفحة هبوط واحدة لمنصة متكاملة، وكل بيزنس بيشتغل بطريقة مختلفة.
+
+الطريقة كده — ومش هتتكلفك أي حاجة:
+
+• استشارة مجانية — إنت بتحكيلنا عن شغلك، وبنسمع وبنسأل الأسئلة الصح وبنأدر حالتك.
+• أفضل الحلول — بنقدملك أقوى الخيارات المناسبة لوضعك، ومنها أفضل نسخة من فكرتك نفسها.
+• ملف المشروع — بيوصلك ملف فيه النطاق الكامل والميزات والمدة والسعر.
+
+مفيش رسوم مخفية ومفيش ضغط إنك تكمل. لو الأرقام مش مناسبة ليك دلوقتي، الملف ملكك تحتفظ بيه — وترجع لما تكون جاهز.`,
+    },
+    {
+      q: 'الاستشارة المجانية بتشتغل إزاي — وبنرد بسرعة قد إيه؟',
+      h: 'استشارة مجانية • رد خلال 24 ساعة • وغالباً أسرع',
+      a: `ابعتلنا رسالة — نموذج التواصل أو الواتساب أو الإيميل، كلهم بيوصلك لنفس الفريق.
+
+• بنرد عليك خلال 24 ساعة — وغالباً أسرع بكتير خلال ساعات العمل.
+• بنحدد استشارة مجانية وندرس بيزنسك: بتعمل إيه، عميلك مين، وعايز توصل لإيه.
+• وبنلتزم إن الاستشارة مجانية فعلاً: نفهم بيزنسك، نقترح أفضل الحلول — وأفضل نسخة من فكرتك — ونجهزلك ملف مشروع كامل بكل التفاصيل والسعر.
+
+تخرج من الاستشارة بصورة واضحة عن اللي المفروض يتبني وتكلفته — سواء هتتكمل معنا أو لأ.`,
+    },
     {
       q: 'ما الذي تقدمه YS-SOFTWARE بالضبط؟',
       h: 'تصميم • بناء • أنظمة • أتمتة • ربط • تطوير',

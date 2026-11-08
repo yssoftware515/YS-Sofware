@@ -14,14 +14,17 @@ class SearchController extends Controller
     ) {}
 
     /**
-     * GET /api/v1/public/search?q=matrix&types[]=product&locale=en
+     * GET /api/v1/public/search?q=website&types[]=service&locale=en
+     *
+     * Searches only publicly reachable content. The 'service', 'page'
+     * and 'faq' types map 1:1 to surviving public routes.
      */
     public function __invoke(Request $request): JsonResponse
     {
         $validated = $request->validate([
             'q' => ['required', 'string', 'min:2', 'max:200'],
             'types' => ['sometimes', 'array'],
-            'types.*' => ['string', 'in:product,article,career,update'],
+            'types.*' => ['string', 'in:service,page,faq'],
             'locale' => ['sometimes', 'string', 'in:en,ar'],
             'limit' => ['sometimes', 'integer', 'min:1', 'max:50'],
         ]);

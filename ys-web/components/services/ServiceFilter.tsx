@@ -2,6 +2,7 @@
 
 import { motion } from "framer-motion"
 import { cn } from "@/lib/utils/cn"
+import { getCategoryLabel } from "@/lib/utils/services-utils"
 
 interface ServiceFilterProps {
   locale: string
@@ -30,7 +31,7 @@ export function ServiceFilter({ locale, categories, activeCategory, onCategoryCh
               key={cat}
               active={activeCategory === cat}
               onClick={() => onCategoryChange(cat)}
-              label={cat}
+              label={getCategoryLabel(cat, locale)}
             />
           ))}
         </div>

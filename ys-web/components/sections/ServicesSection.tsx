@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import { ArrowLeft, ArrowRight } from 'lucide-react'
 import { AnimatedBox } from '@/components/shared/AnimatedBox'
+import { getCategoryLabel } from '@/lib/utils/services-utils'
 import type { HomepageSection, Service } from '@/types'
 
 interface ServicesSectionProps {
@@ -58,7 +59,7 @@ export function ServicesSection({ locale, services, cmsSection }: ServicesSectio
               <Link href={`/${locale}/services/${service.slug}`} style={{ textDecoration: 'none', display: 'flex', flexDirection: 'column', flex: 1, height: '100%' }}>
                 {service.category && (
                   <span style={{ fontSize: '0.72rem', fontWeight: 600, color: 'var(--color-accent)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '0.75rem' }}>
-                    {service.category}
+                    {getCategoryLabel(service.category, locale)}
                   </span>
                 )}
                 <h3 className="font-display font-semibold text-[1.0625rem]" style={{ color: 'var(--color-foreground)', marginBottom: '0.5rem' }}>

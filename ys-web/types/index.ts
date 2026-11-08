@@ -13,67 +13,6 @@ export interface PaginationMeta {
   total: number
 }
 
-// ── Product ───────────────────────────────────────────────────────────
-export type ProductStatus = 'active' | 'beta' | 'planned' | 'archived'
-
-export interface Product {
-  id: string
-  slug: string
-  name: string
-  short_desc: string
-  status: ProductStatus
-  current_version: string | null
-  is_featured: boolean
-  icon_key: string | null
-  brand_color: string | null
-  cover_image: { url: string; alt: string } | null
-}
-
-// PublicFeature — one feature shown on a product page (localized).
-export interface PublicFeature {
-  title: string
-  description: string | null
-  sort_order: number
-}
-
-// PublicPricingPlan — one price presented on a product page. price is a
-// decimal string (or null for custom-quote plans); never float math.
-export interface PublicPricingPlan {
-  name: string
-  pricing_type: 'fixed' | 'starting_at' | 'custom_quote' | 'free'
-  price: string | null
-  currency: string | null
-  billing_cycle: string | null
-  is_featured: boolean
-  sort_order: number
-}
-
-export interface PublicMediaItem {
-  url: string | null
-  alt: string | null
-  kind: 'hero' | 'gallery' | 'screenshot'
-  sort_order: number
-}
-
-export interface ProductDetail extends Product {
-  long_desc: string
-  value_proposition: string | null
-  target_audience: string | null
-  logo_image: { url: string; alt: string } | null
-  product_url: string | null
-  documentation_url: string | null
-  support_url: string | null
-  features: PublicFeature[]
-  pricing_plans: PublicPricingPlan[]
-  media: PublicMediaItem[]
-  latest_release: {
-    version: string
-    release_date: string
-    notes: string | null
-  } | null
-  seo: { title: string; description: string }
-}
-
 // ── Service ───────────────────────────────────────────────────────────
 export type ServiceStatus = 'active' | 'inactive' | 'archived'
 export type ServicePricingType = 'custom_quote' | 'starting_at' | 'fixed' | 'hourly'
@@ -159,6 +98,7 @@ export interface PublicSettings {
   social: {
     github_url: string | null
     tiktok_url: string | null
+    instagram_url: string | null
     x_url: string | null
     linkedin_url: string | null
   }
@@ -235,45 +175,6 @@ export interface HomepageSection {
   subtitle: string | null
   content: Record<string, unknown> | null
   sort_order: number
-}
-
-// ── Roadmap ───────────────────────────────────────────────────────────
-export type RoadmapStatus = 'planned' | 'in_progress' | 'completed' | 'cancelled'
-export type RoadmapPriority = 'low' | 'medium' | 'high' | 'critical'
-
-export interface RoadmapItem {
-  id: string
-  title: string
-  description: string | null
-  status: RoadmapStatus
-  priority: RoadmapPriority
-  target_version: string | null
-  target_quarter: string | null
-  product: { slug: string; name: string } | null
-}
-
-// ── Update ────────────────────────────────────────────────────────────
-export interface Update {
-  id: string
-  title: string
-  content: string
-  type: 'announcement' | 'blog' | 'news' | 'release'
-  is_featured: boolean
-  published_at: string
-  product: { slug: string; name: string } | null
-}
-
-// ── Career ────────────────────────────────────────────────────────────
-export interface Career {
-  id: string
-  title: string
-  department: string
-  location: string
-  type: 'full_time' | 'part_time' | 'contract' | 'internship'
-  description: string | null
-  requirements?: string[]
-  responsibilities?: string[]
-  is_featured: boolean
 }
 
 // ── Timeline ──────────────────────────────────────────────────────────

@@ -238,12 +238,18 @@ export function ContactForm({ locale, serviceSlug, serviceName }: ContactFormPro
                 border: errors.phone ? "1px solid rgba(239,68,68,0.4)" : "1px solid var(--border-input)",
                 color: "var(--color-foreground)",
               }}
-              placeholder={isAr ? "+20 1XX XXX XXXX" : "+1 (555) 000-0000"}
+              placeholder={isAr ? "+20 10XX XXX XXXX" : "+20 10XX XXX XXXX"}
             />
             <AnimatePresence>
-              {errors.phone && (
+              {errors.phone ? (
                 <motion.p initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} exit={{ opacity: 0, height: 0 }} className="text-xs mt-1" style={{ color: "#EF4444" }}>
                   {errors.phone}
+                </motion.p>
+              ) : (
+                <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="text-[11px] mt-1" style={{ color: "var(--color-foreground-subtle)" }}>
+                  {isAr
+                    ? "بأي صيغة دولية — مثال: السعودية +966 5X، الإمارات +971 5X"
+                    : "Any international format — e.g. Saudi +966 5X, UAE +971 5X"}
                 </motion.p>
               )}
             </AnimatePresence>
@@ -471,6 +477,14 @@ background: "var(--surface-subtle)",
             </>
           )}
         </button>
+
+        {status !== "error" && (
+          <p className="text-[11px] text-center" style={{ color: "var(--color-foreground-subtle)" }}>
+            {isAr
+              ? "بنرد عليك خلال 24 ساعة وغالباً أسرع — وبعدها استشارتك المجانية: ملف كامل بتفاصيل مشروعك والسعر، بدون أي التزام."
+              : "We reply within 24 hours, usually faster — then comes your free consultation: a complete project file with all details and the price, no obligation."}
+          </p>
+        )}
 
         {status === "error" && (
           <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-xs text-center" style={{ color: "#EF4444" }}>

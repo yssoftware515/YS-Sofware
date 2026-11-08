@@ -20,28 +20,26 @@ import {
 
 const navContent = {
   en: {
-    products: 'Products',
+    home: 'Home',
     services: 'Services',
-    docs: 'Docs',
-    updates: 'Updates',
     about: 'About',
     faq: 'FAQ',
+    contact: 'Contact',
     get_started: 'Get Started',
-    search_placeholder: 'Search products, docs, careers...',
+    search_placeholder: 'Search services, pages...',
     search_navigate: 'to navigate',
     search_select: 'to select',
     search_close: 'to close',
     lang: 'AR',
   },
   ar: {
-    products: 'المنتجات',
+    home: 'الرئيسية',
     services: 'الخدمات',
-    docs: 'التوثيق',
-    updates: 'المستجدات',
     about: 'عن الشركة',
     faq: 'الأسئلة الشائعة',
+    contact: 'تواصل معنا',
     get_started: 'ابدأ الآن',
-    search_placeholder: 'ابحث في المنتجات، التوثيق، الوظائف...',
+    search_placeholder: 'ابحث في الخدمات والصفحات...',
     search_navigate: 'للتنقل',
     search_select: 'للاختيار',
     search_close: 'للإغلاق',
@@ -367,12 +365,11 @@ const [lastPath, setLastPath] = useState(pathname)
   }, [])
 
   const mainNav: NavLink[] = [
-    { href: `/${locale}/products`, label: t.products },
+    { href: `/${locale}`, label: t.home },
     { href: `/${locale}/services`, label: t.services },
-    { href: `/${locale}/docs`, label: t.docs },
-    { href: `/${locale}/updates`, label: t.updates },
     { href: `/${locale}/about`, label: t.about },
     { href: `/${locale}/faq`, label: t.faq },
+    { href: `/${locale}/contact`, label: t.contact },
   ]
 
   const isActive = (href: string) => pathname === href

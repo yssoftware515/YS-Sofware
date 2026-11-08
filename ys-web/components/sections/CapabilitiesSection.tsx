@@ -50,16 +50,16 @@ const iconMap: Record<string, LucideIcon> = {
 const fallbackCapabilities: Capability[] = [
   {
     icon: Boxes,
-    iconLabel: "Products",
-    title_en: "Software Products",
-    title_ar: "منتجات برمجية",
+    iconLabel: "Digital",
+    title_en: "Digital Products",
+    title_ar: "منتجات رقمية",
     description_en:
-      "Ready-built SaaS platforms and management systems that solve real operational problems out of the box.",
+      "Management platforms and ready digital products under one partnership — for startups and growing companies.",
     description_ar:
-      "منصات SaaS جاهزة وأنظمة إدارة تحل مشكلات تشغيلية حقيقية في الممارسة العملية.",
+      "منتجات رقمية ومنظوم الإدارة تحت شراكة واحدة — للشركات الناشئة والمتوسطة.",
     accent: "#0A4FE7",
     accentBg: "rgba(10,79,231,0.12)",
-    href: "/products",
+    href: "/services",
   },
   {
     icon: Code2,

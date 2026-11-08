@@ -63,6 +63,27 @@ export function getCategories(services: Service[]): string[] {
   return Array.from(cats)
 }
 
+/**
+ * Categories are stored as admin-facing slugs in the DB; the storefront
+ * translates them for display. Unknown slugs fall back to the raw value
+ * so a new category added from the admin panel never renders blank.
+ */
+const CATEGORY_LABELS: Record<string, { en: string; ar: string }> = {
+  web:     { en: 'Web',     ar: 'الويب' },
+  mobile:  { en: 'Mobile',  ar: 'الموبايل' },
+  design:  { en: 'Design',  ar: 'التصميم' },
+  systems: { en: 'Systems', ar: 'الأنظمة' },
+  ai:      { en: 'AI',      ar: 'الذكاء الاصطناعي' },
+  support: { en: 'Support', ar: 'الدعم' },
+}
+
+export function getCategoryLabel(category: string | null | undefined, locale: string): string {
+  if (!category) return ''
+  const labels = CATEGORY_LABELS[category]
+  if (!labels) return category
+  return locale === 'ar' ? labels.ar : labels.en
+}
+
 // Approximate conversion rates (for budget matching display only)
 export function convertBudget(value: number, from: CurrencyCode, to: CurrencyCode): number {
   if (from === to) return value

@@ -13,8 +13,8 @@ const locales = ['en', 'ar'] as const
 const APP_URL  = process.env.NEXT_PUBLIC_APP_URL ?? 'https://ys-systems.com'
 
 const breadcrumbLabels: Record<string, Record<string, string>> = {
-  en: { '': 'Home', '/about': 'About', '/products': 'Products', '/services': 'Services', '/updates': 'Updates', '/changelog': 'Changelog', '/releases': 'Releases', '/docs': 'Documentation', '/roadmap': 'Roadmap', '/careers': 'Careers', '/contact': 'Contact', '/status': 'Status', '/privacy': 'Privacy Policy', '/terms': 'Terms of Service', '/faq': 'FAQ', '/security': 'Security', '/cookie-policy': 'Cookie Policy' },
-  ar: { '': 'الرئيسية', '/about': 'عن المنصة', '/products': 'المنتجات', '/services': 'الخدمات', '/updates': 'المستجدات', '/changelog': 'سجل التغييرات', '/releases': 'الإصدارات', '/docs': 'التوثيق', '/roadmap': 'خارطة الطريق', '/careers': 'الوظائف', '/contact': 'اتصل بنا', '/status': 'حالة النظام', '/privacy': 'سياسة الخصوصية', '/terms': 'شروط الخدمة', '/faq': 'الأسئلة الشائعة', '/security': 'الأمان', '/cookie-policy': 'سياسة الكوكيز' },
+  en: { '': 'Home', '/about': 'About', '/services': 'Services', '/contact': 'Contact', '/privacy': 'Privacy Policy', '/terms': 'Terms of Service', '/faq': 'FAQ', '/security': 'Security', '/cookie-policy': 'Cookie Policy' },
+  ar: { '': 'الرئيسية', '/about': 'عن المنصة', '/services': 'الخدمات', '/contact': 'اتصل بنا', '/privacy': 'سياسة الخصوصية', '/terms': 'شروط الخدمة', '/faq': 'الأسئلة الشائعة', '/security': 'الأمان', '/cookie-policy': 'سياسة الكوكيز' },
 }
 
 function buildBreadcrumbs(pathname: string, locale: string) {
@@ -33,14 +33,15 @@ function buildBreadcrumbs(pathname: string, locale: string) {
 function organizationJsonLd(locale: string, settings?: PublicSettings) {
   const sameAs: string[] = []
   const s = settings?.social
-  if (s?.github_url)   sameAs.push(s.github_url)
-  if (s?.tiktok_url)   sameAs.push(s.tiktok_url)
-  if (s?.x_url)        sameAs.push(s.x_url)
-  if (s?.linkedin_url) sameAs.push(s.linkedin_url)
+  if (s?.github_url)    sameAs.push(s.github_url)
+  if (s?.tiktok_url)    sameAs.push(s.tiktok_url)
+  if (s?.instagram_url) sameAs.push(s.instagram_url)
+  if (s?.x_url)         sameAs.push(s.x_url)
+  if (s?.linkedin_url)  sameAs.push(s.linkedin_url)
   if (sameAs.length === 0) {
     sameAs.push(
       'https://github.com/yehiahwary0-oss',
-      'https://www.tiktok.com/@yahya.dev8',
+      'https://www.instagram.com/ys.software',
     )
   }
   return {
@@ -64,10 +65,9 @@ export default async function PublicLayout({
 
   if (!(locales as readonly string[]).includes(locale)) notFound()
 
-  const [settingsResult, menusResult, productsResult] = await Promise.allSettled([
+  const [settingsResult, menusResult] = await Promise.allSettled([
     api.settings(locale),
     api.menus(locale),
-    api.products(locale),
   ])
 
   let settings: PublicSettings | undefined
@@ -84,8 +84,6 @@ export default async function PublicLayout({
       if (m.location) menus[m.location] = m
     }
   }
-
-  const products = productsResult.status === 'fulfilled' ? productsResult.value : []
 
   const h = await headers()
   const pathname = h.get('x-pathname') ?? h.get('next-url') ?? `/${locale}`
@@ -109,7 +107,7 @@ export default async function PublicLayout({
         {children}
       </main>
       <CookieConsent locale={locale} />
-      <Footer locale={locale} settings={settings} menus={menus} products={products} />
+      <Footer locale={locale} settings={settings} menus={menus} />
     </div>
   )
 }
