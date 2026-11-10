@@ -9,7 +9,7 @@ const locales = ['en', 'ar'] as const
 
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }): Promise<Metadata> {
   const { locale } = await params
-  return buildMetadata({
+  return await buildMetadata({
     locale, path: '/security',
     title: locale === 'ar' ? 'الأمان' : 'Security',
     description: locale === 'ar' ? 'تعرف على ممارسات الأمان في YS Systems & Software: التشفير، التحكم في الوصول، وحماية البنية التحتية، وكيف نحافظ على أمان بياناتك.' : 'Learn about security practices at YS Systems & Software: encryption, access control, infrastructure protection, and how we keep your data safe.',

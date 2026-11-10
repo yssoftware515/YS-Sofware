@@ -25,7 +25,7 @@ const fallbackSections = {
 
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }): Promise<Metadata> {
   const { locale } = await params
-  return buildMetadata({
+  return await buildMetadata({
     locale, path: '/privacy',
     title: locale === 'ar' ? 'سياسة الخصوصية' : 'Privacy Policy',
     description: locale === 'ar' ? 'اطلع على سياسة الخصوصية لـ YS Systems & Software. نوضح كيفية جمع واستخدام وحماية معلوماتك الشخصية.' : 'Learn how YS Systems & Software collects, uses, and protects your personal information. Your privacy matters to us.',

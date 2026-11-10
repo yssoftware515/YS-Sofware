@@ -1,3 +1,5 @@
+import { resolveAppUrl } from '@/lib/seo'
+
 /**
  * Centralized search engine verification configuration.
  *
@@ -68,7 +70,7 @@ export async function submitIndexNow(urls: string[]): Promise<void> {
     return
   }
 
-  const host = process.env.NEXT_PUBLIC_APP_URL ?? 'https://ys-systems.com'
+  const host = await resolveAppUrl()
 
   try {
     await fetch('https://api.indexnow.org/indexnow', {

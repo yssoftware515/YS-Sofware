@@ -52,8 +52,8 @@ describe('safeJsonLd', () => {
 })
 
 describe('breadcrumbJsonLd (hostile URL path segment cannot break out)', () => {
-  it('escapes a pathname-derived breadcrumb name containing a script tag', () => {
-    const html = breadcrumbJsonLd('en', [
+  it('escapes a pathname-derived breadcrumb name containing a script tag', async () => {
+    const html = await breadcrumbJsonLd('en', [
       { name: '</script><script>alert(1)</script>', item: '/pwned' },
     ])
 

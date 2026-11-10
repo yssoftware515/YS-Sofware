@@ -1,7 +1,7 @@
 import type { MetadataRoute } from 'next'
 import { api } from '@/lib/api/client'
+import { resolveAppUrl } from '@/lib/seo'
 
-const APP_URL   = process.env.NEXT_PUBLIC_APP_URL ?? 'https://ys-systems.com'
 const LOCALES   = ['en', 'ar'] as const
 
 // Static routes that exist for every locale
@@ -18,6 +18,8 @@ const STATIC_ROUTES = [
 ]
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
+  const APP_URL = await resolveAppUrl()
+
   const entries: MetadataRoute.Sitemap = []
 
   // ── Static routes — both locales ────────────────────────────────────

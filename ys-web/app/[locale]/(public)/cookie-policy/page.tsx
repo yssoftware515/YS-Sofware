@@ -7,7 +7,7 @@ const locales = ['en', 'ar'] as const
 
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }): Promise<Metadata> {
   const { locale } = await params
-  return buildMetadata({
+  return await buildMetadata({
     locale, path: '/cookie-policy',
     title: locale === 'ar' ? 'سياسة ملفات تعريف الارتباط' : 'Cookie Policy',
     description: locale === 'ar' ? 'تعرف على كيفية استخدام YS Systems & Software لملفات تعريف الارتباط، وأنواعها، وكيفية إدارة تفضيلاتك بسهولة.' : 'Learn how YS Systems & Software uses cookies, the types we set, and how you can manage your cookie preferences at any time.',

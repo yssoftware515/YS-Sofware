@@ -231,7 +231,7 @@ The two sides strengthen each other: the challenges businesses actually face sha
 
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }): Promise<Metadata> {
   const { locale } = await params
-  return buildMetadata({
+  return await buildMetadata({
     locale, path: '/faq',
     title: locale === 'ar' ? 'الأسئلة الشائعة' : 'FAQ',
     description: locale === 'ar' ? 'الأسئلة الشائعة حول YS-SOFTWARE: ماذا نبني، وكيف نعمل، وكيف نتعاون معك.' : 'Frequently asked questions about YS-SOFTWARE: what we build, how we work, and how we partner with you.',

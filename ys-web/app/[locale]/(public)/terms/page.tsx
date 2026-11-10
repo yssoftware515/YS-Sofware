@@ -25,7 +25,7 @@ const fallbackSections = {
 
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }): Promise<Metadata> {
   const { locale } = await params
-  return buildMetadata({
+  return await buildMetadata({
     locale, path: '/terms',
     title: locale === 'ar' ? 'شروط الخدمة' : 'Terms of Service',
     description: locale === 'ar' ? 'شروط وأحكام استخدام خدمات YS Systems & Software. تعرف على حقوقك وواجباتك عند استخدام منصاتنا.' : 'The terms and conditions governing the use of YS Systems & Software products and services. Understand your rights and obligations.',

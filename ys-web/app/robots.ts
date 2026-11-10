@@ -1,6 +1,5 @@
 import type { MetadataRoute } from 'next'
-
-const APP_URL = process.env.NEXT_PUBLIC_APP_URL ?? 'https://ys-systems.com'
+import { resolveAppUrl } from '@/lib/seo'
 
 /**
  * Production robots.txt configuration.
@@ -24,7 +23,9 @@ const APP_URL = process.env.NEXT_PUBLIC_APP_URL ?? 'https://ys-systems.com'
  *   /about, /contact. Removed routes (products, docs, updates, releases,
  *   changelog, roadmap, status, careers) are 308-redirected in proxy.ts.
  */
-export default function robots(): MetadataRoute.Robots {
+export default async function robots(): Promise<MetadataRoute.Robots> {
+  const APP_URL = await resolveAppUrl()
+
   return {
     rules: [
       {

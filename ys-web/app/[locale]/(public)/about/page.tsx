@@ -84,7 +84,7 @@ const fallbackContent = {
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }): Promise<Metadata> {
   const { locale } = await params
   const f = fallbackContent[locale as keyof typeof fallbackContent] ?? fallbackContent.en
-  return buildMetadata({ locale, path: '/about', title: f.title, description: f.hero_subline })
+  return await buildMetadata({ locale, path: '/about', title: f.title, description: f.hero_subline })
 }
 
 export default async function AboutPage({ params }: { params: Promise<{ locale: string }> }) {

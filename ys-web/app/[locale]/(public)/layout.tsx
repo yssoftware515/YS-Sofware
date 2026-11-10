@@ -80,7 +80,7 @@ export default async function PublicLayout({
       />
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: breadcrumbJsonLd(locale, breadcrumbs) }}
+        dangerouslySetInnerHTML={{ __html: await breadcrumbJsonLd(locale, breadcrumbs) }}
       />
       <a href="#main-content" className="skip-link">
         {locale === 'ar' ? 'تخطى إلى المحتوى' : 'Skip to content'}

@@ -28,7 +28,7 @@ export async function generateMetadata({
   const { locale } = await params
   const isAr = locale === 'ar'
 
-  return buildMetadata({
+  return await buildMetadata({
     locale,
     path: '',
     title: isAr ? 'YS Systems & Software — شركة منتجات رقمية متكاملة' : 'YS Systems & Software — Integrated Digital Products Company',

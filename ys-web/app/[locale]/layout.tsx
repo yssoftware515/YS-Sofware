@@ -3,11 +3,10 @@ import { headers } from 'next/headers'
 import { notFound } from 'next/navigation'
 import { ThemeProvider } from '@/components/shared/ThemeProvider'
 import { LocaleSync } from '@/components/shared/LocaleSync'
+import { resolveAppUrl } from '@/lib/seo'
 
 const locales = ['en', 'ar'] as const
 type Locale   = typeof locales[number]
-
-const APP_URL = process.env.NEXT_PUBLIC_APP_URL ?? 'https://ys-systems.com'
 
 function isValidLocale(locale: string): locale is Locale {
   return (locales as readonly string[]).includes(locale)
@@ -25,6 +24,12 @@ export async function generateMetadata({
   const { locale } = await params
   const isAr = locale === 'ar'
 
+  // Resolved from NEXT_PUBLIC_APP_URL when configured, otherwise from the
+  // host the request arrived on. Next.js composes every relative URL-based
+  // metadata field (Open Graph image, canonical, hreflang) against this, so
+  // a link preview always points at the domain the visitor is actually on.
+  const metadataBase = new URL(await resolveAppUrl())
+
   return {
     title: {
       default:  isAr ? 'YS Systems & Software' : 'YS Systems & Software',
@@ -33,7 +38,7 @@ export async function generateMetadata({
     description: isAr
       ? 'منصات SaaS وحلول أعمال حديثة وآمنة'
       : 'Scalable, secure, and modern SaaS platforms.',
-    metadataBase: new URL(APP_URL),
+    metadataBase,
     icons: {
       icon: '/branding/favicon/favicon-32x32.png',
       apple: '/branding/apple/apple-touch-icon.png',

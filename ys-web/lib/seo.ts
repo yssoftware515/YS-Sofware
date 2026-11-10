@@ -1,13 +1,51 @@
 import type { Metadata } from 'next'
+import { headers } from 'next/headers'
 import { SeoRegistry } from '@/lib/platform/registries/SeoRegistry'
 
-const APP_URL      = process.env.NEXT_PUBLIC_APP_URL ?? 'https://ys-systems.com'
 // JPEG (not WebP) — Facebook/LinkedIn/WhatsApp scrapers don't reliably
 // render WebP OG assets. Visually 1200×800 (no-text-crop 3:2 source).
 const DEFAULT_OG      = '/branding/social/og-image.jpg'
 const DEFAULT_TWITTER = '/branding/social/twitter-card.jpg'
 const SITE_NAME_EN = 'YS Systems & Software'
 const SITE_NAME_AR = 'واي إس سيستمز آند سوفتوير'
+
+/**
+ * The canonical public origin of this site.
+ *
+ * NEXT_PUBLIC_APP_URL is the configured answer. It is a BUILD-time variable,
+ * so a deployment that forgets it (or that only sets it for Production)
+ * would otherwise emit absolute URLs against the wrong host — a link preview
+ * would point at an unrelated domain and show no image at all.
+ *
+ * So the fallback is the host the request actually arrived on: the site
+ * describes itself correctly on the production domain, on a preview
+ * deployment, and on localhost, with no configuration.
+ */
+export async function resolveAppUrl(): Promise<string> {
+  const configured = process.env.NEXT_PUBLIC_APP_URL
+
+  if (configured) {
+    try {
+      return new URL(configured).origin
+    } catch {
+      // Fall through to the request host.
+    }
+  }
+
+  try {
+    const h = await headers()
+    const host = h.get('x-forwarded-host') ?? h.get('host')
+    const proto = h.get('x-forwarded-proto') ?? (host?.startsWith('localhost') ? 'http' : 'https')
+
+    if (host) {
+      return new URL(`${proto}://${host}`).origin
+    }
+  } catch {
+    // headers() is unavailable outside a request scope (e.g. a unit test).
+  }
+
+  return 'https://ys-systems.com'
+}
 
 /**
  * Serialize a JSON-LD object for safe injection into a <script
@@ -58,7 +96,7 @@ interface BuildMetadataOptions {
  * Graph tags stay consistent across the entire site without each page
  * re-implementing the same boilerplate.
  */
-export function buildMetadata({
+export async function buildMetadata({
   locale,
   path,
   title,
@@ -67,7 +105,9 @@ export function buildMetadata({
   noIndex = false,
   type = 'website',
   publishedTime,
-}: BuildMetadataOptions): Metadata {
+}: BuildMetadataOptions): Promise<Metadata> {
+  const APP_URL = await resolveAppUrl()
+
   const isAr        = locale === 'ar'
   const siteName    = isAr ? SITE_NAME_AR : SITE_NAME_EN
   const canonicalUrl = `${APP_URL}/${locale}${path}`
@@ -131,11 +171,11 @@ export function buildMetadata({
  *
  * Page-level overrides (title, description, etc.) are still supported via the second argument.
  */
-export function buildMetadataFromRegistry(
+export async function buildMetadataFromRegistry(
   locale: string,
   path: string,
   overrides?: Partial<BuildMetadataOptions>,
-): Metadata {
+): Promise<Metadata> {
   const isAr = locale === 'ar'
   const contribution = seoRegistry.findByRoute(path)
   const registryTitle = contribution ? (isAr ? contribution.titleAr : contribution.titleEn) : undefined
@@ -157,10 +197,12 @@ export function buildMetadataFromRegistry(
  * Generate BreadcrumbList JSON-LD from an array of breadcrumb items.
  * Each item has a human-readable `name` and a relative `item` path (no locale prefix).
  */
-export function breadcrumbJsonLd(
+export async function breadcrumbJsonLd(
   locale: string,
   items: BreadcrumbItem[],
-): string {
+): Promise<string> {
+  const APP_URL = await resolveAppUrl()
+
   const itemListElement = items.map((crumb, i) => ({
     '@type': 'ListItem',
     position: i + 1,
