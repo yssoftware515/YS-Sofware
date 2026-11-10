@@ -131,6 +131,7 @@ Set these in the Vercel project settings → Environment Variables:
 - `TRUSTED_PROXIES=REMOTE_ADDR` — **required on Vercel**. `private_ranges` only trusts RFC 1918/4193 addresses, and Vercel's edge is on a *public* IP, so that value trusts nobody: `X-Forwarded-Proto` is ignored, `$request->secure()` is false, and the VULN-09 TLS gate answers **every** API request with `403 TLS_REQUIRED`. The frontend swallows that error and renders empty pages. `REMOTE_ADDR` trusts exactly the peer that opened the connection — on Vercel that is always Vercel's own proxy, because the container is not reachable from the internet directly — and Vercel documents that it overwrites `X-Forwarded-For` with the real client IP, so trusting the peer opens no spoofing hole.
 - `SANCTUM_STATEFUL_DOMAINS` — frontend domain(s), comma-separated
 - `SESSION_SECURE_COOKIE=true`, `REQUIRE_TLS=true`
+- `CACHE_STORE=database`, `SESSION_DRIVER=database` — **required on Vercel**. The container filesystem is ephemeral and Vercel runs several instances, so a file-backed cache/session lives on one instance's disk and dies with it: the CSRF handshake breaks (the XSRF token is derived from the session) and a cached response can differ per instance. The `cache`, `cache_locks` and `sessions` tables already exist in the schema, so both stores work against Neon without any extra migration. Docker Compose keeps `file` for both — there the volume persists them and the file store is faster.
 - `MAIL_*` — SMTP credentials
 
 **Frontend (build-time):**
