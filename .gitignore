@@ -8,6 +8,7 @@ backups/
 
 # Neon local link file (org / project / branch IDs)
 .neon
+neon/.neon
 
 # Belt-and-suspenders (also ignored per-subdir) — build/runtime artifacts
 node_modules/

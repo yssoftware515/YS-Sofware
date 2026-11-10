@@ -1,0 +1,14 @@
+{
+  "name": "ys-software-neon",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Neon infrastructure-as-code for the YS-SOFTWARE monorepo. Kept in its own directory on purpose: a package.json at the repository root changes how Vercel installs dependencies for the frontend service and breaks the Turbopack font loader.",
+  "scripts": {
+    "neon:status": "neon config status",
+    "neon:plan": "neon config plan",
+    "neon:deploy": "neon deploy"
+  },
+  "dependencies": {
+    "@neon/config": "^1.14.0"
+  }
+}

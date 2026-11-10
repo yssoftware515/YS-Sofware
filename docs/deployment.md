@@ -186,18 +186,22 @@ Therefore `DATABASE_URL` points at the **direct** endpoint. With `max_connection
 
 | File | Role |
 |---|---|
-| `neon.ts` | Neon infrastructure-as-code — declares the Postgres service and the per-branch policy. `auth: false` because the application manages its own authentication (Laravel Sanctum). |
-| `.neon` | Local link file (org / project / branch). Git-ignored. |
+| `neon/neon.ts` | Neon infrastructure-as-code — declares the Postgres service and the per-branch policy. `auth: false` because the application manages its own authentication (Laravel Sanctum). |
+| `neon/package.json` | Declares the `@neon/config` dependency the CLI needs to evaluate `neon.ts`. |
+| `neon/.neon` | Local link file (org / project / branch). Git-ignored. |
 | `.env.local` | Neon-generated environment variables (`DATABASE_URL`, `DATABASE_URL_UNPOOLED`, branch metadata). Git-ignored. |
 | `ys-api/.env` | The values the backend actually reads at runtime. Git-ignored. |
+
+**⚠ The Neon tooling lives in `neon/`, never at the repository root.** A `package.json` at the repository root changes how Vercel installs dependencies for the frontend service: the root install prunes the `@vercel/turbopack-next` shim that Vercel injects for Turbopack's `next/font/google` loader, and the Next.js build then fails with *"Module not found: Can't resolve '@vercel/turbopack-next/internal/font/google/font'"*. Keeping the Neon config in its own directory leaves the repository root exactly as it was before the Neon work, so the frontend build behaves as it did on the first successful deployment.
 
 **Migrations** must run against the **direct** endpoint (`DATABASE_URL_UNPOOLED`) — the same string as `DATABASE_URL` — because schema migrations hold a transaction open across many statements.
 
 **⚠ The test suite must never target Neon.** `ys-api/phpunit.xml` clears `DATABASE_URL` explicitly. Laravel's `ConfigurationUrlParser` lets `DATABASE_URL` override every `DB_*` value, so without that line the suite would run `RefreshDatabase` against the production database and wipe it. With the variable cleared, the suite uses the local `ys_api_test` database (same as CI).
 
-**Useful commands** (run from the repository root):
+**Useful commands** (run from the `neon/` directory):
 
 ```bash
+cd neon
 neon config status          # live branch configuration
 neon config plan            # dry-run diff of neon.ts against the branch
 neon deploy                 # apply neon.ts and re-pull env vars
