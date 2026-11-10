@@ -15,12 +15,6 @@ const CommandPalette = lazy(() => import('@/components/admin/CommandPalette').th
 
 import { API_BASE as API } from '@/lib/api/config'
 
-function getLocaleCookie(): string {
-  if (typeof document === 'undefined') return 'en'
-  const match = document.cookie.match(/(?:^|;\s*)ys_admin_locale=(en|ar)/)
-  return match ? match[1] : 'en'
-}
-
 function setLocaleCookie(locale: string) {
   document.cookie = `ys_admin_locale=${locale};path=/;max-age=31536000;SameSite=Lax`
 }
@@ -197,10 +191,17 @@ function Breadcrumb({ locale }: { locale: string }) {
   )
 }
 
-export default function AdminShell({ children }: { children: React.ReactNode }) {
+export default function AdminShell({
+  children,
+  locale: initialLocale,
+}: {
+  children: React.ReactNode
+  /** Resolved on the server from the ys_admin_locale cookie (app/admin/layout.tsx). */
+  locale: 'en' | 'ar'
+}) {
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const [commandOpen, setCommandOpen] = useState(false)
-  const [locale, setLocaleState] = useState(getLocaleCookie)
+  const [locale, setLocaleState] = useState(initialLocale)
 
   const toggleLocale = useCallback(() => {
     setLocaleState(prev => {
