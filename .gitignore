@@ -6,6 +6,9 @@ backups/
 .env.local
 .env.production
 
+# Neon local link file (org / project / branch IDs)
+.neon
+
 # Belt-and-suspenders (also ignored per-subdir) — build/runtime artifacts
 node_modules/
 .next/

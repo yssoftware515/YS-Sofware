@@ -1,0 +1,14 @@
+{
+  "name": "ys-software",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Neon infrastructure-as-code for the YS-SOFTWARE monorepo (database provisioning only - the application itself lives in ys-web/ and ys-api/).",
+  "scripts": {
+    "neon:status": "neon config status",
+    "neon:plan": "neon config plan",
+    "neon:deploy": "neon deploy"
+  },
+  "dependencies": {
+    "@neon/config": "^1.14.0"
+  }
+}

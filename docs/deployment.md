@@ -77,7 +77,7 @@ Vercel is the only approved production hosting platform. Render, Railway, VPS, a
 |---|---|---|
 | Frontend | Vercel (Next.js 16, native) | `ys-web/` directory, auto-detected by Vercel |
 | Backend | Vercel Functions (Container Runtime, Beta) | `ys-api/Dockerfile.vercel` (FrankenPHP + Caddy) |
-| Database | External PostgreSQL (Neon or any provider) | Connected via `DB_*` env vars, `sslmode=prefer` |
+| Database | Neon (Lakebase Postgres) ✅ provisioned | `DATABASE_URL` → direct endpoint, `sslmode=require` — see §5.9 |
 | Queue | Vercel Daemons + database jobs table | `php artisan queue:work` as a daemon; `QUEUE_CONNECTION=database` |
 | Scheduler | Vercel Cron → authenticated HTTP endpoint | `php artisan schedule:run` via cron-triggered route |
 | Storage | Ephemeral container FS | Uploads use external object store (Vercel Blob / S3) |
@@ -126,8 +126,7 @@ Set these in the Vercel project settings → Environment Variables:
 **Backend (all environments):**
 - `APP_KEY` — `php artisan key:generate --show` output (stable per environment)
 - `APP_ENV=production`, `APP_DEBUG=false`
-- `DB_CONNECTION=pgsql`, `DB_HOST`, `DB_PORT=5432`, `DB_DATABASE`, `DB_USERNAME`, `DB_PASSWORD`
-- `DB_SSLMODE=require` (Neon requires SSL)
+- `DATABASE_URL` — the Neon **direct** endpoint (see §5.9). Laravel reads it automatically; it overrides every `DB_*` value.
 - `LOG_CHANNEL=stderr`
 - `TRUSTED_PROXIES` — Vercel proxy CIDRs
 - `SANCTUM_STATEFUL_DOMAINS` — frontend domain(s), comma-separated
@@ -147,7 +146,7 @@ Set these in the Vercel project settings → Environment Variables:
 | Cache/session are file-based | Not shared across instances | Use database/Redis for shared state if needed |
 | Daemons: production only | No background workers in preview | Accept preview limitation; test queue via HTTP |
 | No `schedule:work` process | Scheduled tasks need Cron + HTTP endpoint | Vercel Cron → authenticated route |
-| Neon SSL required | `DB_SSLMODE=require` | Already supported by `config/database.php` |
+| Neon region latency | ~360 ms/query from an un-pooled European connection | Keep compute close to the app region; Neon autoscaling absorbs bursts |
 
 ### 5.8 Deployment steps
 
@@ -161,6 +160,50 @@ Set these in the Vercel project settings → Environment Variables:
 8. Verify `/api/v1/health` and `/health/live` respond
 
 - **K-34 stays deferred:** no Laravel scheduled commands exist (`routes/console.php` absent, no `schedule()` calls), so the `scheduler` container is idle by design; `php artisan schedule:work` is wired for when real schedules are added.
+
+### 5.9 Neon database (Lakebase Postgres) ✅ provisioned
+
+Neon is the production database: project `ys-software` (`twilight-firefly-29528763`), branch `production` (`br-proud-pond-b9uc2jwb`), region `aws-eu-central-1`, Postgres 18.
+
+| Item | Value |
+|---|---|
+| Direct endpoint | `ep-shy-paper-b9vez1a1.c-7.eu-central-1.aws.neon.tech:5432` |
+| Pooled endpoint | `ep-shy-paper-b9vez1a1-pooler.c-7.eu-central-1.aws.neon.tech:5432` |
+| Database / role | `neondb` / `neondb_owner` |
+| SSL | `sslmode=require`, `channel_binding=require` |
+| Compute | 0.25–2 CU, autoscaling; `max_connections = 901` |
+
+**⚠ The pooled (`-pooler`) endpoint must NOT be used by this application.** It was measured directly: any transaction containing two or more statements fails with `SQLSTATE 25P02 — current transaction is aborted` (0 of 15 multi-statement transactions succeeded on the pooled endpoint versus 15 of 15 on the direct endpoint). Two things in the app depend on multi-statement transactions:
+
+- The database queue pops a job with `SELECT … FOR UPDATE SKIP LOCKED` inside a transaction.
+- `DB::transaction()` is used by the contact-request → customer conversion and the milestone reorder paths.
+
+Therefore `DATABASE_URL` points at the **direct** endpoint. With `max_connections = 901` there is ample headroom for Vercel to run hundreds of concurrent function instances.
+
+**The pooled endpoint is retained for reference** as `DATABASE_URL_POOLED` (in `ys-api/.env`, and in the Neon-generated `.env.local`). It becomes usable again only if the application's transaction usage is reworked so that no request ever issues two statements in one transaction.
+
+**Files:**
+
+| File | Role |
+|---|---|
+| `neon.ts` | Neon infrastructure-as-code — declares the Postgres service and the per-branch policy. `auth: false` because the application manages its own authentication (Laravel Sanctum). |
+| `.neon` | Local link file (org / project / branch). Git-ignored. |
+| `.env.local` | Neon-generated environment variables (`DATABASE_URL`, `DATABASE_URL_UNPOOLED`, branch metadata). Git-ignored. |
+| `ys-api/.env` | The values the backend actually reads at runtime. Git-ignored. |
+
+**Migrations** must run against the **direct** endpoint (`DATABASE_URL_UNPOOLED`) — the same string as `DATABASE_URL` — because schema migrations hold a transaction open across many statements.
+
+**⚠ The test suite must never target Neon.** `ys-api/phpunit.xml` clears `DATABASE_URL` explicitly. Laravel's `ConfigurationUrlParser` lets `DATABASE_URL` override every `DB_*` value, so without that line the suite would run `RefreshDatabase` against the production database and wipe it. With the variable cleared, the suite uses the local `ys_api_test` database (same as CI).
+
+**Useful commands** (run from the repository root):
+
+```bash
+neon config status          # live branch configuration
+neon config plan            # dry-run diff of neon.ts against the branch
+neon deploy                 # apply neon.ts and re-pull env vars
+neon branches list          # list branches
+```
+
 
 ## 7. Deploy flow caveats ⚠️
 
@@ -190,11 +233,11 @@ covered by visitors; served via `/storage/` with the 1y cache headers). The defa
 
 ## 10. Deployment topology notes (provider-agnostic)
 
-The platform is designed around the **Docker Compose topology above** (§1) — that is what is implemented and verified (Sprint 12 Phase C). **No external database provider, hosting platform, or Neon linkage is provisioned, configured, or implied anywhere in this repository.** The backend connects to PostgreSQL via the generic Laravel `pgsql` driver (`config/database.php`, `DATABASE_URL`/`sslmode=prefer` supported); the host `.env` / compose `envVars` supply `DB_HOST`, `DB_PORT`, `DB_DATABASE`, `DB_USERNAME`, `DB_PASSWORD` at deploy time.
+The platform is designed around the **Docker Compose topology above** (§1) — that is what is implemented and verified (Sprint 12 Phase C). The backend connects to PostgreSQL via the generic Laravel `pgsql` driver (`config/database.php`, `DATABASE_URL` supported); the host `.env` / compose `envVars` supply `DB_HOST`, `DB_PORT`, `DB_DATABASE`, `DB_USERNAME`, `DB_PASSWORD` at deploy time. The production deployment target is **Vercel** (§5) with **Neon** as the database provider (§5.9) — the Docker Compose stack remains the local development and test environment.
 
-- **Database:** any PostgreSQL 16+ instance (self-hosted Docker `postgres:16-alpine` in compose, or a managed PostgreSQL from any provider) works — the connection parameters are environment-injected. No provider-specific settings (Neon, PgBouncer, SSL enforcement beyond `sslmode=prefer`, etc.) are hard-coded.
+- **Database:** any PostgreSQL 16+ instance (self-hosted Docker `postgres:16-alpine` in compose, or a managed PostgreSQL from any provider) works — the connection parameters are environment-injected. No provider-specific settings are hard-coded. Neon is the provisioned production instance (§5.9); its one real constraint is that the **pooled** endpoint cannot carry this app's multi-statement transactions, so `DATABASE_URL` uses the direct endpoint.
 - **Cache/queue:** default drivers are `file` (cache) and `database` (queue, `jobs` table). No Redis is used or required (Phase 4A, P1-01; `predis/predis` was removed from `composer.json` in Group H).
-- **Frontend:** build-time args `NEXT_PUBLIC_API_URL` / `NEXT_PUBLIC_APP_URL` are inlined at `next build`; no frontend hosting provider is chosen or provisioned here.
-- **Media storage:** `public/storage` via the Docker `backend_storage` volume, served through the backend nginx with 1y cache headers. `config/filesystems.php` retains AWS/S3 wiring but **no provider is provisioned**.
+- **Frontend:** build-time args `NEXT_PUBLIC_API_URL` / `NEXT_PUBLIC_APP_URL` are inlined at `next build`.
+- **Media storage:** `public/storage` via the Docker `backend_storage` volume, served through the backend nginx with 1y cache headers. `config/filesystems.php` retains AWS/S3 wiring but **no provider is provisioned** — on Vercel the container filesystem is ephemeral, so uploads need Vercel Blob or S3.
 - **TLS:** terminated by an external gateway in front of the edge nginx (`X-Forwarded-Proto` is passed). The edge nginx itself never terminates TLS (no 443 vhost). Set `SESSION_SECURE_COOKIE=true` when TLS terminates externally.
-- **Nothing in this section references a live production environment** — real host paths, secrets (`DEPLOY_HOST`, `DEPLOY_URL`, `APP_KEY`, `DB_PASSWORD`, …) come from GitHub environment secrets and are not present in the repository.
+- **Nothing in this section references a live production environment** — real host paths, secrets (`DEPLOY_HOST`, `DEPLOY_URL`, `APP_KEY`, `DB_PASSWORD`, …) come from GitHub environment secrets and are not present in the repository. The Neon connection string likewise lives only in git-ignored files (`.env.local`, `ys-api/.env`), never in the repository.
