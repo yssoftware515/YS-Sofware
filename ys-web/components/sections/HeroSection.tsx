@@ -455,6 +455,13 @@ export function HeroSection({ locale, settings }: HeroSectionProps) {
             style={{ objectPosition: '62% 58%' }}
             sizes="100vw"
             priority
+            /* Served straight from /public instead of /_next/image. The
+               runtime image optimizer does not answer for this app's
+               container deployment, which left the hero artwork missing
+               while every plain <img> (the logo) rendered fine. These
+               files are already hand-optimized WebP (31 KB / 71 KB), so
+               the optimizer bought nothing anyway. */
+            unoptimized
           />
         </div>
         <div
@@ -471,6 +478,9 @@ export function HeroSection({ locale, settings }: HeroSectionProps) {
             style={{ objectPosition: '50% 100%' }}
             sizes="100vw"
             priority
+            /* See the desktop hero above: served from /public, not through
+               the image optimizer. */
+            unoptimized
           />
         </div>
         <div

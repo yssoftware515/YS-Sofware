@@ -60,6 +60,11 @@ export function AboutHero({
           style={{ objectPosition: '68% 42%' }}
           sizes="100vw"
           priority
+          /* Served straight from /public instead of /_next/image — see the
+             note in HeroSection.tsx: the runtime image optimizer does not
+             answer for this app's container deployment, so the artwork went
+             missing while plain <img> elements rendered fine. */
+          unoptimized
         />
       </div>
 
@@ -80,6 +85,8 @@ export function AboutHero({
           style={{ objectPosition: '50% 100%' }}
           sizes="100vw"
           priority
+          /* See the desktop about background above. */
+          unoptimized
         />
       </div>
       <div
