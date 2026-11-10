@@ -128,7 +128,7 @@ Set these in the Vercel project settings → Environment Variables:
 - `APP_ENV=production`, `APP_DEBUG=false`
 - `DATABASE_URL` — the Neon **direct** endpoint (see §5.9). Laravel reads it automatically; it overrides every `DB_*` value.
 - `LOG_CHANNEL=stderr`
-- `TRUSTED_PROXIES` — Vercel proxy CIDRs
+- `TRUSTED_PROXIES=REMOTE_ADDR` — **required on Vercel**. `private_ranges` only trusts RFC 1918/4193 addresses, and Vercel's edge is on a *public* IP, so that value trusts nobody: `X-Forwarded-Proto` is ignored, `$request->secure()` is false, and the VULN-09 TLS gate answers **every** API request with `403 TLS_REQUIRED`. The frontend swallows that error and renders empty pages. `REMOTE_ADDR` trusts exactly the peer that opened the connection — on Vercel that is always Vercel's own proxy, because the container is not reachable from the internet directly — and Vercel documents that it overwrites `X-Forwarded-For` with the real client IP, so trusting the peer opens no spoofing hole.
 - `SANCTUM_STATEFUL_DOMAINS` — frontend domain(s), comma-separated
 - `SESSION_SECURE_COOKIE=true`, `REQUIRE_TLS=true`
 - `MAIL_*` — SMTP credentials

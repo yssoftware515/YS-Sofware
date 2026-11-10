@@ -148,6 +148,16 @@ $app = Application::configure(basePath: dirname(__DIR__))
 // (RFC 1918/4193) — the correct default for containerized deployments
 // where the reverse proxy lives on a private network. Set TRUSTED_PROXIES=''
 // to override and trust no proxy (breaks containerized deployments).
+//
+// On Vercel the reverse proxy is NOT on a private network — the container
+// is reached from Vercel's public edge — so 'private_ranges' trusts nobody
+// there, X-Forwarded-Proto is ignored, $request->secure() is false and the
+// VULN-09 TLS gate refuses every API request with 403. Use
+// TRUSTED_PROXIES=REMOTE_ADDR there: it trusts exactly the peer that
+// connected to the process, which on Vercel is always Vercel's own proxy
+// (the container is not reachable from the internet directly). Vercel
+// documents that it overwrites X-Forwarded-For with the real client IP, so
+// trusting the peer does not open a spoofing hole.
 $app->booted(function () {
     $trustedProxies = array_values(array_filter(array_map(
         'trim',
@@ -156,8 +166,14 @@ $app->booted(function () {
 
     if ($trustedProxies !== []) {
         TrustProxies::at($trustedProxies);
+        // X-Forwarded-For is trusted alongside proto/host so that
+        // $request->ip() is the real client IP and not the proxy's. Without
+        // it every visitor behind the same proxy shares one rate-limit
+        // bucket (the VULN-07 global-budget collapse). Both the Vercel edge
+        // and the compose nginx overwrite the header themselves.
         TrustProxies::withHeaders(
-            Request::HEADER_X_FORWARDED_PROTO
+            Request::HEADER_X_FORWARDED_FOR
+                | Request::HEADER_X_FORWARDED_PROTO
                 | Request::HEADER_X_FORWARDED_HOST,
         );
     }
