@@ -41,5 +41,15 @@
         <env name="MAIL_MAILER"      value="array"/>
         <env name="BCRYPT_ROUNDS"    value="4"/>
         <env name="REQUIRE_TLS"      value="false"/>
+        <!--
+            ADMIN_PASSWORD is deliberately CLEARED here too. The bootstrap-admin
+            contract (AdminSeederContractTest) requires the seeder to fail
+            closed — no admin account may be created from a blank password —
+            and it verifies that against the *live* environment. A developer's
+            local .env holds a real ADMIN_PASSWORD, so without this line the
+            contract test fails on any machine that has one configured.
+            Clearing it pins the fail-closed default for the test run.
+        -->
+        <env name="ADMIN_PASSWORD"   value=""/>
     </php>
 </phpunit>
