@@ -1,10 +1,8 @@
 import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
-import { api } from '@/lib/api/client'
 import { buildMetadata, safeJsonLd } from '@/lib/seo'
 import { PageHero } from '@/components/shared/PageHero'
 import { FaqAccordion } from '@/components/faq/FaqAccordion'
-import type { FaqItem } from '@/types'
 
 const locales = ['en', 'ar'] as const
 
@@ -245,20 +243,13 @@ export default async function FAQPage({ params }: { params: Promise<{ locale: st
   if (!(locales as readonly string[]).includes(locale)) notFound()
   const isAr = locale === 'ar'
 
-  let faqItems: FaqItem[] = []
-  try {
-    faqItems = await api.faqs(locale)
-  } catch (err) { console.error('[public:faq] fetch failed:', err) }
-
-  const items = faqItems.length > 0
-    ? faqItems
-    : (fallbackFaqs[locale] ?? fallbackFaqs.en).map((f, i) => ({
-        id: String(i),
-        question: f.q,
-        answer: f.a,
-        highlight: f.h ?? null,
-        category: null,
-      }))
+  const items = (fallbackFaqs[locale] ?? fallbackFaqs.en).map((f, i) => ({
+    id: String(i),
+    question: f.q,
+    answer: f.a,
+    highlight: f.h ?? null,
+    category: null,
+  }))
 
   const faqJsonLd = {
     '@context': 'https://schema.org',

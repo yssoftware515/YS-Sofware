@@ -57,7 +57,7 @@ class MediaUploadService
         $this->validateFile($file);
 
         // Explicit disk wins; otherwise the default (private `local`) disk.
-        // Site-presented assets (product covers etc.) are stored on the
+        // Site-presented assets (service covers etc.) are stored on the
         // public disk by the caller so /storage can serve them.
         $disk ??= config('filesystems.default', 'local');
         $filename = $this->generateFilename($file);

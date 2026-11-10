@@ -24,7 +24,7 @@ class UserController extends Controller
     {
         $this->authorize('manage_users');
 
-        $users = User::with(['role', 'products:id'])
+        $users = User::with(['role'])
             ->when($request->query('role'), fn ($q, $r) => $q->whereHas('role', fn ($rq) => $rq->where('slug', $r))
             )
             ->when($request->query('search'), fn ($q, $s) => $q->where(fn ($sub) => $sub
@@ -107,7 +107,7 @@ class UserController extends Controller
 
         return response()->json([
             'success' => true,
-            'data' => new UserResource($user->load(['role', 'products:id'])),
+            'data' => new UserResource($user->load('role')),
         ]);
     }
 
@@ -176,53 +176,6 @@ class UserController extends Controller
             'success' => true,
             'message' => 'User updated successfully.',
             'data' => new UserResource($user->fresh('role')),
-        ]);
-    }
-
-    /**
-     * PUT /api/v1/admin/users/{user}/products
-     *
-     * Sets which products this admin can access (see
-     * User::canAccessProduct). Gated by manage_admins, not manage_users —
-     * assigning scope IS the sensitive "grant admin access" action the
-     * business asked to be delegatable separately from ordinary user CRUD.
-     */
-    public function syncProducts(Request $request, User $user): JsonResponse
-    {
-        $this->authorize('manage_admins');
-
-        $validated = $request->validate([
-            'product_ids' => ['required', 'array'],
-            'product_ids.*' => ['uuid', 'exists:products,id'],
-        ]);
-
-        // A non-super-admin can't grant access to a product they don't
-        // have themselves — otherwise a scoped admin with manage_admins
-        // could hand out (or take for themselves via another account)
-        // access beyond their own scope, defeating the whole point of
-        // scoping in the first place.
-        $actor = Auth::user();
-        if (! $actor->isSuperAdmin()) {
-            $allowed = $actor->products()->pluck('products.id')->all();
-            $requested = $validated['product_ids'];
-            if (array_diff($requested, $allowed) !== []) {
-                abort(403, 'You can only grant access to products you have access to yourself.');
-            }
-        }
-
-        $user->products()->sync($validated['product_ids']);
-
-        $this->auditService->log(
-            action: 'user.product_access_updated',
-            resourceType: 'User',
-            resourceId: $user->id,
-            newValues: ['product_ids' => $validated['product_ids']],
-        );
-
-        return response()->json([
-            'success' => true,
-            'message' => 'Product access updated successfully.',
-            'data' => new UserResource($user->fresh(['role', 'products:id'])),
         ]);
     }
 

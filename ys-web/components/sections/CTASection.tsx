@@ -1,8 +1,6 @@
 import Link from 'next/link'
 import { MessageCircle } from 'lucide-react'
-import type { HomepageSection, PublicSettings } from '@/types'
-import { ctaContentSchema, type CtaContent } from '@/lib/cms/schemas'
-import { validateCmsContent, validateUrl } from '@/lib/cms/validate'
+import type { PublicSettings } from '@/types'
 import {
   buildWhatsAppHref,
   normalizeWhatsAppNumber,
@@ -12,7 +10,6 @@ import {
 
 interface CTASectionProps {
   locale: string
-  cmsSection?: HomepageSection
   settings?: PublicSettings
 }
 
@@ -37,18 +34,17 @@ const fallback = {
   },
 }
 
-export function CTASection({ locale, cmsSection, settings }: CTASectionProps) {
+export function CTASection({ locale, settings }: CTASectionProps) {
   const isAr = locale === 'ar'
   const f = fallback[locale as keyof typeof fallback] ?? fallback.en
 
-  const heading = cmsSection?.title ?? f.heading
-  const body    = cmsSection?.subtitle ?? f.body
+  const heading = f.heading
+  const body    = f.body
 
-  const content = validateCmsContent(cmsSection, ctaContentSchema)
-  const ptext   = (isAr ? content?.primary_text_ar : content?.primary_text_en) ?? f.primary
-  const stext   = (isAr ? content?.secondary_text_ar : content?.secondary_text_en) ?? f.secondary
-  const purl    = validateUrl(content?.primary_url, f.primary_url)
-  const surl    = validateUrl(content?.secondary_url, f.secondary_url)
+  const ptext   = f.primary
+  const stext   = f.secondary
+  const purl    = f.primary_url
+  const surl    = f.secondary_url
 
   // WhatsApp link built ONLY from the shared helper — settings number first,
   // code default as the guarded fallback, digits normalized via helper.

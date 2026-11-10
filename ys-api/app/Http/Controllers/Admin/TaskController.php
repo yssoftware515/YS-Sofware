@@ -58,7 +58,6 @@ class TaskController extends Controller
         $this->authorize('manage_projects');
 
         $validated = $this->validatedPayload($request);
-        $this->assertProjectAccessible($validated['project_id']);
         LifecycleService::reconcileCompletion($validated);
 
         $task = Task::create([...$validated, 'created_by' => Auth::id()]);
@@ -76,8 +75,6 @@ class TaskController extends Controller
     {
         $this->authorize('view_projects');
 
-        $this->assertTaskAccessible($task);
-
         return response()->json(['success' => true, 'data' => $this->payload($task->load('creator:id,name'))]);
     }
 
@@ -85,10 +82,7 @@ class TaskController extends Controller
     {
         $this->authorize('manage_projects');
 
-        $this->assertTaskAccessible($task);
-
         $validated = $this->validatedPayload($request);
-        $this->assertProjectAccessible($validated['project_id']);
         LifecycleService::reconcileCompletion($validated, $task->status);
 
         $task->update($validated);
@@ -105,8 +99,6 @@ class TaskController extends Controller
     public function updateStatus(Request $request, Task $task): JsonResponse
     {
         $this->authorize('manage_projects');
-
-        $this->assertTaskAccessible($task);
 
         $validated = $request->validate([
             'status' => ['required', Rule::in(Task::STATUSES)],
@@ -135,23 +127,10 @@ class TaskController extends Controller
     {
         $this->authorize('manage_projects');
 
-        $this->assertTaskAccessible($task);
-
         $this->auditService->logModelChange('task.deleted', $task);
         $task->delete();
 
         return response()->json(['success' => true, 'message' => 'Task deleted successfully.']);
-    }
-
-    private function assertProjectAccessible(string $projectId): void
-    {
-        $project = Project::findOrFail($projectId);
-        abort_unless($project->isAccessibleBy(Auth::user()), 403, 'You do not have access to this product.');
-    }
-
-    private function assertTaskAccessible(Task $task): void
-    {
-        abort_unless($task->isAccessibleBy(Auth::user()), 403, 'You do not have access to this product.');
     }
 
     private function validatedPayload(Request $request): array

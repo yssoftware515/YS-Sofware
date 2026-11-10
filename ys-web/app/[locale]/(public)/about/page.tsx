@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/Button'
 import { AboutHero } from '@/components/shared/AboutHero'
 import { FeatureRow, type FeatureRowItem } from '@/components/shared/FeatureRow'
 import { AnimatedBox } from '@/components/shared/AnimatedBox'
-import type { TimelineEntry, PublicSettings, StaticPage } from '@/types'
+import type { PublicSettings } from '@/types'
 
 const locales = ['en', 'ar'] as const
 
@@ -42,8 +42,6 @@ const fallbackContent = {
       { title: 'Continuous Evolution', description: "Your business changes, your customers change — so your technology should too. We build for what's next." },
     ],
 
-    timeline_label: 'Company Timeline',
-    type_labels: { founding: 'Founding', product_launch: 'Launch', milestone: 'Milestone', award: 'Award', partnership: 'Partnership' },
     cta_heading: 'Have an idea? Let\u2019s build it.',
     cta_body: 'Tell us what you need \u2014 a product, a platform, or a full system \u2014 and let\u2019s map the way forward.',
     cta_label: 'Start a Conversation',
@@ -77,8 +75,6 @@ const fallbackContent = {
       { title: 'التطور المستمر', description: 'أعمالك تتغيّر وعملاؤك يتغيّرون، لذا تقنيتك يجب أن تتطور أيضًا. نبني لما هو قادم.' },
     ],
 
-    timeline_label: 'التسلسل الزمني للشركة',
-    type_labels: { founding: 'تأسيس', product_launch: 'إطلاق', milestone: 'معلم', award: 'جائزة', partnership: 'شراكة' },
     cta_heading: 'لديك فكرة؟ لنبنها معاً.',
     cta_body: 'أخبرنا بما تحتاجه \u2014 منتجاً أو منصة أو نظاماً متكاملاً \u2014 لنتحدد الطريق معاً.',
     cta_label: 'ابدأ محادثة',
@@ -88,12 +84,6 @@ const fallbackContent = {
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }): Promise<Metadata> {
   const { locale } = await params
   const f = fallbackContent[locale as keyof typeof fallbackContent] ?? fallbackContent.en
-  try {
-    const page = await api.page('about', locale)
-    if (page?.title) {
-      return buildMetadata({ locale, path: '/about', title: page.title, description: page.excerpt ?? f.hero_subline })
-    }
-  } catch (err) { console.error('[public:about] fetch failed:', err) }
   return buildMetadata({ locale, path: '/about', title: f.title, description: f.hero_subline })
 }
 
@@ -103,31 +93,14 @@ export default async function AboutPage({ params }: { params: Promise<{ locale: 
   const f = fallbackContent[locale as keyof typeof fallbackContent] ?? fallbackContent.en
   const isAr = locale === 'ar'
 
-  let timeline: TimelineEntry[] = []
-  let settings: PublicSettings | undefined
-  let cmsPage: StaticPage | undefined
-  try {
-    [timeline, settings, cmsPage] = await Promise.all([
-      api.timeline(locale),
-      api.settings(locale),
-      api.page('about', locale).catch(() => undefined),
-    ])
-  } catch (err) { console.error('[public:about] fetch failed:', err) }
+  const settings: PublicSettings | undefined = await api.settings(locale).catch(() => undefined)
 
   const companyName = settings?.brand?.company_name ?? 'YS Systems & Software'
 
-  let sections: { label: string; text: string }[] = []
-  if (cmsPage?.content) {
-    try {
-      const parsed = JSON.parse(cmsPage.content)
-      if (Array.isArray(parsed)) sections = parsed
-    } catch (err) { console.error('[public:about] fetch failed:', err) }
-  }
-
-  const missionLabel = sections[0]?.label ?? f.mission_label
-  const missionText  = sections[0]?.text ?? f.mission
-  const visionLabel  = sections[1]?.label ?? f.vision_label
-  const visionText   = sections[1]?.text ?? f.vision
+  const missionLabel = f.mission_label
+  const missionText  = f.mission
+  const visionLabel  = f.vision_label
+  const visionText   = f.vision
 
   const highlightIcons = [Layers, Workflow, ShieldCheck, TrendingUp]
   const highlightItems: FeatureRowItem[] = f.highlights.map((h, i) => ({ ...h, icon: highlightIcons[i] }))
@@ -185,37 +158,6 @@ export default async function AboutPage({ params }: { params: Promise<{ locale: 
           <FeatureRow items={valueItems} accent="violet" />
         </div>
       </section>
-
-      {/* ── Timeline ───────────────────────────────────────────────────── */}
-      {timeline.length > 0 && (
-        <section className="section-sm" style={{ borderTop: '1px solid var(--color-border)' }}>
-          <div className="container-site" style={{ maxWidth: '56rem' }}>
-            <h2 className="font-display font-semibold text-fluid-xl" style={{ color: 'var(--color-foreground)', marginBottom: '3rem', textAlign: 'center' }}>{f.timeline_label}</h2>
-            <div style={{ position: 'relative' }}>
-              <div style={{ position: 'absolute', left: '50%', top: 0, bottom: 0, width: 1, backgroundColor: 'var(--color-border)', transform: 'translateX(-50%)' }} className="hidden md:block" />
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '3rem' }}>
-                {timeline.map((entry, i) => (
-                  <div key={entry.id} className="grid grid-cols-1 md:grid-cols-2 gap-6 items-center">
-                    <div style={{ textAlign: i % 2 === 0 ? 'right' : 'left', order: i % 2 === 0 ? 0 : 1 }} className="hidden md:block">
-                      <span style={{ fontSize: '0.75rem', color: 'var(--color-foreground-muted)', fontWeight: 600 }}>{new Date(entry.event_date).getFullYear()}</span>
-                    </div>
-                    <div style={{ padding: '1.25rem 1.5rem', borderRadius: '0.875rem', border: '1px solid var(--color-border)', backgroundColor: 'var(--color-surface)', order: i % 2 === 0 ? 1 : 0 }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.5rem' }}>
-                        <span style={{ fontSize: '0.65rem', fontWeight: 600, color: 'var(--color-accent)', textTransform: 'uppercase', letterSpacing: '0.08em' }}>
-                          {f.type_labels[entry.type as keyof typeof f.type_labels] ?? entry.type}
-                        </span>
-                        <span style={{ fontSize: '0.75rem', color: 'var(--color-foreground-muted)' }} className="md:hidden">· {new Date(entry.event_date).getFullYear()}</span>
-                      </div>
-                      <h3 className="font-display font-semibold" style={{ color: 'var(--color-foreground)', marginBottom: '0.25rem' }}>{entry.title}</h3>
-                      {entry.description && <p style={{ fontSize: '0.875rem', color: 'var(--color-foreground-muted)', lineHeight: 1.6 }}>{entry.description}</p>}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-        </section>
-      )}
 
       {/* ── CTA ────────────────────────────────────────────────────────── */}
       <section className="section-sm section-divider-top" style={{ backgroundColor: 'var(--color-background-subtle)' }}>

@@ -3,7 +3,6 @@
 namespace App\Domains\Operations\Models;
 
 use App\Domains\Auth\Models\User;
-use App\Domains\Billing\Models\Customer;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -74,25 +73,14 @@ class Milestone extends Model
         return $this->isOpen() && $this->target_date?->lt(Carbon::today()) === true;
     }
 
-    // ── Product scoping ──────────────────────────────────────────────
+    // ── Row visibility ──────────────────────────────────────────────
 
     /**
-     * Milestones inherit the tenant boundary through project → customer,
-     * exactly like tasks.
+     * Row visibility is permission-gated only. The scope is kept as a
+     * no-op so existing callers stay unchanged.
      */
     public function scopeAccessibleBy(Builder $query, User $user): Builder
     {
-        if ($user->isSuperAdmin()) {
-            return $query;
-        }
-
-        return $query->whereHas('project', fn ($q) => $q->whereNull('customer_id')
-            ->orWhereHas('customer', fn ($q2) => $q2->whereNull('product_id')
-                ->orWhereIn('product_id', $user->products()->pluck('products.id'))));
-    }
-
-    public function isAccessibleBy(User $user): bool
-    {
-        return Customer::userCanAccess($this->project?->customer?->product_id, $user);
+        return $query;
     }
 }

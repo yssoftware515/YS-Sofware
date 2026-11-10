@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { Save, ArrowLeft, Eye, EyeOff, Check } from 'lucide-react'
+import { Save, ArrowLeft, Eye, EyeOff } from 'lucide-react'
 import Link from 'next/link'
 import { Button } from '@/components/ui/Button'
 import { Field, Input, Select, Checkbox, FormSection } from '@/components/admin/FormElements'
@@ -27,14 +27,13 @@ const emptyForm: UserFormData = {
 interface UserFormProps {
   userId?: string
   initialData?: Partial<UserFormData>
-  initialProductIds?: string[]
   isSelf?: boolean       // editing your own account — role/status locked
   isSuperAdmin?: boolean // target user is super_admin — locked unless current user is too
   currentUserIsSuperAdmin?: boolean
 }
 
 export function UserForm({
-  userId, initialData, initialProductIds, isSelf, isSuperAdmin, currentUserIsSuperAdmin,
+  userId, initialData, isSelf, isSuperAdmin, currentUserIsSuperAdmin,
 }: UserFormProps) {
   const router = useRouter()
   const { show } = useToast()
@@ -46,57 +45,14 @@ export function UserForm({
   const [showPwd, setShowPwd] = useState(false)
   const [roles, setRoles]   = useState<{ id: string; name: string; slug: string; description: string | null; permissions: string[] }[]>([])
 
-  // Product access — saved through its own endpoint (PUT
-  // /admin/users/{id}/products), separate from the basic account form,
-  // since it's a distinct action gated by a distinct permission
-  // (manage_admins, not manage_users) on the backend.
-  const [products, setProducts]         = useState<{ id: string; name: string }[]>([])
-  const [productIds, setProductIds]     = useState<string[]>(initialProductIds ?? [])
-  const [savingAccess, setSavingAccess] = useState(false)
-
   const locked = isSelf || (isSuperAdmin && !currentUserIsSuperAdmin)
-  const selectedRole = roles.find(r => r.id === form.role_id)
-  const selectedRoleIsSuperAdmin = selectedRole?.permissions?.includes('*') ?? false
 
   useEffect(() => {
     fetch(`${API}/admin/roles`, { credentials: 'include', headers: { Accept: 'application/json' } })
       .then(r => r.json())
       .then(body => { if (body.success) setRoles(body.data) })
       .catch(() => {})
-
-    // Products list only matters for scoping — harmless to fetch always,
-    // the section that uses it just won't render for super-admin roles.
-    fetch(`${API}/admin/products?per_page=100`, { credentials: 'include', headers: { Accept: 'application/json' } })
-      .then(r => r.json())
-      .then(body => { if (body.success) setProducts(body.data.map((p: { id: string; name_en: string }) => ({ id: p.id, name: p.name_en }))) })
-      .catch(() => {})
   }, [])
-
-  const toggleProduct = (id: string) => {
-    setProductIds(prev => prev.includes(id) ? prev.filter(p => p !== id) : [...prev, id])
-  }
-
-  const saveProductAccess = async () => {
-    if (!userId) return
-    setSavingAccess(true)
-    try {
-      await ensureXsrfToken(API)
-      const xsrf = readXsrfToken()
-      const res  = await fetch(`${API}/admin/users/${userId}/products`, {
-        method: 'PUT',
-        credentials: 'include',
-        headers: { 'Content-Type': 'application/json', Accept: 'application/json', ...(xsrf ? { 'X-XSRF-TOKEN': xsrf } : {}) },
-        body: JSON.stringify({ product_ids: productIds }),
-      })
-      const body = await res.json()
-      if (!res.ok || !body.success) { show('error', body.message ?? 'Failed to update product access.'); return }
-      show('success', 'Product access updated.')
-    } catch {
-      show('error', 'Network error.')
-    } finally {
-      setSavingAccess(false)
-    }
-  }
 
   const update = <K extends keyof UserFormData>(key: K, value: UserFormData[K]) => {
     setForm(prev => ({ ...prev, [key]: value }))
@@ -229,29 +185,6 @@ export function UserForm({
             />
           )}
         </FormSection>
-
-        {isEdit && !selectedRoleIsSuperAdmin && (
-          <FormSection
-            title="Product Access"
-            description="Which products this admin can manage. Unchecked = no access to that product's content, releases, or docs."
-          >
-            {products.length === 0 ? (
-              <p style={{ fontSize: '0.8125rem', color: 'var(--color-foreground-muted)' }}>No products yet.</p>
-            ) : (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-                {products.map(p => (
-                  <label key={p.id} style={{ display: 'flex', alignItems: 'center', gap: '0.625rem', fontSize: '0.875rem', cursor: 'pointer', padding: '0.5rem 0.75rem', borderRadius: 8, border: '1px solid var(--color-border)', backgroundColor: productIds.includes(p.id) ? 'var(--color-accent-subtle)' : 'var(--color-background)' }}>
-                    <input type="checkbox" checked={productIds.includes(p.id)} onChange={() => toggleProduct(p.id)} style={{ accentColor: 'var(--color-accent)' }} />
-                    {p.name}
-                  </label>
-                ))}
-              </div>
-            )}
-            <Button type="button" variant="secondary" size="sm" onClick={saveProductAccess} loading={savingAccess} style={{ marginTop: '0.75rem' }}>
-              <Check size={14} /> Save Product Access
-            </Button>
-          </FormSection>
-        )}
 
         {!isEdit && (
           <FormSection title="Password" description="Minimum 12 characters">

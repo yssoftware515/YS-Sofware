@@ -6,25 +6,8 @@ import { corePermissionGroups } from '@/modules/core/permissions'
  * backend's real authorization checks (grep-verified against
  * ys-api/app/Domains/Auth/Enums/Permission.php and every controller
  * `authorize()` call).
- *
- * Timeline is guarded by manage_timeline (TimelineController) and Feature
- * Flags by manage_feature_flags (FeatureFlagController) — never by
- * manage_settings, which only guards the settings resource. A role built
- * with the wrong mapping silently grants nothing.
  */
 describe('corePermissionGroups mapping', () => {
-  it('maps Timeline to manage_timeline, never manage_settings', () => {
-    const group = corePermissionGroups.find(g => g.group === 'Timeline')
-    expect(group?.permissions).toEqual(['manage_timeline'])
-    expect(group?.permissions).not.toContain('manage_settings')
-  })
-
-  it('maps Feature Flags to manage_feature_flags, never manage_settings', () => {
-    const group = corePermissionGroups.find(g => g.group === 'Feature Flags')
-    expect(group?.permissions).toEqual(['manage_feature_flags'])
-    expect(group?.permissions).not.toContain('manage_settings')
-  })
-
   it('keeps Settings on manage_settings', () => {
     const group = corePermissionGroups.find(g => g.group === 'Settings')
     expect(group?.permissions).toContain('manage_settings')

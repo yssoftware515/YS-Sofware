@@ -20,7 +20,6 @@ class AuditLogFactory extends Factory
             'action' => $this->faker->randomElement(['created', 'updated', 'deleted', 'login']),
             'resource_type' => $this->faker->randomElement(['product', 'service', 'faq', 'user']),
             'resource_id' => (string) $this->faker->uuid(),
-            'product_id' => null,
             'old_values' => [],
             'new_values' => [],
             'ip_address' => $this->faker->ipv4(),

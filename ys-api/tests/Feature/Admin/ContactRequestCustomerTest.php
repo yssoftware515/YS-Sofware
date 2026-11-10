@@ -4,8 +4,8 @@ namespace Tests\Feature\Admin;
 
 use App\Domains\Auth\Models\Role;
 use App\Domains\Auth\Models\User;
-use App\Domains\Billing\Models\Customer;
 use App\Domains\Operations\Models\ContactRequest;
+use App\Domains\Operations\Models\Customer;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Laravel\Sanctum\Sanctum;
 use Tests\TestCase;
@@ -127,7 +127,7 @@ class ContactRequestCustomerTest extends TestCase
         $this->assertNull($request->fresh()->customer_id);
 
         // no permissions at all → denied
-        $this->actingAsScoped(['manage_products']);
+        $this->actingAsScoped(['manage_settings']);
         $this->postJson("/api/v1/admin/contact-requests/{$request->id}/convert-customer")
             ->assertStatus(403);
     }

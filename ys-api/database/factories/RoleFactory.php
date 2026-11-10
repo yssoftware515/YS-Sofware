@@ -14,7 +14,7 @@ class RoleFactory extends Factory
         return [
             'name' => $this->faker->jobTitle(),
             'slug' => $this->faker->unique()->slug(2),
-            'permissions' => ['view_products'],
+            'permissions' => ['manage_contact_requests'],
             'description' => $this->faker->sentence(),
         ];
     }

@@ -101,7 +101,7 @@ class MilestoneTest extends TestCase
 
         $this->getJson('/api/v1/admin/milestones')->assertStatus(401);
 
-        $this->actingAsScoped(['manage_products']);
+        $this->actingAsScoped(['manage_settings']);
         $this->getJson('/api/v1/admin/milestones')->assertStatus(403);
         $this->postJson('/api/v1/admin/milestones', [
             'project_id' => $project->id,

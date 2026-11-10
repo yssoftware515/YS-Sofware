@@ -1,9 +1,7 @@
 import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
-import { api } from '@/lib/api/client'
 import { buildMetadata } from '@/lib/seo'
 import { PageHero } from '@/components/shared/PageHero'
-import type { StaticPage } from '@/types'
 
 const locales = ['en', 'ar'] as const
 
@@ -37,29 +35,13 @@ export default async function CookiePolicyPage({ params }: { params: Promise<{ l
     { title: 'Contact Us', body: 'If you have any questions about our Cookie Policy, please contact us at cantactys@gmail.com.' },
   ]
 
-  let sections = fallbackSections
-  let page: StaticPage | null = null
-  try {
-    page = await api.page('cookie-policy', locale)
-    if (page?.content) {
-      const parsed = JSON.parse(page.content)
-      if (Array.isArray(parsed)) sections = parsed
-    }
-  } catch (err) { console.error('[public:cookie-policy] fetch failed:', err) }
-
-  const lastUpdated = page?.published_at
-    ? new Intl.DateTimeFormat(isAr ? 'ar' : 'en-US', { dateStyle: 'long' }).format(Date.parse(page.published_at))
-    : undefined
-  const heroDescription = lastUpdated
-    ? (isAr ? `آخر تحديث: ${lastUpdated}` : `Last updated: ${lastUpdated}`)
-    : undefined
+  const sections = fallbackSections
 
   return (
     <div style={{ minHeight: '100dvh', backgroundColor: 'var(--color-background)' }}>
       <PageHero
         eyebrow={isAr ? 'قانوني' : 'Legal'}
         title={isAr ? 'سياسة ملفات تعريف الارتباط' : 'Cookie Policy'}
-        description={heroDescription}
         maxWidth="48rem"
       />
 

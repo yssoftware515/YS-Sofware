@@ -4,7 +4,7 @@ namespace Tests\Feature\Admin;
 
 use App\Domains\Auth\Models\Role;
 use App\Domains\Auth\Models\User;
-use App\Domains\Billing\Models\Customer;
+use App\Domains\Operations\Models\Customer;
 use App\Domains\Operations\Models\Project;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Laravel\Sanctum\Sanctum;

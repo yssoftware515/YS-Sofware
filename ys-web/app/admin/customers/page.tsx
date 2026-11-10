@@ -15,7 +15,6 @@ interface Customer {
   type: 'individual' | 'company' | null
   company: string | null
   status: 'active' | 'archived'
-  subscriptions_count: number | null
   projects_count: number | null
   created_at: string
 }
@@ -45,7 +44,7 @@ export default function AdminCustomersPage() {
   const deleteCustomer = useAdminDelete(RESOURCE)
 
   const handleDelete = (id: string, name: string) => {
-    if (!confirm(`Delete customer "${name}"? Only possible if they have no subscriptions or projects.`)) return
+    if (!confirm(`Delete customer "${name}"? Only possible if they have no projects.`)) return
     deleteCustomer.mutate(id)
   }
 
@@ -54,7 +53,7 @@ export default function AdminCustomersPage() {
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '1rem' }}>
         <div>
           <h1 className="font-display font-semibold" style={{ fontSize: '1.375rem', color: 'var(--color-foreground)' }}>Customers</h1>
-          <p style={{ fontSize: '0.875rem', color: 'var(--color-foreground-muted)', marginTop: '0.125rem' }}>People and companies YS System works with — projects, subscriptions, and contact requests</p>
+          <p style={{ fontSize: '0.875rem', color: 'var(--color-foreground-muted)', marginTop: '0.125rem' }}>People and companies YS System works with — projects and contact requests</p>
         </div>
         <Link href="/admin/customers/new">
           <Button variant="primary" size="sm"><Plus size={16} /> Add Customer</Button>
@@ -93,20 +92,20 @@ export default function AdminCustomersPage() {
           <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.875rem' }}>
             <thead>
               <tr style={{ borderBottom: '1px solid var(--color-border)', backgroundColor: 'var(--color-background-subtle)' }}>
-                {['Customer', 'Type', 'Status', 'Subscriptions', 'Projects', 'Actions'].map(col => (
+                {['Customer', 'Type', 'Status', 'Projects', 'Actions'].map(col => (
                   <th key={col} style={{ padding: '0.75rem 1rem', textAlign: 'left', fontSize: '0.75rem', fontWeight: 600, color: 'var(--color-foreground-muted)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>{col}</th>
                 ))}
               </tr>
             </thead>
             <tbody>
               {isLoading ? (
-                <tr><td colSpan={6} style={{ padding: '3rem', textAlign: 'center', color: 'var(--color-foreground-muted)' }}>Loading...</td></tr>
+                <tr><td colSpan={5} style={{ padding: '3rem', textAlign: 'center', color: 'var(--color-foreground-muted)' }}>Loading...</td></tr>
               ) : isError ? (
-                <tr><td colSpan={6} style={{ padding: '3rem', textAlign: 'center', color: 'var(--color-error)' }}>
+                <tr><td colSpan={5} style={{ padding: '3rem', textAlign: 'center', color: 'var(--color-error)' }}>
                   {error instanceof Error ? error.message : 'Failed to load customers.'}
                 </td></tr>
               ) : customers.length === 0 ? (
-                <tr><td colSpan={6} style={{ padding: '3rem', textAlign: 'center', color: 'var(--color-foreground-muted)' }}>
+                <tr><td colSpan={5} style={{ padding: '3rem', textAlign: 'center', color: 'var(--color-foreground-muted)' }}>
                   No customers yet. <Link href="/admin/customers/new" style={{ color: 'var(--color-accent)' }}>Add one →</Link>
                 </td></tr>
               ) : customers.map((customer) => {
@@ -124,11 +123,6 @@ export default function AdminCustomersPage() {
                     </td>
                     <td style={{ padding: '0.875rem 1rem' }}>
                       <Badge variant={cfg.variant}>{cfg.label}</Badge>
-                    </td>
-                    <td style={{ padding: '0.875rem 1rem' }}>
-                      <Link href={`/admin/subscriptions?customer_id=${customer.id}`} style={{ color: 'var(--color-accent)', textDecoration: 'none' }}>
-                        {customer.subscriptions_count ?? 0}
-                      </Link>
                     </td>
                     <td style={{ padding: '0.875rem 1rem' }}>
                       <Link href={`/admin/projects?customer_id=${customer.id}`} style={{ color: 'var(--color-accent)', textDecoration: 'none' }}>

@@ -11,7 +11,6 @@ export default function EditUserPage() {
   const id     = params.id as string
 
   const [data, setData]                       = useState<Partial<UserFormData> | null>(null)
-  const [initialProductIds, setInitialProductIds] = useState<string[]>([])
   const [isSelf, setIsSelf]                   = useState(false)
   const [isSuperAdmin, setIsSuperAdmin]       = useState(false)
   const [currentIsSuperAdmin, setCurrentIsSuperAdmin] = useState(false)
@@ -35,7 +34,6 @@ export default function EditUserPage() {
         role_id: targetUser.role?.id ?? '',
         is_active: targetUser.is_active,
       })
-      setInitialProductIds(targetUser.product_ids ?? [])
       setIsSelf(targetUser.id === me.id)
       // Checks the actual '*' permission, not the role's slug/name — a
       // super-admin role isn't guaranteed to literally be named
@@ -53,7 +51,6 @@ export default function EditUserPage() {
     <UserForm
       userId={id}
       initialData={data}
-      initialProductIds={initialProductIds}
       isSelf={isSelf}
       isSuperAdmin={isSuperAdmin}
       currentUserIsSuperAdmin={currentIsSuperAdmin}

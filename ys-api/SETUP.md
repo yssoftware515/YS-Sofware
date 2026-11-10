@@ -9,7 +9,6 @@
 | PHP         | 8.4+     |
 | Composer    | 2.x      |
 | PostgreSQL  | 15+      |
-| Redis       | 7+       |
 | Git         | any      |
 
 ---
@@ -40,10 +39,6 @@ DB_PORT=5432
 DB_DATABASE=ys_api
 DB_USERNAME=your_postgres_user
 DB_PASSWORD=your_postgres_password
-
-REDIS_HOST=127.0.0.1
-REDIS_PORT=6379
-REDIS_PASSWORD=null          # set if Redis has a password
 
 FRONTEND_URL=http://localhost:3000
 SANCTUM_STATEFUL_DOMAINS=localhost:3000
@@ -80,19 +75,26 @@ CREATE DATABASE ys_api_test;   -- for running tests
 php artisan migrate
 ```
 
-This runs 12 migrations in order:
+This runs migrations in order (current, post-Group H):
 1. roles
 2. users
-3. audit_logs
+3. audit_logs (RLS enabled — immutability at DB level)
 4. personal_access_tokens
 5. settings
 6. media
-7. products
-8. product_releases
-9. content tables (docs, roadmap, updates, careers, contact, timeline)
-10. feature_flags
-11. search vectors (PostgreSQL FTS + GIN indexes)
-12. audit_logs RLS (Row-Level Security — immutability at DB level)
+7. services
+8. customers
+9. contact_requests
+10. projects
+11. tasks
+12. milestones
+13. menus / menu_items
+14. static_pages
+15. faqs
+16. search vectors (retired tables dropped by Group H; active search uses bounded ILIKE via PostgresSearchDriver)
+17. jobs, cache, sessions, failed_jobs (system tables)
+
+Group H (`2026_11_10_000001`, `2026_11_10_000002`) dropped the retired domain tables and the `customers.product_id` / `audit_logs.product_id` columns. Those migrations are **irreversible by design** (`down()` throws `RuntimeException`).
 
 ---
 
@@ -103,7 +105,7 @@ php artisan db:seed
 ```
 
 This creates:
-- 5 default roles (super_admin, admin, editor, content_manager, support)
+- 3 default roles (super_admin `*`, admin 10 permissions, support 3 permissions)
 - 1 super admin account (only if `ADMIN_PASSWORD` is set in the environment — the seeder fails closed on a blank value)
 - Default company settings
 
@@ -254,12 +256,11 @@ php artisan horizon
 Domain-Driven Design (DDD)
 ├── Domains/
 │   ├── Auth/          User, Role, LoginAction, LoginDTO, PermissionRepository
-│   ├── Product/       Product, ProductRelease, CRUD Actions, Observers
-│   ├── Content/       Docs, Roadmap, Updates, Careers, Timeline
-│   ├── Operations/    ContactRequest, SubmitContactRequestAction
-│   ├── Search/        SearchDriver (interface), PostgresSearchDriver
-│   └── System/        AuditLog(immutable), Setting, Media, FeatureFlag
-│                      AuditService, FeatureFlagService, MediaUploadService
+│   ├── Operations/    Customer, Project, Task, Milestone, ContactRequest (+ actions)
+│   ├── Search/        SearchDriver (interface), PostgresSearchDriver, SearchService
+│   ├── Services/      Service, ServiceObserver (audit)
+│   └── System/        AuditLog (immutable), Setting, Media
+│                      AuditService, MediaUploadService, HtmlSanitizerService, DashboardService
 ```
 
 ## Key Security Decisions
@@ -269,10 +270,10 @@ Domain-Driven Design (DDD)
 | Password Hashing     | bcrypt (Laravel default; `BCRYPT_ROUNDS` honored)          |
 | Session Tokens       | Sanctum, 8h TTL (30d with remember)        |
 | Audit Log Protection | Eloquent override + PostgreSQL RLS          |
-| Feature Flags Cache  | Redis with atomic lock (stampede-safe)      |
-| Email Delivery       | Async jobs via Redis queue + afterCommit()  |
+| Feature Flags        | Removed with the Feature Flag domain (Group F/H) |
+| Email Delivery       | Async jobs via database queue driver + afterCommit() |
 | File Uploads         | Server-side MIME detection, UUID names      |
-| Search               | PostgreSQL FTS with websearch_to_tsquery()  |
+| Search               | Bounded ILIKE per type via PostgresSearchDriver (services, static_pages, faqs) |
 | Rate Limiting        | 120/min public · 5/min auth · 3/hr contact |
 
 ## API Endpoints Summary
@@ -285,28 +286,37 @@ POST /api/v1/auth/logout
 GET  /api/v1/auth/me
 
 GET  /api/v1/public/settings
-GET  /api/v1/public/search?q=...
-GET  /api/v1/public/products
-GET  /api/v1/public/products/{slug}
-GET  /api/v1/public/docs
-GET  /api/v1/public/docs/{slug}
-GET  /api/v1/public/roadmap
-GET  /api/v1/public/updates
-GET  /api/v1/public/careers
-GET  /api/v1/public/careers/{id}
-GET  /api/v1/public/timeline
+GET  /api/v1/public/services
+GET  /api/v1/public/services/{slug}
+GET  /api/v1/public/search?q=...&types[]=service|page|faq
 POST /api/v1/public/contact
 
 # Admin (Bearer token required)
-CRUD /api/v1/admin/products
-CRUD /api/v1/admin/releases
-CRUD /api/v1/admin/docs/categories
-CRUD /api/v1/admin/docs/articles
-CRUD /api/v1/admin/roadmap
-CRUD /api/v1/admin/updates
-CRUD /api/v1/admin/careers
-CRUD /api/v1/admin/timeline
+GET/POST  /api/v1/admin/services
+GET/PUT/PATCH/DELETE  /api/v1/admin/services/{service}
 GET  /api/v1/admin/contact-requests
+GET  /api/v1/admin/contact-requests/{id}
+PATCH  /api/v1/admin/contact-requests/{id}/status
+GET/POST  /api/v1/admin/customers
+GET/PUT/PATCH/DELETE  /api/v1/admin/customers/{customer}
+GET/POST  /api/v1/admin/projects
+GET/PUT/PATCH/DELETE  /api/v1/admin/projects/{project}
+GET/POST  /api/v1/admin/tasks
+GET/PUT/PATCH/DELETE  /api/v1/admin/tasks/{task}
+GET/POST  /api/v1/admin/milestones
+GET/PUT/PATCH/DELETE  /api/v1/admin/milestones/{milestone}
+POST  /api/v1/admin/milestones/{milestone}/move
+GET  /api/v1/admin/dashboard/stats
+GET/POST  /api/v1/admin/users
+GET/PUT/PATCH/DELETE  /api/v1/admin/users/{user}
+GET  /api/v1/admin/roles
+POST  /api/v1/admin/roles
+GET/PUT/PATCH/DELETE  /api/v1/admin/roles/{role}
+GET  /api/v1/admin/settings
+GET  /api/v1/admin/settings/{setting}
+PUT  /api/v1/admin/settings/{setting}
+GET  /api/v1/admin/audit-logs
+GET  /api/v1/admin/ops/failed-jobs
 GET  /api/v1/admin/media
 POST /api/v1/admin/media
 CRUD /api/v1/admin/users

@@ -5,7 +5,7 @@ namespace App\Domains\Search\DTOs;
 readonly class SearchResult
 {
     public function __construct(
-        public string $type,        // 'product' | 'article' | 'career' | 'update'
+        public string $type,        // 'service' | 'page' | 'faq'
         public string $id,
         public string $title,
         public ?string $excerpt,

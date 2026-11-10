@@ -1,0 +1,50 @@
+# Stage 1: Base — FrankenPHP with PHP 8.4
+# Official Vercel Laravel guide pattern: FrankenPHP (PHP + Caddy)
+FROM dunglas/frankenphp:1-php8.4-bookworm AS base
+
+RUN cp "$PHP_INI_DIR/php.ini-production" "$PHP_INI_DIR/php.ini" \
+    && install-php-extensions pdo_pgsql zip opcache mbstring
+
+WORKDIR /app
+
+# Stage 2: Dependencies — install Composer packages without running scripts
+FROM base AS dependencies
+
+COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
+COPY composer.json composer.lock ./
+RUN composer install \
+    --no-dev \
+    --no-interaction \
+    --no-progress \
+    --no-scripts \
+    --optimize-autoloader \
+    --prefer-dist
+
+# Copy application code and generate autoloader (post-autoload-dump hooks run here)
+COPY . .
+RUN mkdir -p \
+        storage/framework/cache \
+        storage/framework/sessions \
+        storage/framework/views \
+        bootstrap/cache \
+    && composer dump-autoload --no-dev --classmap-authoritative
+
+# Stage 3: Runtime — minimal image with app + Caddyfile
+FROM base AS runtime
+
+COPY --from=dependencies --chown=www-data:www-data /app /app
+COPY Caddyfile /etc/frankenphp/Caddyfile
+
+# Allow binding to $PORT (Vercel passes PORT env var, defaults to 80)
+RUN setcap CAP_NET_BIND_SERVICE=+eip /usr/local/bin/frankenphp \
+    && chown -R www-data:www-data /config/caddy /data/caddy
+
+ENV PORT=80 \
+    APP_ENV=production \
+    APP_DEBUG=false \
+    LOG_CHANNEL=stderr
+
+USER www-data
+
+# FrankenPHP serves HTTP on $PORT and routes PHP to public/index.php
+CMD ["frankenphp", "run", "--config", "/etc/frankenphp/Caddyfile"]

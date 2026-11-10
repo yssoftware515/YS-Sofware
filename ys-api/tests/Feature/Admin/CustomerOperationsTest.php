@@ -4,8 +4,8 @@ namespace Tests\Feature\Admin;
 
 use App\Domains\Auth\Models\Role;
 use App\Domains\Auth\Models\User;
-use App\Domains\Billing\Models\Customer;
 use App\Domains\Operations\Models\ContactRequest;
+use App\Domains\Operations\Models\Customer;
 use App\Domains\Operations\Models\Project;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Laravel\Sanctum\Sanctum;
@@ -46,7 +46,7 @@ class CustomerOperationsTest extends TestCase
 
     public function test_admin_without_permissions_cannot_view_or_manage_customers(): void
     {
-        $this->actingAsScoped(['manage_products']);
+        $this->actingAsScoped(['manage_settings']);
 
         $this->getJson('/api/v1/admin/customers')->assertStatus(403);
 
@@ -170,7 +170,7 @@ class CustomerOperationsTest extends TestCase
 
     // ── Deleting while referenced ────────────────────────────────────
 
-    public function test_customer_with_projects_or_subscriptions_cannot_be_deleted(): void
+    public function test_customer_with_projects_cannot_be_deleted(): void
     {
         $this->actingAsSuperAdmin();
 
@@ -248,7 +248,7 @@ class CustomerOperationsTest extends TestCase
         $this->actingAsSuperAdmin();
         Customer::factory()->create(['name' => 'Secret Client', 'email' => 'secret@client.com']);
 
-        foreach (['/api/v1/public/products', '/api/v1/public/services', '/api/v1/public/faqs'] as $publicRoute) {
+        foreach (['/api/v1/public/services', '/api/v1/public/settings'] as $publicRoute) {
             $this->getJson($publicRoute)
                 ->assertStatus(200)
                 ->assertJsonMissing(['email' => 'secret@client.com']);

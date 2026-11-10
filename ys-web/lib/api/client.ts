@@ -2,8 +2,7 @@ import { ensureXsrfToken, readXsrfToken } from '@/lib/csrf'
 import { API_BASE } from '@/lib/api/config'
 import type {
   ApiResponse, Service, ServiceDetail,
-  PublicSettings, TimelineEntry, SearchResult,
-  StaticPage, FaqItem, Menu, HomepageSection,
+  PublicSettings, SearchResult,
 } from '@/types'
 
 export interface SearchResponse {
@@ -58,9 +57,6 @@ export const api = {
   service: (slug: string, locale = 'en') =>
     request<ServiceDetail>(`/public/services/${slug}`, {}, locale),
 
-  timeline: (locale = 'en') =>
-    request<TimelineEntry[]>('/public/timeline', {}, locale),
-
   // Search — never cached, results must reflect current DB state
   search: (query: string, locale = 'en', types: string[] = [], limit = 10) => {
     const params = new URLSearchParams({ q: query, locale, limit: String(limit) })
@@ -70,30 +66,6 @@ export const api = {
 
   contact: (data: unknown, locale = 'en') =>
     request('/public/contact', { method: 'POST', body: JSON.stringify(data), next: { revalidate: 0 } }, locale),
-
-  // ── CMS - Static Pages ──────────────────────────────────────────
-  pages: (locale = 'en') =>
-    request<StaticPage[]>('/public/pages', {}, locale),
-
-  page: (slug: string, locale = 'en') =>
-    request<StaticPage>(`/public/pages/${slug}`, {}, locale),
-
-  // ── CMS - FAQ ───────────────────────────────────────────────────
-  faqs: (locale = 'en', category?: string) => {
-    const params = category ? `?category=${encodeURIComponent(category)}` : ''
-    return request<FaqItem[]>(`/public/faqs${params}`, {}, locale)
-  },
-
-  // ── CMS - Menus ─────────────────────────────────────────────────
-  menus: (locale = 'en') =>
-    request<Menu[]>('/public/menus', {}, locale),
-
-  menu: (location: string, locale = 'en') =>
-    request<Menu>(`/public/menus/${location}`, {}, locale),
-
-  // ── CMS - Homepage Sections ─────────────────────────────────────
-  homepageSections: (locale = 'en') =>
-    request<HomepageSection[]>('/public/homepage-sections', {}, locale),
 }
 
 export function adminRequest<T>(endpoint: string, options: RequestInit = {}): Promise<T> {

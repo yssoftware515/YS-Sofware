@@ -1,9 +1,7 @@
 import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
-import { api } from '@/lib/api/client'
 import { buildMetadata } from '@/lib/seo'
 import { PageHero } from '@/components/shared/PageHero'
-import type { StaticPage } from '@/types'
 
 const locales = ['en', 'ar'] as const
 const fallbackSections = {
@@ -38,31 +36,13 @@ export default async function PrivacyPage({ params }: { params: Promise<{ locale
   const { locale } = await params
   if (!(locales as readonly string[]).includes(locale)) notFound()
   const isAr = locale === 'ar'
-  const f = fallbackSections[locale as keyof typeof fallbackSections] ?? fallbackSections.en
-
-  let sections: { title: string; body: string }[] = f
-  let page: StaticPage | null = null
-  try {
-    page = await api.page('privacy', locale)
-    if (page?.content) {
-      const parsed = JSON.parse(page.content)
-      if (Array.isArray(parsed)) sections = parsed
-    }
-  } catch (err) { console.error('[public:privacy] fetch failed:', err) }
-
-  const lastUpdated = page?.published_at
-    ? new Intl.DateTimeFormat(isAr ? 'ar' : 'en-US', { dateStyle: 'long' }).format(Date.parse(page.published_at))
-    : undefined
-  const heroDescription = lastUpdated
-    ? (isAr ? `آخر تحديث: ${lastUpdated}` : `Last updated: ${lastUpdated}`)
-    : undefined
+  const sections = fallbackSections[locale as keyof typeof fallbackSections] ?? fallbackSections.en
 
   return (
     <div style={{ minHeight: '100dvh', backgroundColor: 'var(--color-background)' }}>
       <PageHero
         eyebrow={isAr ? 'قانوني' : 'Legal'}
         title={isAr ? 'سياسة الخصوصية' : 'Privacy Policy'}
-        description={heroDescription}
         maxWidth="48rem"
       />
 

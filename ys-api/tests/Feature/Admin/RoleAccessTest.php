@@ -41,7 +41,7 @@ class RoleAccessTest extends TestCase
     public function test_manage_users_user_cannot_mutate_roles(): void
     {
         $this->actAsUserWith(['manage_users']);
-        $target = Role::factory()->create(['slug' => 'ordinary', 'permissions' => ['manage_media']]);
+        $target = Role::factory()->create(['slug' => 'ordinary', 'permissions' => ['manage_settings']]);
 
         $this->postJson('/api/v1/admin/roles', [
             'name' => 'Escalated',
@@ -60,13 +60,13 @@ class RoleAccessTest extends TestCase
     public function test_manage_users_user_can_never_grant_themselves_admins_permission(): void
     {
         $this->actAsUserWith(['manage_users']);
-        $target = Role::factory()->create(['slug' => 'peon', 'permissions' => ['manage_media']]);
+        $target = Role::factory()->create(['slug' => 'peon', 'permissions' => ['manage_settings']]);
 
         $this->putJson("/api/v1/admin/roles/{$target->id}", [
             'permissions' => ['manage_users', 'manage_admins'],
         ])->assertStatus(403);
 
-        $this->assertSame(['manage_media'], $target->fresh()->permissions);
+        $this->assertSame(['manage_settings'], $target->fresh()->permissions);
     }
 
     public function test_manage_admins_user_retains_full_functionality(): void
@@ -117,13 +117,13 @@ class RoleAccessTest extends TestCase
     public function test_manage_admins_user_cannot_extend_role_to_permissions_they_do_not_hold(): void
     {
         $this->actAsUserWith(['manage_users', 'manage_admins']);
-        $target = Role::factory()->create(['slug' => 'peon', 'permissions' => ['manage_media']]);
+        $target = Role::factory()->create(['slug' => 'peon', 'permissions' => ['manage_settings']]);
 
         $this->putJson("/api/v1/admin/roles/{$target->id}", [
-            'permissions' => ['manage_media', 'manage_settings'],
+            'permissions' => ['manage_settings', 'manage_settings'],
         ])->assertStatus(403);
 
-        $this->assertSame(['manage_media'], $target->fresh()->permissions);
+        $this->assertSame(['manage_settings'], $target->fresh()->permissions);
     }
 
     public function test_super_admin_can_compose_any_role(): void
@@ -156,7 +156,7 @@ class RoleAccessTest extends TestCase
 
     public function test_authenticated_user_without_either_permission_is_blocked(): void
     {
-        $this->actAsUserWith(['manage_products']);
+        $this->actAsUserWith(['manage_settings']);
 
         $this->getJson('/api/v1/admin/roles')->assertStatus(403);
     }

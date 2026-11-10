@@ -2,22 +2,21 @@ import Link from 'next/link'
 import { ArrowLeft, ArrowRight } from 'lucide-react'
 import { AnimatedBox } from '@/components/shared/AnimatedBox'
 import { getCategoryLabel } from '@/lib/utils/services-utils'
-import type { HomepageSection, Service } from '@/types'
+import type { Service } from '@/types'
 
 interface ServicesSectionProps {
   locale: string
   services: Service[]
-  cmsSection?: HomepageSection
 }
 
-export function ServicesSection({ locale, services, cmsSection }: ServicesSectionProps) {
+export function ServicesSection({ locale, services }: ServicesSectionProps) {
   const isAr = locale === 'ar'
   const Arrow = isAr ? ArrowLeft : ArrowRight
 
-  const title = cmsSection?.title ?? (isAr ? 'خدماتنا' : 'Our Services')
-  const subtitle = cmsSection?.subtitle ?? (isAr
+  const title = isAr ? 'خدماتنا' : 'Our Services'
+  const subtitle = isAr
     ? 'منتجات جاهزة غير كافية؟ نبني لك ما يناسبك بالضبط.'
-    : 'Off-the-shelf products aren\u2019t enough \u2014 we build exactly what your business needs.')
+    : 'Off-the-shelf products aren\u2019t enough \u2014 we build exactly what your business needs.'
 
   const featured = services.filter(s => s.is_featured).slice(0, 3)
   const shown = featured.length > 0 ? featured : services.slice(0, 3)

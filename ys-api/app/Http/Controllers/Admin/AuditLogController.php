@@ -13,10 +13,9 @@ class AuditLogController extends Controller
     /**
      * GET /api/v1/admin/audit-logs
      *
-     * F-003 (Phase 5A): scoped to the caller's product access — product
-     * rows of other tenants are invisible, global/system rows stay
-     * visible, super admins see everything. All filters compose with the
-     * scope, so query manipulation cannot widen it.
+     * Row visibility is permission-gated only: every holder of
+     * `view_audit_logs` sees the full trail (super admins included).
+     * All filters compose with that boundary.
      */
     public function index(Request $request): JsonResponse
     {

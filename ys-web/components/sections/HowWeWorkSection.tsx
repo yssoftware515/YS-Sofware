@@ -1,11 +1,7 @@
 import { AnimatedBox } from '@/components/shared/AnimatedBox'
-import type { HomepageSection } from '@/types'
-import { processContentSchema, type ProcessItemData } from '@/lib/cms/schemas'
-import { validateCmsContent } from '@/lib/cms/validate'
 
 interface HowWeWorkSectionProps {
   locale: string
-  cmsSection?: HomepageSection
 }
 
 interface Step {
@@ -48,21 +44,9 @@ const fallbackSteps: Step[] = [
   },
 ]
 
-function parseCmsSteps(raw: ProcessItemData[]): Step[] {
-  return raw.map((item) => ({
-    title_en: item.title_en ?? '',
-    title_ar: item.title_ar ?? '',
-    description_en: item.description_en ?? '',
-    description_ar: item.description_ar ?? '',
-  }))
-}
-
-export function HowWeWorkSection({ locale, cmsSection }: HowWeWorkSectionProps) {
+export function HowWeWorkSection({ locale }: HowWeWorkSectionProps) {
   const isAr = locale === 'ar'
-  const cmsContent = validateCmsContent(cmsSection, processContentSchema)
-  const steps: Step[] = cmsContent?.items?.length
-    ? parseCmsSteps(cmsContent.items)
-    : fallbackSteps
+  const steps: Step[] = fallbackSteps
 
   return (
     <section className="section-sm section-divider-top" style={{ backgroundColor: 'var(--color-background-subtle)' }}>

@@ -5,6 +5,9 @@ namespace App\Domains\Search\Drivers;
 use App\Domains\Search\Contracts\SearchDriver;
 use App\Domains\Search\DTOs\SearchResult;
 use App\Domains\Search\DTOs\SearchResultCollection;
+use App\Domains\Search\Enums\SearchLocale;
+use App\Domains\Search\Enums\SearchType;
+use App\Domains\Search\SearchRules;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 
@@ -34,20 +37,17 @@ class PostgresSearchDriver implements SearchDriver
      */
     private const PER_TYPE_MARGIN = 5;
 
-    /** Locale whitelist — used to build SQL column names safely. */
-    private const LOCALES = ['en', 'ar'];
-
     public function search(
         string $query,
         array $types = [],
         string $locale = 'en',
-        int $limit = 20,
+        int $limit = SearchRules::DEFAULT_LIMIT,
     ): SearchResultCollection {
         $start = microtime(true);
 
         // Defense-in-depth: the locale interpolates into SQL column
         // names, so it must be a whitelisted value — never a fallback.
-        if (! in_array($locale, self::LOCALES, true)) {
+        if (! in_array($locale, SearchLocale::values(), true)) {
             throw new \InvalidArgumentException("Unsupported search locale '{$locale}'.");
         }
 
@@ -56,7 +56,7 @@ class PostgresSearchDriver implements SearchDriver
             return $this->emptyCollection($query, $start);
         }
 
-        $allowed = ['service', 'page', 'faq'];
+        $allowed = SearchType::values();
         $active = empty($types)
             ? $allowed
             : array_values(array_intersect($allowed, $types));
@@ -72,9 +72,9 @@ class PostgresSearchDriver implements SearchDriver
         foreach ($active as $type) {
             $batch = match ($type) {
                 'service' => $this->searchServices($sanitized, $locale, $limit),
-                'page'    => $this->searchPages($sanitized, $locale, $limit),
-                'faq'     => $this->searchFaqs($sanitized, $locale, $limit),
-                default   => ['results' => collect(), 'count' => 0],
+                'page' => $this->searchPages($sanitized, $locale, $limit),
+                'faq' => $this->searchFaqs($sanitized, $locale, $limit),
+                default => ['results' => collect(), 'count' => 0],
             };
 
             $all = $all->merge($batch['results']);
@@ -90,6 +90,7 @@ class PostgresSearchDriver implements SearchDriver
             if ($byType !== 0) {
                 return $byType;
             }
+
             return strcmp($a['url'], $b['url']);
         })->values()->take($limit);
 
@@ -119,8 +120,8 @@ class PostgresSearchDriver implements SearchDriver
     {
         $base = DB::table('services')
             ->where(function ($w) use ($q, $locale) {
-                $w->where('name_' . $locale, 'ilike', $this->likePattern($q))
-                  ->orWhere('short_desc_' . $locale, 'ilike', $this->likePattern($q));
+                $w->where('name_'.$locale, 'ilike', $this->likePattern($q))
+                    ->orWhere('short_desc_'.$locale, 'ilike', $this->likePattern($q));
             })
             ->where('status', 'active')
             ->whereNull('deleted_at');
@@ -135,7 +136,7 @@ class PostgresSearchDriver implements SearchDriver
                 1.0                   AS rank,
                 json_build_object('category', category) AS meta
             ", ["/{$locale}/services/"])
-            ->orderBy('name_' . $locale)
+            ->orderBy('name_'.$locale)
             ->limit($limit + self::PER_TYPE_MARGIN)
             ->get()
             ->map(fn ($r) => (array) $r);
@@ -150,8 +151,8 @@ class PostgresSearchDriver implements SearchDriver
     {
         $base = DB::table('static_pages')
             ->where(function ($w) use ($q, $locale) {
-                $w->where('title_' . $locale, 'ilike', $this->likePattern($q))
-                  ->orWhere('excerpt_' . $locale, 'ilike', $this->likePattern($q));
+                $w->where('title_'.$locale, 'ilike', $this->likePattern($q))
+                    ->orWhere('excerpt_'.$locale, 'ilike', $this->likePattern($q));
             })
             ->where('status', 'published')
             ->whereNotNull('published_at')
@@ -167,7 +168,7 @@ class PostgresSearchDriver implements SearchDriver
                 1.0                   AS rank,
                 '{}'::json            AS meta
             ", ["/{$locale}/"])
-            ->orderBy('title_' . $locale)
+            ->orderBy('title_'.$locale)
             ->limit($limit + self::PER_TYPE_MARGIN)
             ->get()
             ->map(fn ($r) => (array) $r);
@@ -182,8 +183,8 @@ class PostgresSearchDriver implements SearchDriver
     {
         $base = DB::table('faqs')
             ->where(function ($w) use ($q, $locale) {
-                $w->where('question_' . $locale, 'ilike', $this->likePattern($q))
-                  ->orWhere('answer_' . $locale, 'ilike', $this->likePattern($q));
+                $w->where('question_'.$locale, 'ilike', $this->likePattern($q))
+                    ->orWhere('answer_'.$locale, 'ilike', $this->likePattern($q));
             })
             ->where('status', 'published')
             ->whereNull('deleted_at');
@@ -216,7 +217,8 @@ class PostgresSearchDriver implements SearchDriver
     private function likePattern(string $q): string
     {
         $escaped = str_replace(['\\', '%', '_'], ['\\\\', '\%', '\_'], $q);
-        return '%' . $escaped . '%';
+
+        return '%'.$escaped.'%';
     }
 
     /**
@@ -227,7 +229,7 @@ class PostgresSearchDriver implements SearchDriver
         $clean = preg_replace('/[\x00-\x1F\x7F]/u', '', $query);
         $clean = trim((string) $clean);
 
-        return mb_substr($clean, 0, 200);
+        return mb_substr($clean, 0, SearchRules::MAX_QUERY_LENGTH);
     }
 
     private function emptyCollection(string $query, float $start): SearchResultCollection

@@ -7,7 +7,7 @@ import { usePathname, useRouter } from 'next/navigation'
 import { Menu, X, Moon, Sun, Globe, Search, ArrowRight, Command, Loader2 } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { cn } from '@/lib/utils/cn'
-import type { Menu as CmsMenu, SearchResult } from '@/types'
+import type { SearchResult } from '@/types'
 import { api } from '@/lib/api/client'
 import { useThemeStore } from '@/lib/stores/theme'
 import { useHydrated } from '@/lib/hooks/useHydrated'
@@ -49,7 +49,6 @@ const navContent = {
 
 interface HeaderProps {
   locale: string
-  menu?: CmsMenu
 }
 
 interface NavLink {
@@ -324,7 +323,7 @@ function SearchModal({
 // ═══════════════════════════════════════════════════════════════════════════════
 // HEADER — matches reference design exactly
 // ═══════════════════════════════════════════════════════════════════════════════
-export function Header({ locale, menu }: HeaderProps) {
+export function Header({ locale }: HeaderProps) {
   const isAr = locale === 'ar'
   const t = navContent[isAr ? 'ar' : 'en']
   const pathname = usePathname()

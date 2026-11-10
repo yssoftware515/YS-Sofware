@@ -21,10 +21,6 @@ class UserResource extends JsonResource
                 'slug' => $this->role->slug,
                 'permissions' => $this->role->permissions,
             ]),
-            // Only meaningful for non-super-admins (a super admin bypasses
-            // scoping entirely — see User::canAccessProduct). Included
-            // whenever the 'products' relation was eager-loaded.
-            'product_ids' => $this->whenLoaded('products', fn () => $this->products->pluck('id')),
             'created_at' => $this->created_at->toIso8601String(),
         ];
         // Note: password, password_changed_at, remember_token

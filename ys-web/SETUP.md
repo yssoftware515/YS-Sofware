@@ -69,13 +69,10 @@ app/
 │   ├── (public)/          ← Route group with Header + Footer layout
 │   │   ├── layout.tsx     ← Fetches settings server-side
 │   │   ├── page.tsx       ← Home page
-│   │   ├── products/      ← Products listing + [slug] detail
 │   │   ├── about/
-│   │   ├── roadmap/
-│   │   ├── updates/
-│   │   ├── careers/
+│   │   ├── services/      ← Services catalog + [slug] detail
 │   │   ├── contact/
-│   │   └── docs/
+│   │   └── search/        ← Global search results
 │   └── layout.tsx         ← Sets lang + dir attributes, fonts
 ├── admin/
 │   ├── login/             ← Admin login (no auth required)

@@ -6,7 +6,7 @@
 # invented here — this checks the same signals the platform already exposes:
 #   * frontend readiness route   /health/live
 #   * backend readiness route    /api/v1/health  (DB + cache)
-#   * auth gate must answer 401  /api/v1/admin/products
+#   * auth gate must answer 401  /api/v1/admin/dashboard/stats
 #
 # Exit 0 = all measurable endpoints healthy, non-zero otherwise. Wire it on
 # the host (cron hour or systemd timer), e.g.:
@@ -27,7 +27,7 @@ curl -fsS -o /dev/null --max-time "$TIMEOUT" "$BASE_URL/health/live" \
 curl -fsS -o /dev/null --max-time "$TIMEOUT" "$BASE_URL/api/v1/health" \
   || fail "backend /api/v1/health unreachable (DB or cache degraded)"
 
-code="$(curl -s -o /dev/null -w '%{http_code}' --max-time "$TIMEOUT" "$BASE_URL/api/v1/admin/products")"
+code="$(curl -s -o /dev/null -w '%{http_code}' --max-time "$TIMEOUT" "$BASE_URL/api/v1/admin/dashboard/stats")"
 [ "$code" = "401" ] || fail "api auth gate expected 401, got ${code}"
 
 echo "[watchdog] $(date -Is) all checks healthy"

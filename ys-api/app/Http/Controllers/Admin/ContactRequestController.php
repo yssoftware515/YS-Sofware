@@ -2,8 +2,8 @@
 
 namespace App\Http\Controllers\Admin;
 
-use App\Domains\Billing\Models\Customer;
 use App\Domains\Operations\Models\ContactRequest;
+use App\Domains\Operations\Models\Customer;
 use App\Domains\Operations\Models\Project;
 use App\Domains\System\Services\AuditService;
 use App\Http\Controllers\Controller;
@@ -49,8 +49,6 @@ class ContactRequestController extends Controller
     {
         $this->authorize('manage_contact_requests');
 
-        $this->assertRequestAccessible($contactRequest);
-
         // Auto-mark as reviewing on first open â€” "new" means untouched.
         if ($contactRequest->isNew()) {
             $contactRequest->update(['status' => 'reviewing']);
@@ -63,8 +61,6 @@ class ContactRequestController extends Controller
     public function updateStatus(Request $request, ContactRequest $contactRequest): JsonResponse
     {
         $this->authorize('manage_contact_requests');
-
-        $this->assertRequestAccessible($contactRequest);
 
         $validated = $request->validate([
             'status' => ['required', Rule::in(ContactRequest::STATUSES)],
@@ -98,14 +94,11 @@ class ContactRequestController extends Controller
         $this->authorize('manage_contact_requests');
         $this->authorize('manage_customers');
 
-        $this->assertRequestAccessible($contactRequest);
-
         $validated = $request->validate([
             'customer_id' => ['required', 'uuid', Rule::exists('customers', 'id')],
         ]);
 
         $customer = Customer::findOrFail($validated['customer_id']);
-        abort_unless(Customer::userCanAccess($customer->product_id, Auth::user()), 403, 'You do not have access to this product.');
 
         $contactRequest->update([
             'customer_id' => $validated['customer_id'],
@@ -139,12 +132,7 @@ class ContactRequestController extends Controller
         $this->authorize('manage_contact_requests');
         $this->authorize('manage_customers');
 
-        // Requests linked to a customer outside this admin's product scope
-        // must never be convertible — the resulting customer row would be
-        // created from foreign tenant data (F-001, Phase 5A).
-        $this->assertRequestAccessible($contactRequest);
-
-        // Canonical identity check â€” email is lowercased by the model
+        // Canonical identity check — email is lowercased by the model
         // mutator, so compare case-insensitively here as well.
         $email = strtolower(trim($contactRequest->email));
 
@@ -219,8 +207,6 @@ class ContactRequestController extends Controller
         $this->authorize('manage_contact_requests');
         $this->authorize('manage_customers');
 
-        $this->assertRequestAccessible($contactRequest);
-
         $oldCustomerId = $contactRequest->customer_id;
         $contactRequest->update(['customer_id' => null]);
 
@@ -251,14 +237,11 @@ class ContactRequestController extends Controller
         $this->authorize('manage_contact_requests');
         $this->authorize('manage_projects');
 
-        $this->assertRequestAccessible($contactRequest);
-
         $validated = $request->validate([
             'project_id' => ['required', 'uuid', Rule::exists('projects', 'id')],
         ]);
 
         $project = Project::findOrFail($validated['project_id']);
-        abort_unless($project->isAccessibleBy(Auth::user()), 403, 'You do not have access to this product.');
 
         if ($contactRequest->customer_id === null || $project->customer_id !== $contactRequest->customer_id) {
             abort(422, 'The request and the project must belong to the same customer. Link the request to a customer first.');
@@ -286,9 +269,6 @@ class ContactRequestController extends Controller
     {
         $this->authorize('manage_contact_requests');
         $this->authorize('manage_projects');
-
-        $this->assertRequestAccessible($contactRequest);
-        abort_unless($project->isAccessibleBy(Auth::user()), 403, 'You do not have access to this product.');
 
         if ($project->contact_request_id !== $contactRequest->id) {
             abort(422, 'This project is not linked to this contact request.');
@@ -328,10 +308,5 @@ class ContactRequestController extends Controller
         return Auth::user()->can('view_financials')
             ? $base.',quoted_value,currency'
             : $base;
-    }
-
-    private function assertRequestAccessible(ContactRequest $contactRequest): void
-    {
-        abort_unless($contactRequest->isAccessibleBy(Auth::user()), 403, 'You do not have access to this product.');
     }
 }

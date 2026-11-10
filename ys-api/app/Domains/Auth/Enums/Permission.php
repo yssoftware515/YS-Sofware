@@ -16,26 +16,11 @@ namespace App\Domains\Auth\Enums;
  * User::isSuperAdmin()), not "one more permission to pick from a list."
  *
  * Used by RoleRequest to validate that a role's `permissions` array only
- * ever contains real, enforced strings — the same closed-list philosophy
- * as ProductIcon: an admin can't create a role with a typo'd permission
- * that silently does nothing.
+ * ever contains real, enforced strings — a closed list, so an admin can't
+ * create a role with a typo'd permission that silently does nothing.
  */
 enum Permission: string
 {
-    // Content
-    case ManageProducts = 'manage_products';
-    case ManageCareers = 'manage_careers';
-    case ManageDocumentation = 'manage_documentation';
-    case ManageFaqs = 'manage_faqs';
-    case ManageHomepage = 'manage_homepage';
-    case ManageMenus = 'manage_menus';
-    case ManageRoadmap = 'manage_roadmap';
-    case ManageStaticPages = 'manage_static_pages';
-    case ManageUpdates = 'manage_updates';
-    case ManageMedia = 'manage_media';
-    case ManageTimeline = 'manage_timeline';
-    case ManageFeatureFlags = 'manage_feature_flags';
-
     // Company operations
     case ManageContactRequests = 'manage_contact_requests';
     case ManageSettings = 'manage_settings';
@@ -51,8 +36,7 @@ enum Permission: string
     case ManageUsers = 'manage_users';
     case ManageAdmins = 'manage_admins';      // new — grant/revoke other admins, see docblock below
 
-    // Business — new in this phase
-    case ManageSubscriptions = 'manage_subscriptions';
+    // Business — financial visibility
     case ViewFinancials = 'view_financials';
 
     // Services (Sprint 2 — Company Platform Evolution)

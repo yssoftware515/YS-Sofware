@@ -7,7 +7,7 @@ import { api }    from '@/lib/api/client'
 import { breadcrumbJsonLd, safeJsonLd } from '@/lib/seo'
 
 const CookieConsent = dynamic(() => import('@/components/shared/CookieConsent').then(m => m.CookieConsent))
-import type { PublicSettings, Menu } from '@/types'
+import type { PublicSettings } from '@/types'
 
 const locales = ['en', 'ar'] as const
 const APP_URL  = process.env.NEXT_PUBLIC_APP_URL ?? 'https://ys-systems.com'
@@ -65,25 +65,8 @@ export default async function PublicLayout({
 
   if (!(locales as readonly string[]).includes(locale)) notFound()
 
-  const [settingsResult, menusResult] = await Promise.allSettled([
-    api.settings(locale),
-    api.menus(locale),
-  ])
-
-  let settings: PublicSettings | undefined
-  if (settingsResult.status === 'fulfilled') {
-    settings = settingsResult.value
-  }
-
-  let menus: Record<string, Menu> | undefined
-  if (menusResult.status === 'fulfilled') {
-    const raw = menusResult.value
-    const arr = Array.isArray(raw) ? raw : []
-    menus = {}
-    for (const m of arr) {
-      if (m.location) menus[m.location] = m
-    }
-  }
+  const settingsResult = await api.settings(locale).catch(() => undefined)
+  const settings: PublicSettings | undefined = settingsResult
 
   const h = await headers()
   const pathname = h.get('x-pathname') ?? h.get('next-url') ?? `/${locale}`
@@ -102,12 +85,12 @@ export default async function PublicLayout({
       <a href="#main-content" className="skip-link">
         {locale === 'ar' ? 'تخطى إلى المحتوى' : 'Skip to content'}
       </a>
-      <Header locale={locale} menu={menus?.header} />
+      <Header locale={locale} />
       <main id="main-content" style={{ flex: 1, paddingTop: '4rem' }}>
         {children}
       </main>
       <CookieConsent locale={locale} />
-      <Footer locale={locale} settings={settings} menus={menus} />
+      <Footer locale={locale} settings={settings} />
     </div>
   )
 }

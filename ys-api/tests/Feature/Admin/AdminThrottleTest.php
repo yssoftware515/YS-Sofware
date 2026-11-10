@@ -93,7 +93,7 @@ class AdminThrottleTest extends TestCase
 
         // A public endpoint keeps working — it has its own throttle:public
         // budget (120/min) and is completely outside the admin limiter.
-        $this->getJson('/api/v1/public/products')->assertStatus(200);
+        $this->getJson('/api/v1/public/services')->assertStatus(200);
     }
 
     public function test_admin_limiter_recovers_after_the_window_expires(): void

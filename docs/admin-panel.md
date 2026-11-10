@@ -1,6 +1,6 @@
 # Admin Panel
 
-**Verification:** ✅ code-verified · ⚠️ inferred · ❓ unknown
+**Verification:** ✅ code-verified from `app/admin/*`, `modules/core/*` (2026-11-10).
 
 ---
 
@@ -13,59 +13,42 @@ The admin panel lives at `app/admin/*` in `ys-web`. It is a client-rendered Next
 | Path | Page |
 |---|---|
 | `/admin/login` | Login (client-side lockout: 5 attempts → 30s) |
-| `/admin/dashboard` | Dashboard: 8 widget stat cards, quick actions, system status |
-| `/admin/products` (+ `[id]`, `new`) | Products CRUD |
-| `/admin/releases` | Releases CRUD |
-| `/admin/docs` (+ `categories/` + `articles/[id]`, `new`) | Documentation management |
-| `/admin/static-pages` (+ `[id]`, `new`) | Static pages CRUD |
-| `/admin/faq` (+ `[id]`, `new`) | FAQs CRUD (API uses `/admin/faqs`) |
-| `/admin/menus` (+ `[id]`, `new`) | Menus CRUD |
-| `/admin/homepage` (+ `[id]`, `new`) | Homepage sections (API uses `/admin/homepage-sections`) |
-| `/admin/roadmap` | Roadmap CRUD |
-| `/admin/updates` | Updates + publish/unpublish |
-| `/admin/careers` | Careers CRUD |
-| `/admin/timeline` | Timeline CRUD |
-| `/admin/media` | Media library (upload/list/delete) |
-| `/admin/users` (+ `[id]`, `new`) | Users CRUD + product access |
+| `/admin/forgot-password` | Request a password reset link |
+| `/admin/reset-password` | Set a new password from the reset token |
+| `/admin/dashboard` | Dashboard: 5 widget stat cards + attention lists |
+| `/admin/services` (+ `[id]`, `new`) | Services CRUD (company service catalog) |
+| `/admin/contact-requests` (+ `[id]`) | Inquiries: status, customer/project linking, convert-to-customer |
+| `/admin/customers` (+ `[id]`, `new`) | Customers CRUD |
+| `/admin/projects` (+ `[id]`, `new`) | Projects CRUD (delivery records) |
+| `/admin/users` (+ `[id]`, `new`) | Users CRUD |
 | `/admin/roles` | Roles CRUD (permission picker) |
 | `/admin/settings` | Settings management |
-| `/admin/feature-flags` | Feature flags CRUD |
-| `/admin/audit-logs` | Audit log viewer (⚠️ UI exists; API exists) |
-| `/admin/sessions` | ⚠️ **no backend API** → broken |
-| `/admin/login-history` | ⚠️ **no backend API** → broken |
-| `/admin/api-tokens` | ⚠️ **no backend API** → broken |
-| `/admin/notifications` | ⚠️ **no backend API** → broken |
-| `/admin/customers` (+ `[id]`, `new`) | Customers CRUD |
-| `/admin/projects` (+ `[id]`, `new`) | Projects CRUD (Operational/delivery records) |
-| `/admin/subscriptions` (+ `new`) | Subscriptions CRUD (manual) |
+| `/admin/audit-logs` | Audit log viewer |
 
 ## 3. Shell & providers (`app/admin/layout.tsx`, ✅ verified)
 
-- Sidebar navigation from kernel `NavigationRegistry` (`getFilteredGroups(hasPermission)`) — 8 groups: Overview, Content, Media, System, Security, Notifications, Business, Billing. Business (Customers, Projects) is gated by `view_customers`/`view_projects`.
+- Sidebar navigation from kernel `NavigationRegistry` (`getFilteredGroups(hasPermission)`) — 6 groups: Overview, Services & Content, Engagement, System, Security, Business. Customers/Projects are gated by `view_customers`/`view_projects`.
 - Breadcrumb, `QueryClientProvider` (TanStack Query), `PlatformProvider` (boots `registeredModules` = [`coreModule`]), `AuthProvider`, `ToastProvider`, Cmd/Ctrl+K `CommandPalette`.
 - `HealthIndicator` (uses `lib/platform/health-endpoints` — frontend-side checks).
 
 ## 4. Dashboard widgets (✅ `modules/core/widgets.ts`)
 
-| Widget id | Title | Permission | API path used | Backend route | Status |
-|---|---|---|---|---|---|
-| `products` | Products | manage_products | `/admin/products` | ✅ exists | ✅ |
-| `releases` | Releases | ⚠️ `manage_releases` (invalid) | `/admin/releases` | ✅ exists | ⚠️ permission mismatch |
-| `careers` | Careers | manage_careers | `/admin/careers` | ✅ exists | ✅ |
-| `audit-logs` | Audit Logs | view_audit_logs | `/admin/audit-logs` | ✅ exists | ✅ |
-| `static-pages` | Static Pages | manage_static_pages | `/admin/static-pages` | ✅ exists | ✅ |
-| `faq` | FAQ | manage_faqs | `/admin/faq` | ❌ (is `/admin/faqs`) | ❌ 404 |
-| `menus` | Menus | manage_menus | `/admin/menus` | ✅ exists | ✅ |
-| `homepage` | Homepage | manage_homepage | `/admin/homepage` | ❌ (is `/admin/homepage-sections`) | ❌ 404 |
+| Widget id | Title | Permission | API path |
+|---|---|---|---|
+| `services` | Services | manage_services | `/admin/services` |
+| `inquiries` | Inquiries | manage_contact_requests | `/admin/contact-requests` |
+| `customers` | Customers | view_customers | `/admin/customers` |
+| `projects` | Projects | view_projects | `/admin/projects` |
+| `audit-logs` | Audit Logs | view_audit_logs | `/admin/audit-logs` |
 
 Widget counts are read from `meta.total` of each list response; failures fall back to 0 silently.
 
 ## 5. Forms & validation (✅ verified)
 
-- Admin forms use zod schemas (CMS content) and local client validation; server-side FormRequests/inline validation are authoritative.
-- `UserForm` — role picker, product access checkboxes (synced via `PUT /admin/users/{id}/products`).
-- `RoleForm` — permission multi-select driven by `modules/core/permissions.ts`.
-- Rich text (product long desc, doc articles) sanitized server-side (Purifier) and client-side (dompurify) — see security.md.
+- Admin forms use local client validation; server-side FormRequests/inline validation are authoritative.
+- `UserForm` — role picker (no product access; product-scoped access was removed with the Product domain).
+- `RoleForm` — permission multi-select driven by `modules/core/permissions.ts` (mirrors `Permission.php` exactly).
+- Rich text (service descriptions, static page content) is sanitized server-side (Purifier); see security.md.
 
 ## 6. Data access pattern (✅ verified)
 
@@ -73,8 +56,5 @@ Widget counts are read from `meta.total` of each list response; failures fall ba
 
 ## 7. Known admin panel issues (see known-issues.md for detail)
 
-1. 4 pages with no backend API (sessions, login-history, api-tokens, notifications) → error states.
-2. 2 dashboard widgets 404 (faq, homepage paths).
-3. Widget permission `manage_releases` invalid.
-4. Duplicated navigation definitions (`lib/admin/navigation.ts` vs `modules/core/navigation.ts`).
-5. `middleware.ts` guards by cookie presence only — an expired cookie passes the redirect guard and only the API rejects; UX should redirect on 401 (`AuthProvider` handles refresh on mount; ❓ verify behavior after token expiry).
+1. `middleware.ts` guards by cookie presence only — an expired cookie passes the redirect guard and only the API rejects; UX should redirect on 401 (`AuthProvider` handles refresh on mount).
+2. Removed public routes (`/products`, `/docs`, `/updates`, `/roadmap`, `/careers`) are still 308-redirected by `proxy.ts`; that is intentional (no dead 404s), not an admin surface.

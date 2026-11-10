@@ -36,7 +36,7 @@ class UserPrivilegeEscalationTest extends TestCase
     public function test_manage_users_admin_cannot_promote_user_to_super_admin(): void
     {
         $actor = $this->makeUserWith($this->makeRole('user_manager', ['manage_users']));
-        $target = $this->makeUserWith($this->makeRole('peon', ['view_products']));
+        $target = $this->makeUserWith($this->makeRole('peon', ['view_services']));
         $superAdminRole = $this->makeRole('super_admin', ['*']);
         Sanctum::actingAs($actor, ['admin']);
 
@@ -50,7 +50,7 @@ class UserPrivilegeEscalationTest extends TestCase
     public function test_manage_users_admin_cannot_assign_role_with_permissions_they_do_not_hold(): void
     {
         $actor = $this->makeUserWith($this->makeRole('user_manager', ['manage_users']));
-        $target = $this->makeUserWith($this->makeRole('peon', ['view_products']));
+        $target = $this->makeUserWith($this->makeRole('peon', ['view_services']));
         $adminRole = $this->makeRole('admin', ['manage_settings', 'manage_users', 'view_audit_logs']);
         Sanctum::actingAs($actor, ['admin']);
 
@@ -64,7 +64,7 @@ class UserPrivilegeEscalationTest extends TestCase
     public function test_manage_users_admin_cannot_assign_wildcard_role_without_super_admin_slug(): void
     {
         $actor = $this->makeUserWith($this->makeRole('user_manager', ['manage_users']));
-        $target = $this->makeUserWith($this->makeRole('peon', ['view_products']));
+        $target = $this->makeUserWith($this->makeRole('peon', ['view_services']));
         $wildcardRole = $this->makeRole('god_mode', ['*']);
         Sanctum::actingAs($actor, ['admin']);
 
@@ -75,9 +75,9 @@ class UserPrivilegeEscalationTest extends TestCase
 
     public function test_manage_users_admin_can_assign_role_with_subset_permissions(): void
     {
-        $actor = $this->makeUserWith($this->makeRole('user_manager', ['manage_users', 'manage_media']));
-        $target = $this->makeUserWith($this->makeRole('peon', ['view_products']));
-        $subsetRole = $this->makeRole('media_editor', ['manage_media']);
+        $actor = $this->makeUserWith($this->makeRole('user_manager', ['manage_users', 'manage_settings']));
+        $target = $this->makeUserWith($this->makeRole('peon', ['view_services']));
+        $subsetRole = $this->makeRole('media_editor', ['manage_settings']);
         Sanctum::actingAs($actor, ['admin']);
 
         $this->putJson("/api/v1/admin/users/{$target->id}", [
@@ -90,7 +90,7 @@ class UserPrivilegeEscalationTest extends TestCase
     public function test_super_admin_can_assign_any_role(): void
     {
         $actor = $this->superAdminUser();
-        $target = $this->makeUserWith($this->makeRole('peon', ['view_products']));
+        $target = $this->makeUserWith($this->makeRole('peon', ['view_services']));
         $adminRole = $this->makeRole('admin', ['manage_settings', 'manage_users', 'view_audit_logs']);
         Sanctum::actingAs($actor, ['admin']);
 
@@ -104,7 +104,7 @@ class UserPrivilegeEscalationTest extends TestCase
     public function test_super_admin_can_promote_user_to_super_admin(): void
     {
         $actor = $this->superAdminUser();
-        $target = $this->makeUserWith($this->makeRole('peon', ['view_products']));
+        $target = $this->makeUserWith($this->makeRole('peon', ['view_services']));
         Sanctum::actingAs($actor, ['admin']);
 
         $this->putJson("/api/v1/admin/users/{$target->id}", [
@@ -163,8 +163,8 @@ class UserPrivilegeEscalationTest extends TestCase
 
     public function test_manage_users_admin_can_create_user_with_subset_role(): void
     {
-        $actor = $this->makeUserWith($this->makeRole('user_manager', ['manage_users', 'manage_media']));
-        $subsetRole = $this->makeRole('media_editor', ['manage_media']);
+        $actor = $this->makeUserWith($this->makeRole('user_manager', ['manage_users', 'manage_settings']));
+        $subsetRole = $this->makeRole('media_editor', ['manage_settings']);
         Sanctum::actingAs($actor, ['admin']);
 
         $this->postJson('/api/v1/admin/users', [
@@ -187,7 +187,7 @@ class UserPrivilegeEscalationTest extends TestCase
 
         $superAdmin = $this->makeUserWith($superAdminRole);
         $actor = $this->makeUserWith($this->makeRole('user_manager', ['manage_users']));
-        $target = $this->makeUserWith($this->makeRole('peon', ['view_products']));
+        $target = $this->makeUserWith($this->makeRole('peon', ['view_services']));
         Sanctum::actingAs($actor, ['admin']);
 
         // The renamed-super-admin account is still protected...

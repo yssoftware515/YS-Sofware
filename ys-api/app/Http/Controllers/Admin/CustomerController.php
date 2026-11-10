@@ -2,13 +2,13 @@
 
 namespace App\Http\Controllers\Admin;
 
-use App\Domains\Billing\Models\Customer;
 use App\Domains\Operations\Models\ContactRequest;
+use App\Domains\Operations\Models\Customer;
 use App\Domains\Operations\Models\Project;
 use App\Domains\System\Services\AuditService;
 use App\Http\Controllers\Controller;
-use App\Http\Requests\Admin\Billing\CreateCustomerRequest;
-use App\Http\Requests\Admin\Billing\UpdateCustomerRequest;
+use App\Http\Requests\Admin\Operations\CreateCustomerRequest;
+use App\Http\Requests\Admin\Operations\UpdateCustomerRequest;
 use App\Http\Resources\Admin\CustomerResource;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -27,7 +27,6 @@ class CustomerController extends Controller
         $this->authorize('view_customers');
 
         $customers = Customer::accessibleBy(Auth::user())
-            ->withCount('subscriptions')
             ->withCount('projects')
             ->when($request->query('search'), function ($q, $s) {
                 $q->where(fn ($sub) => $sub->where('name', 'ilike', "%{$s}%")
@@ -56,7 +55,6 @@ class CustomerController extends Controller
         $this->authorize('manage_customers');
 
         $validated = $request->validated();
-        $this->assertProductAccessible($validated['product_id'] ?? null);
 
         $customer = Customer::create([
             ...$validated,
@@ -77,9 +75,7 @@ class CustomerController extends Controller
     {
         $this->authorize('view_customers');
 
-        $this->assertCustomerAccessible($customer);
-
-        $customer->loadCount('subscriptions')->loadCount('projects');
+        $customer->loadCount('projects');
 
         $data = (new CustomerResource($customer->load('creator')))->toArray($request);
 
@@ -145,11 +141,7 @@ class CustomerController extends Controller
     {
         $this->authorize('manage_customers');
 
-        $this->assertCustomerAccessible($customer);
-
         $validated = $request->validated();
-        $this->assertProductAccessible($validated['product_id'] ?? $customer->product_id);
-
         $customer->update($validated);
 
         $this->auditService->logModelChange('customer.updated', $customer);
@@ -160,8 +152,6 @@ class CustomerController extends Controller
     public function updateStatus(Request $request, Customer $customer): JsonResponse
     {
         $this->authorize('manage_customers');
-
-        $this->assertCustomerAccessible($customer);
 
         $validated = $request->validate([
             'status' => ['required', Rule::in(Customer::STATUSES)],
@@ -185,12 +175,6 @@ class CustomerController extends Controller
     {
         $this->authorize('manage_customers');
 
-        $this->assertCustomerAccessible($customer);
-
-        if ($customer->subscriptions()->exists()) {
-            abort(422, 'Cannot delete a customer with existing subscriptions. Cancel or remove their subscriptions first.');
-        }
-
         if ($customer->projects()->exists()) {
             abort(422, 'Cannot delete a customer with existing projects. Archive the customer instead.');
         }
@@ -199,15 +183,5 @@ class CustomerController extends Controller
         $customer->delete();
 
         return response()->json(['success' => true, 'message' => 'Customer deleted successfully.']);
-    }
-
-    private function assertCustomerAccessible(Customer $customer): void
-    {
-        abort_unless(Customer::userCanAccess($customer->product_id, Auth::user()), 403, 'You do not have access to this product.');
-    }
-
-    private function assertProductAccessible(?string $productId): void
-    {
-        abort_unless(Customer::userCanAccess($productId, Auth::user()), 403, 'You do not have access to this product.');
     }
 }

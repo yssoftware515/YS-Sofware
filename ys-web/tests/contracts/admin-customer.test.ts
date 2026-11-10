@@ -19,7 +19,6 @@ const realCustomerDetail = {
   whatsapp: '+971500000000',
   notes: null,
   status: 'active',
-  subscriptions_count: 1,
   projects_count: 2,
   active_projects_count: 1,
   on_hold_projects_count: 0,

@@ -14,11 +14,11 @@ import { ensureXsrfToken, readXsrfToken } from '@/lib/csrf'
  * A shared hook means that class of bug can only exist in one place, not
  * fifteen, and gets caught (and fixed) once instead of once per page.
  *
- * @param resource   API path, e.g. 'products' or '/admin/products'.
+ * @param resource   API path, e.g. 'services' or '/admin/services'.
  * @param searchParams  optional query string params (search, filters, page).
  */
-// Accepts both legacy bare segments ('products') and fully-qualified
-// paths ('/admin/products'); callers control the prefix, never the hook.
+// Accepts both legacy bare segments ('services') and fully-qualified
+// paths ('/admin/services'); callers control the prefix, never the hook.
 function adminPath(resource: string): string {
   return resource.startsWith('/') ? resource : `/admin/${resource}`
 }

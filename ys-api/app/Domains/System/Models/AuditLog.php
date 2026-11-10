@@ -24,12 +24,9 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * The Audit log user_id is passed explicitly in job payloads because
  * Auth::id() returns null inside async queue workers.
  *
- * Tenant scoping (F-003): product_id is captured at write time by
- * AuditService from the audited resource. NULL means a system/global
- * event (auth, users, roles, settings, global customers, unlinked
- * contact requests...). scopeAccessibleBy mirrors the customer tenant
- * anchor: super admins see everything; scoped admins see their own
- * products' events plus global events.
+ * Row visibility is permission-gated only: every admin holding the audit
+ * permission sees the whole trail. `scopeAccessibleBy` is kept as a
+ * no-op so existing callers stay unchanged.
  */
 class AuditLog extends Model
 {
@@ -42,7 +39,6 @@ class AuditLog extends Model
         'action',
         'resource_type',
         'resource_id',
-        'product_id',
         'old_values',
         'new_values',
         'ip_address',
@@ -100,20 +96,14 @@ class AuditLog extends Model
         return $this->belongsTo(User::class);
     }
 
-    // ── Product scoping (F-003) ──────────────────────────────────────
+    // ── Row visibility ───────────────────────────────────────────────
 
     /**
-     * Mirrors the Customer tenant anchor exactly: super admins see every
-     * event; scoped admins see events of products they can access plus
-     * global/system events (product_id NULL).
+     * Row visibility is permission-gated only. The scope is kept as a
+     * no-op so existing callers stay unchanged.
      */
     public function scopeAccessibleBy(Builder $query, User $user): Builder
     {
-        if ($user->isSuperAdmin()) {
-            return $query;
-        }
-
-        return $query->where(fn ($q) => $q->whereNull('product_id')
-            ->orWhereIn('product_id', $user->products()->pluck('products.id')));
+        return $query;
     }
 }

@@ -3,7 +3,7 @@ import { notFound } from 'next/navigation'
 import { api } from '@/lib/api/client'
 import { buildMetadata } from '@/lib/seo'
 import { PageHero } from '@/components/shared/PageHero'
-import type { PublicSettings, StaticPage } from '@/types'
+import type { PublicSettings } from '@/types'
 
 const locales = ['en', 'ar'] as const
 
@@ -21,14 +21,7 @@ export default async function SecurityPage({ params }: { params: Promise<{ local
   if (!(locales as readonly string[]).includes(locale)) notFound()
   const isAr = locale === 'ar'
 
-  let settings: PublicSettings | undefined
-  let cmsPage: StaticPage | undefined
-  try {
-    [settings, cmsPage] = await Promise.all([
-      api.settings(locale),
-      api.page('security', locale).catch(() => undefined),
-    ])
-  } catch (err) { console.error('[public:security] fetch failed:', err) }
+  const settings: PublicSettings | undefined = await api.settings(locale).catch(() => undefined)
 
   const securityEmail = settings?.contacts?.security_email
   const fallbackSections = isAr ? [
@@ -47,13 +40,7 @@ export default async function SecurityPage({ params }: { params: Promise<{ local
     { title: 'Report a Vulnerability', body: 'If you believe you\'ve found a security vulnerability, we encourage you to report it to us responsibly. We take all reports seriously and will respond as quickly as we can.' },
   ]
 
-  let sections = fallbackSections
-  try {
-    if (cmsPage?.content) {
-      const parsed = JSON.parse(cmsPage.content)
-      if (Array.isArray(parsed)) sections = parsed
-    }
-  } catch (err) { console.error('[public:security] fetch failed:', err) }
+  const sections = fallbackSections
 
   return (
     <div style={{ minHeight: '100dvh', backgroundColor: 'var(--color-background)' }}>

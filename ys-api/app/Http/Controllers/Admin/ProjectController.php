@@ -64,7 +64,6 @@ class ProjectController extends Controller
         }
 
         $this->projects->assertRequestMatchesCustomer($validated, $validated['customer_id'] ?? null);
-        $this->projects->assertCustomerAccessible($validated['customer_id'] ?? null);
 
         $attributes = Arr::except($validated, ['service_ids']);
         LifecycleService::reconcileCompletion($attributes);
@@ -87,8 +86,6 @@ class ProjectController extends Controller
     {
         $this->authorize('view_projects');
 
-        $this->projects->assertProjectAccessible($project);
-
         $project->load('customer:id,name,company', 'services:id,name_en,name_ar', 'creator:id,name', 'contactRequest:id,name,email,request_type,status');
 
         $payload = $this->payload($project);
@@ -100,8 +97,6 @@ class ProjectController extends Controller
     public function update(Request $request, Project $project): JsonResponse
     {
         $this->authorize('manage_projects');
-
-        $this->projects->assertProjectAccessible($project);
 
         $validated = $this->projects->validate($request->all());
 
@@ -119,7 +114,6 @@ class ProjectController extends Controller
         // checking against the old one would let a customer change
         // silently detach the request from its actual customer.
         $this->projects->assertRequestMatchesCustomer($validated, $validated['customer_id'] ?? $project->customer_id, $project->contact_request_id);
-        $this->projects->assertCustomerAccessible($validated['customer_id'] ?? $project->customer_id);
 
         $attributes = Arr::except($validated, ['service_ids']);
         LifecycleService::reconcileCompletion($attributes, $project->status);
@@ -141,8 +135,6 @@ class ProjectController extends Controller
     public function updateStatus(Request $request, Project $project): JsonResponse
     {
         $this->authorize('manage_projects');
-
-        $this->projects->assertProjectAccessible($project);
 
         $validated = $request->validate([
             'status' => ['required', Rule::in(Project::STATUSES)],
@@ -173,8 +165,6 @@ class ProjectController extends Controller
     public function destroy(Project $project): JsonResponse
     {
         $this->authorize('manage_projects');
-
-        $this->projects->assertProjectAccessible($project);
 
         $this->auditService->logModelChange('project.deleted', $project);
         $project->services()->detach();

@@ -6,7 +6,7 @@ use App\Domains\Services\Models\Service;
 use App\Domains\System\Services\AuditService;
 
 /**
- * ServiceObserver — audit every service mutation, mirroring ProductObserver.
+ * ServiceObserver — audit every service mutation.
  */
 class ServiceObserver
 {

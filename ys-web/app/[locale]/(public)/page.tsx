@@ -7,7 +7,7 @@ import { CapabilitiesSection } from '@/components/sections/CapabilitiesSection'
 import { ServicesSection }  from '@/components/sections/ServicesSection'
 import { HowWeWorkSection } from '@/components/sections/HowWeWorkSection'
 import { CTASection }       from '@/components/sections/CTASection'
-import type { Service, PublicSettings, HomepageSection } from '@/types'
+import type { Service, PublicSettings } from '@/types'
 
 function SectionSkeleton() {
   return (
@@ -50,41 +50,25 @@ export default async function HomePage({
 }) {
   const { locale } = await params
 
-  const [settingsResult, sectionsResult] = await Promise.allSettled([
-    api.settings(locale),
-    api.homepageSections(locale).catch(() => [] as HomepageSection[]),
-  ])
-
-  const settings: PublicSettings | undefined =
-    settingsResult.status === 'fulfilled' ? settingsResult.value : undefined
-
-  const sections: HomepageSection[] =
-    sectionsResult.status === 'fulfilled' ? sectionsResult.value : []
-
-  const heroSection      = sections.find(s => s.type === 'hero')
-  const whyChoose        = sections.find(s => s.type === 'why_choose')
-  const processSec       = sections.find(s => s.type === 'process')
-  const ctaSection       = sections.find(s => s.type === 'cta')
+  const settings = await api.settings(locale).catch(() => undefined)
 
   return (
     <>
       <HeroSection
         locale={locale}
         settings={settings}
-        cmsSection={heroSection}
-        whyChooseSection={whyChoose}
       />
       <Suspense fallback={<SectionSkeleton />}>
-        <CapabilitiesSection locale={locale} cmsSection={sections.find(s => s.type === 'capabilities')} />
+        <CapabilitiesSection locale={locale} />
       </Suspense>
       <Suspense fallback={<SectionSkeleton />}>
         <ServicesData locale={locale} />
       </Suspense>
       <Suspense fallback={<SectionSkeleton />}>
-        <HowWeWorkSection locale={locale} cmsSection={processSec} />
+        <HowWeWorkSection locale={locale} />
       </Suspense>
       <Suspense fallback={<SectionSkeleton />}>
-        <CTASection locale={locale} cmsSection={ctaSection} settings={settings} />
+        <CTASection locale={locale} settings={settings} />
       </Suspense>
     </>
   )

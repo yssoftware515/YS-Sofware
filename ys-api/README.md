@@ -1,6 +1,6 @@
 # YS Systems & Software — Backend API
 
-Laravel 12 · PHP 8.4 · PostgreSQL · Redis · Sanctum
+Laravel 12 · PHP 8.4 · PostgreSQL · Sanctum
 
 ---
 
@@ -10,36 +10,37 @@ Laravel 12 · PHP 8.4 · PostgreSQL · Redis · Sanctum
 app/
 ├── Domains/
 │   ├── Auth/
-│   │   ├── Actions/         LoginAction
+│   │   ├── Actions/         LoginAction, ...
 │   │   ├── DTOs/            LoginDTO (readonly)
 │   │   ├── Models/          User, Role
-│   │   ├── Policies/        ProductPolicy
-│   │   └── Repositories/    PermissionRepository (future-swap abstraction)
-│   ├── Product/
-│   │   ├── Actions/         CreateProductAction, UpdateProductAction, DeleteProductAction
-│   │   ├── DTOs/            CreateProductDTO, UpdateProductDTO (readonly)
-│   │   ├── Models/          Product, ProductRelease
-│   │   └── Observers/       ProductObserver, ProductReleaseObserver (auto audit + version sync)
-│   ├── Content/
-│   │   ├── Actions/         CreateUpdateAction, PublishUpdateAction, UnpublishUpdateAction,
-│   │   │                    CreateCareerAction, UpdateCareerAction,
-│   │   │                    CreateTimelineEntryAction, UpdateTimelineEntryAction,
-│   │   │                    CreateDocumentationCategoryAction, UpdateDocumentationCategoryAction,
-│   │   │                    CreateDocumentationArticleAction, UpdateDocumentationArticleAction,
-│   │   │                    CreateRoadmapItemAction, UpdateRoadmapItemAction
-│   │   └── Models/          DocumentationCategory, DocumentationArticle, RoadmapItem, Update, Career, TimelineEntry
+│   │   ├── Policies/        (none — gate-based authorization)
+│   │   └── Repositories/    PermissionRepository
 │   ├── Operations/
-│   │   ├── Actions/         SubmitContactRequestAction (with spam scoring)
-│   │   └── Models/          ContactRequest
+│   │   ├── Actions/         SubmitContactRequestAction (spam scoring), ...
+│   │   └── Models/          Customer, Project, Task, Milestone, ContactRequest
+│   ├── Search/
+│   │   ├── Contracts/       SearchDriver
+│   │   ├── Drivers/         PostgresSearchDriver
+│   │   ├── DTOs/            SearchResult
+│   │   ├── Enums/           SearchType, SearchLocale
+│   │   ├── Rules/           SearchRules
+│   │   └── Services/        SearchService
+│   ├── Services/
+│   │   ├── Actions/         ...
+│   │   ├── DTOs/            ...
+│   │   ├── Enums/           ServicePricingType, ServiceBillingCycle, ServiceStatus
+│   │   ├── Models/          Service
+│   │   └── Observers/       ServiceObserver (audit)
 │   └── System/
-│       ├── Models/          AuditLog (immutable), Setting, Media, FeatureFlag
-│       └── Services/        AuditService, MediaUploadService
+│       ├── Models/          AuditLog (immutable), Setting, Media
+│       └── Services/        AuditService, MediaUploadService, HtmlSanitizerService,
+│                            DashboardService, HealthCheckService, SafeUrl (Rule)
 ├── Http/
 │   ├── Controllers/
 │   │   ├── Auth/            AuthController
-│   │   ├── Admin/           Product, Release, Documentation, Roadmap, Update,
-│   │   │                    Career, Timeline, Contact, Media, User, Setting, AuditLog
-│   │   └── Public/          Product, Documentation, Roadmap, Update, Career, Timeline, Contact, Setting
+│   │   ├── Admin/           Services, ContactRequests, Customers, Projects, Tasks,
+│   │   │                    Milestones, Users, Roles, Settings, AuditLogs, FailedJobs
+│   │   └── Public/          Settings, Services, Search, Contact
 │   ├── Middleware/          SecurityHeaders, EnsureUserIsActive, ForceJsonResponse
 │   └── Requests/            FormRequests per domain
 ├── Exceptions/              Handler (consistent JSON), Auth exceptions
@@ -54,7 +55,7 @@ app/
 git clone <repo> && cd ys-api
 composer install
 cp .env.example .env
-# Edit: DB_*, REDIS_*, FRONTEND_URL
+# Edit: DB_*, APP_*, FRONTEND_URL, CACHE_STORE=file|array, QUEUE_CONNECTION=database|sync
 php artisan key:generate
 php artisan migrate
 php artisan db:seed
@@ -71,7 +72,7 @@ Bootstrap admin (created by `AdminUserSeeder` from env, fails closed when unset)
 
 ## API Reference
 
-Base URL: `http://localhost:8000/api/v1`
+Base URL: `http://localhost:8000/api/v1` (or `NEXT_PUBLIC_API_URL`)
 
 ### Auth
 | Method | Endpoint       | Auth     |
@@ -79,38 +80,34 @@ Base URL: `http://localhost:8000/api/v1`
 | POST   | /auth/login   | Public   |
 | POST   | /auth/logout  | Required |
 | GET    | /auth/me      | Required |
+| POST   | /auth/change-password | Required |
+| POST   | /auth/forgot-password | Public |
+| POST   | /auth/reset-password  | Public |
 
-### Public (throttle: 120/min)
+### Public (throttle: 120/min, except search & contact)
 | Method | Endpoint                  |
 |--------|--------------------------|
 | GET    | /public/settings         |
-| GET    | /public/products         |
-| GET    | /public/products/{slug}  |
-| GET    | /public/docs             |
-| GET    | /public/docs/{slug}      |
-| GET    | /public/roadmap          |
-| GET    | /public/updates          |
-| GET    | /public/careers          |
-| GET    | /public/careers/{id}     |
-| GET    | /public/timeline         |
-| POST   | /public/contact          | (throttle: 3/hr) |
+| GET    | /public/services         |
+| GET    | /public/services/{slug}  |
+| GET    | /public/search           | (throttle: search = 60/min; types: service, page, faq) |
+| POST   | /public/contact          | (throttle: contact = 3/hr) |
 
 ### Admin (Bearer token required)
 | Resource        | Endpoints                                       | Permission              |
 |----------------|-------------------------------------------------|-------------------------|
-| Products        | CRUD /admin/products                            | manage_products         |
-| Releases        | CRUD /admin/releases                            | manage_products         |
-| Doc Categories  | CRUD /admin/docs/categories                     | manage_documentation    |
-| Doc Articles    | CRUD /admin/docs/articles                       | manage_documentation    |
-| Roadmap         | CRUD /admin/roadmap                             | manage_roadmap          |
-| Updates         | CRUD + publish/unpublish /admin/updates         | manage_updates          |
-| Careers         | CRUD /admin/careers                             | manage_careers          |
-| Timeline        | CRUD /admin/timeline                            | manage_settings         |
-| Contact         | List/View/Status /admin/contact-requests        | manage_contact_requests |
-| Media           | List/Upload/Delete /admin/media                 | manage_media            |
-| Users           | CRUD /admin/users                               | manage_users            |
-| Settings        | List/View/Update /admin/settings                | manage_settings         |
-| Audit Logs      | List /admin/audit-logs                          | view_audit_logs         |
+| Dashboard      | GET /admin/dashboard/stats                      | per widget (view_financials for money) |
+| Services       | CRUD /admin/services                            | view_services / manage_services |
+| Contact        | List/View/Status/Link/Convert /admin/contact-requests | manage_contact_requests |
+| Customers      | CRUD /admin/customers                           | view_customers / manage_customers |
+| Projects       | CRUD /admin/projects                            | view_projects / manage_projects |
+| Tasks          | CRUD /admin/tasks                               | view_projects / manage_projects |
+| Milestones     | CRUD + move /admin/milestones                   | view_projects / manage_projects |
+| Users          | CRUD /admin/users                               | manage_users |
+| Roles          | CRUD /admin/roles                               | manage_users (read) / manage_admins (write) |
+| Settings       | List/View/Update /admin/settings                | manage_settings |
+| Audit Logs     | List /admin/audit-logs                          | view_audit_logs |
+| Failed Jobs    | GET /admin/ops/failed-jobs                      | view_audit_logs (read-only) |
 
 ### Response Shape
 ```json
@@ -120,45 +117,37 @@ Base URL: `http://localhost:8000/api/v1`
 
 ---
 
-## Security
+## Removed surfaces (Group H)
 
-- Argon2id password hashing
-- Sanctum tokens: 8h default, 30d remember
-- Rate limiting: 120/min public · 5/min auth · 3/hr contact
-- CSP, X-Frame-Options, HSTS, fingerprint removal
-- AuditLog.save() + delete() blocked — immutable by design
-- Settings with is_public=false never reach public API
-- Media: MIME detection (server-side), double-extension guard, randomized filenames
-- Spam scoring on contact submissions
+The Product, Subscription, Content (documentation/roadmap/updates/careers/timeline) and Feature Flag domains were removed. Their routes, tables, controllers, and permissions no longer exist:
+- Dropped tables: `products`, `product_releases`, `product_media`, `product_features`, `product_pricing_plans`, `admin_product_access`, `subscriptions`, `careers`, `documentation_categories`, `documentation_articles`, `roadmap_items`, `updates`, `timeline_entries`, `feature_flags`
+- Dropped columns: `customers.product_id`, `audit_logs.product_id`
+- Removed permission: `manage_products`, `view_products`, `manage_documentation`, `manage_roadmap`, `manage_updates`, `manage_careers`, `manage_media`, `manage_timeline`, `manage_feature_flags`, `manage_faqs`, `manage_menus`, `manage_homepage`, `manage_static_pages`, `manage_subscriptions`
+- Row visibility is now permission-gated only (no product-level scoping).
+- Group H migrations (`2026_11_10_000001`, `2026_11_10_000002`) are **irreversible by design** (`down()` throws `RuntimeException`). Rollback is not supported — restore from a database backup if applied in error.
 
 ---
 
 ## Testing
 
 ```bash
-php artisan test                        # All tests
+php artisan test                        # All tests (359 passed / 1313 assertions)
 php artisan test --testsuite=Feature    # Feature only
 php artisan test --testsuite=Unit       # Unit only
-php artisan test --coverage             # With coverage report
 ```
 
-Test suites:
-- `tests/Feature/Auth/AuthTest.php`         — Login, logout, me, headers
-- `tests/Feature/Admin/ProductTest.php`     — Product CRUD + business rules
-- `tests/Feature/Admin/DocumentationTest.php` — Docs categories + articles
-- `tests/Feature/Public/PublicEndpointsTest.php` — Public visibility rules, contact
-- `tests/Unit/Domains/ActionTest.php`       — Reading time, spam scoring, media security
+Test suites cover: Auth, Services, ContactRequests, Customers, Projects, Tasks, Milestones, Users, Roles, Settings, AuditLogs, Search, Public endpoints, Security.
 
 ---
 
-## Database (12 migrations, in order)
+## Database (current, post-Group H)
 
-```
-roles → users → audit_logs → personal_access_tokens
-→ settings → media → products → product_releases
-→ content_tables (roadmap/docs/updates/careers/contact/timeline)
-→ feature_flags
-```
+Retained tables: `users`, `roles`, `services`, `customers`, `projects`, `tasks`, `milestones`,
+`contact_requests`, `audit_logs`, `media`, `settings`, `menus`, `menu_items`, `static_pages`,
+`faqs`, `personal_access_tokens`, plus system tables `jobs`, `cache`, `sessions`, `failed_jobs`.
+
+Seeded: 3 roles (super_admin `*`, admin 10 permissions, support 3 permissions), 11 services,
+default settings, homepage sections, FAQs, menus, static pages.
 
 ---
 
@@ -167,16 +156,8 @@ roles → users → audit_logs → personal_access_tokens
 | Role            | Key Permissions                                                        |
 |-----------------|------------------------------------------------------------------------|
 | super_admin     | `*` (wildcard — bypasses all gates via Gate::before)                  |
-| admin           | All except manage_users                                                |
-| editor          | manage_documentation, manage_updates, manage_roadmap, manage_media    |
-| content_manager | manage_documentation, manage_updates, manage_careers                   |
-| support         | manage_contact_requests, view_products                                 |
+| admin           | manage_settings, manage_contact_requests, view_audit_logs, view_services, manage_services, view_customers, manage_customers, view_projects, manage_projects, view_financials |
+| support         | manage_contact_requests, view_customers, manage_customers |
 
----
-
-## Phase Roadmap
-
-- [x] Phase 1 — Core, Auth, RBAC, Products, Settings, Audit, Security
-- [x] Phase 2 — Documentation, Releases, Roadmap, Updates, Careers, Timeline, Contact, Media
-- [ ] Phase 3 — Feature Flags UI, Global Search, Email notifications
-- [ ] Phase 4 — Security hardening, rate limit tuning, production readiness
+Permission checks fail closed; the `Permission` enum is a closed list validated by role requests.
+Row visibility is permission-gated only — no product-level scoping.

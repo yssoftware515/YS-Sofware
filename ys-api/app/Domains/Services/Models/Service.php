@@ -12,9 +12,8 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 /**
  * A company service offered by YS Technologies — the "services" side of
- * the platform, deliberately distinct from SaaS products:
+ * the platform:
  *
- *   products  → the YS product catalog (Sprint 1 Product domain)
  *   services  → custom work for customers: websites, mobile apps, AI,
  *               automation, UI/UX, branding, integrations, consulting...
  *

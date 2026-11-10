@@ -19,7 +19,6 @@ class CustomerResource extends JsonResource
             'whatsapp' => $this->whatsapp,
             'notes' => $this->notes,
             'status' => $this->status,
-            'subscriptions_count' => $this->whenCounted('subscriptions'),
             'projects_count' => $this->whenCounted('projects'),
             'creator' => $this->whenLoaded('creator', fn () => $this->creator ? [
                 'id' => $this->creator->id,

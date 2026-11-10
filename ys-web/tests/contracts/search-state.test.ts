@@ -20,11 +20,11 @@ import type { SearchResult } from '@/types'
  */
 
 const result = (n: number): SearchResult => ({
-  type: 'product',
+  type: 'service',
   id: `p-${n}`,
   title: `Result ${n}`,
   excerpt: null,
-  url: `/en/products/r${n}`,
+  url: `/en/services/r${n}`,
   rank: n,
   meta: {},
 })

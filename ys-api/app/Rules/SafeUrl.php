@@ -17,7 +17,7 @@ use Illuminate\Contracts\Validation\ValidationRule;
  *    protocol-relative `//...`) are allowed, as are http/https/mailto/tel
  *    absolute URLs. This preserves the existing navigation contract
  *    while rejecting executable schemes.
- *  - strict (product external URLs, settings social URLs): only absolute
+ *  - strict (settings social URLs): only absolute
  *    https:// URLs are accepted.
  *
  * Whitespace/control characters inside a scheme (e.g. `java\tscript:`,

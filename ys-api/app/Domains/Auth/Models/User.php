@@ -2,12 +2,10 @@
 
 namespace App\Domains\Auth\Models;
 
-use App\Domains\Product\Models\Product;
 use App\Domains\System\Models\AuditLog;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Foundation\Auth\User as Authenticatable;
@@ -63,19 +61,6 @@ class User extends Authenticatable
         return $this->hasMany(AuditLog::class);
     }
 
-    /**
-     * Products this admin has explicit access to. Irrelevant for
-     * super admins (they bypass this check entirely — see
-     * canAccessProduct()) and meaningless-by-design for a user with zero
-     * rows here: that means zero product access, not unrestricted access.
-     */
-    public function products(): BelongsToMany
-    {
-        return $this->belongsToMany(Product::class, 'admin_product_access')
-            ->using(AdminProductAccess::class)
-            ->withTimestamps();
-    }
-
     // ── Permission helpers ───────────────────────────────────────────
 
     public function hasPermission(string $permission): bool
@@ -108,32 +93,12 @@ class User extends Authenticatable
     /**
      * True only for the literal '*' permission — kept as its own named
      * method (rather than every caller re-checking hasPermission('*'))
-     * because product-scoping and future scope checks need to ask "does
-     * this user bypass scoping entirely" as a distinct question from
-     * "does this user have permission X."
+     * so scope checks can ask "does this user bypass scoping entirely"
+     * as a distinct question from "does this user have permission X."
      */
     public function isSuperAdmin(): bool
     {
         return $this->hasPermission('*');
-    }
-
-    /**
-     * The actual product-access gate. Call this IN ADDITION TO the
-     * existing $this->authorize('manage_products')-style action checks —
-     * it answers a different question ("which product") than those do
-     * ("can you do this kind of thing at all"). Deliberately fails closed:
-     * a non-super-admin with no admin_product_access rows gets false, not
-     * true, even if some other permission check already passed.
-     */
-    public function canAccessProduct(Product|string $product): bool
-    {
-        if ($this->isSuperAdmin()) {
-            return true;
-        }
-
-        $productId = $product instanceof Product ? $product->id : $product;
-
-        return $this->products()->where('products.id', $productId)->exists();
     }
 
     public function isActive(): bool

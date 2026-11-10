@@ -2,7 +2,6 @@
 
 namespace Tests\Unit\Domains;
 
-use App\Domains\Content\Actions\CreateDocumentationArticleAction;
 use App\Domains\Operations\Actions\SubmitContactRequestAction;
 use App\Domains\System\Services\MediaUploadService;
 use App\Jobs\SendContactRequestNotificationJob;
@@ -17,23 +16,6 @@ use Tests\TestCase;
 class ActionTest extends TestCase
 {
     use RefreshDatabase;
-
-    // ── DocumentationArticle reading time ────────────────────────────
-
-    public function test_reading_time_is_calculated_from_word_count(): void
-    {
-        // 200 words = 1 minute, 400 words = 2 minutes
-        // Resolved via the container (not `new`) because this Action now
-        // depends on HtmlSanitizerService — letting Laravel wire it up is
-        // the standard pattern and keeps this test from having to know
-        // about dependencies it isn't actually testing.
-        $action = $this->app->make(CreateDocumentationArticleAction::class);
-
-        // estimateReadingTime() is public — testable directly, no reflection needed
-        $this->assertEquals(1, $action->estimateReadingTime(implode(' ', array_fill(0, 150, 'word'))));
-        $this->assertEquals(2, $action->estimateReadingTime(implode(' ', array_fill(0, 350, 'word'))));
-        $this->assertEquals(5, $action->estimateReadingTime(implode(' ', array_fill(0, 950, 'word'))));
-    }
 
     // ── Contact spam scoring ─────────────────────────────────────────
 

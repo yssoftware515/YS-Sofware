@@ -9,8 +9,8 @@ Next.js ^16.2.9 (App Router) · React 19 · TypeScript 5.5 · Tailwind CSS 3.4 �
 
 1. **Public site** — `app/[locale]/(public)/*`, bilingual EN/AR with RTL.
 2. **Admin panel** — `app/admin/*`, English-only UI, permission-filtered navigation.
-3. **Platform framework** — `lib/platform/` (100 files) — a plugin kernel powering the admin shell; dead scaffolding removed 2026-08-18 (Phase 2A, ARCH-006).
-4. **Core module** — `modules/core/` registers nav groups, permission groups, dashboard widgets.
+3. **Platform framework** — `lib/platform/` (12 files) — a minimal plugin kernel powering the admin shell (`ModuleKernel`, registries for navigation/permission/widget/SEO, services for Logger/EventBus/ServiceContainer/PlatformConfig); dead scaffolding removed 2026-08-18 (Phase 2A, ARCH-006).
+4. **Core module** — `modules/core/` registers nav groups (6 groups), permission groups (8 groups, 12 permissions), and 5 dashboard widgets.
 
 ## 2. Routing
 
@@ -26,7 +26,7 @@ Next.js ^16.2.9 (App Router) · React 19 · TypeScript 5.5 · Tailwind CSS 3.4 �
 - Base: `NEXT_PUBLIC_API_URL` (default `http://localhost:8000/api/v1`).
 - Sends `Accept-Language` from locale.
 - ISR caching: GETs `revalidate: 60`; search & contact `0` (never cached).
-- Exposed functions: `settings, products, product, roadmap, updates, careers, timeline, search, contact, pages, page, faqs, menus, menu, homepageSections`.
+- Exposed functions: `settings, services, service, search, contact, pages, page, faqs`.
 - Admin wrapper `lib/admin/api.ts`: `adminFetch/adminList/adminGet/adminCreate/adminUpdate/adminDelete`, always `credentials: 'include'`, throws `{status, message, errors}`.
 
 ## 4. Auth flow (admin) (✅ verified)
@@ -72,25 +72,20 @@ Implemented in `ys-web/lib/csrf.ts` (consumed by `lib/api/client.ts` and `lib/ad
 
 - `lib/cms/schemas.ts` — zod schemas (`heroContentSchema`, `whyChooseContentSchema`, `ctaContentSchema`).
 - `lib/cms/validate.ts` — `validateUrl()` (protocol allow-list), `validateCmsContent()` (safeParse).
-- Rich text rendering: product `long_desc` and doc articles → `dangerouslySetInnerHTML` **wrapped in `sanitizeHtml()`** (isomorphic-dompurify allow-list). Static pages/FAQ/updates render as plain React text (no innerHTML). ✅
+- Rich text rendering: service descriptions and static page content → `dangerouslySetInnerHTML` **wrapped in `sanitizeHtml()`** (isomorphic-dompurify allow-list). FAQs render as plain React text (no innerHTML). ✅
 
-## 9. The `lib/platform` framework (✅ verified — biggest structure in the frontend)
+## 9. The `lib/platform` framework (✅ verified)
 
-A self-contained, module-kernel framework (56 subdirectories, 100 files; 79 provably-unreachable files — hooks, adapters, sdk, cli, testing, unused barrels — deleted 2026-08-18 with build/type-check/lint/tests verification):
+A minimal, self-contained module-kernel framework (**12 files**, 4 subdirectories) powering the admin shell:
 
 | Area | Key files |
 |---|---|
 | Kernel | `kernel/ModuleKernel.ts`, `bootstrap.ts`, `PlatformProvider.tsx` |
-| Contracts | `contracts/ModuleManifest` (ModuleManifest, PlatformModule, Dependency, PluginConfig) |
-| Registries | Navigation, Permission, Widget, Settings, Search, SEO, FeatureFlag, Scheduler |
-| Services | Logger, PlatformConfig, EventBus, NotificationBus, AuditEngine, HealthReporter, PerformanceMonitor, SecurityManager, ServiceContainer |
-| Buses | CommandBus, QueryBus, MiddlewarePipeline (+ logging/metrics/permission/validation/feature-flag/rate-limit middleware) |
-| Engines | FeatureFlagEngine, DependencyGraph |
-| Drivers | cache (Memory/Null), storage (Local), mail (Smtp), search, queue, worker, scheduler |
-| Operational | health-endpoints (HealthEndpointProvider), secrets (SecretsManager; providers env/docker/vault), release, recovery, installer, backup, deployments, updates, maintenance, media, snapshot, manifest, inspector, lifecycle, CLI, generator, SDK |
-| Observability | monitoring, performance, logs, audit, observability, reports, reviews (SecurityReview, PerformanceReview) |
+| Contracts | `contracts/ModuleManifest.ts` |
+| Registries | `NavigationRegistry.ts`, `PermissionRegistry.ts`, `WidgetRegistry.ts`, `SeoRegistry.ts` |
+| Services | `Logger.ts`, `EventBus.ts`, `ServiceContainer.ts`, `PlatformConfig.ts` |
 
-**Reality check (✅ after Phase 2A):** every remaining file is reachable from app code or `tests/platform/*`; the framework is functional and unit-tested but only a portion is wired into the running app (PlatformProvider boots the core module; nav/widgets/permissions registries are consumed by the admin layout; HealthIndicator uses health-endpoints). Remaining services (mail, search, queue, storage, secrets, release, recovery, installer, backup) are standalone abstractions with no production integration — foundation code kept by owner decision.
+**Verification:** every remaining file is reachable from app code (`app/admin/layout.tsx` boots the core module via `PlatformProvider`; nav/widgets/permissions registries are consumed by the admin shell; `HealthIndicator` uses health-endpoints). The framework is functional but only the portions above are wired into the running app. No FeatureFlag, Scheduler, Search-driver, mail, or storage engines are registered — those capabilities were removed with their domains in Groups A–F/H, and no placeholder engines remain.
 
 ## 10. Tests (⚠️)
 
@@ -99,7 +94,7 @@ A self-contained, module-kernel framework (56 subdirectories, 100 files; 79 prov
 
 ## 11. TypeScript config (✅ verified)
 
-- Path alias `@/*` → project root. Strict mode. `types/` holds shared interfaces (`ApiResponse<T>`, `Product`, `PublicSettings`, `AdminUser`, `Locale`, etc.).
+- Path alias `@/*` → project root. Strict mode. `types/` holds shared interfaces (`ApiResponse<T>`, `PublicSettings`, `AdminUser`, `Locale`, etc.).
 
 ## 12. Known frontend issues (summary; details in known-issues.md)
 

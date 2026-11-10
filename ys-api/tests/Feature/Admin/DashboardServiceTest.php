@@ -4,9 +4,7 @@ namespace Tests\Feature\Admin;
 
 use App\Domains\Auth\Models\Role;
 use App\Domains\Auth\Models\User;
-use App\Domains\Cms\Models\Faq;
 use App\Domains\Operations\Models\ContactRequest;
-use App\Domains\Product\Models\Product;
 use App\Domains\Services\Models\Service;
 use App\Domains\System\Services\DashboardService;
 use App\Domains\System\Services\HealthCheckService;
@@ -57,16 +55,12 @@ class DashboardServiceTest extends TestCase
     public function test_super_admin_stats_include_counts_attention_health_and_recent(): void
     {
         $user = $this->actingAsSuperAdmin();
-        Product::factory()->count(3)->create();
         Service::factory()->count(2)->create();
-        Faq::factory()->count(2)->create();
         ContactRequest::factory()->create(['status' => 'new']);
 
         $data = $this->dashboardService()->stats($user);
 
-        $this->assertSame(3, $data['counts']['products']);
         $this->assertSame(2, $data['counts']['services']);
-        $this->assertSame(2, $data['counts']['faqs']);
         $this->assertSame(1, $data['counts']['new_contact_requests']);
         $this->assertArrayHasKey('projects_overdue', $data['attention']);
         $this->assertNotEmpty($data['recent_contact_requests']);
@@ -75,15 +69,13 @@ class DashboardServiceTest extends TestCase
 
     public function test_scoped_admin_only_receives_permitted_counts(): void
     {
-        $user = $this->actingAsScoped(['manage_products']);
-        $products = Product::factory()->count(4)->create();
-        $user->products()->attach($products->pluck('id'));
+        $user = $this->actingAsScoped(['view_services']);
+        Service::factory()->count(3)->create();
         ContactRequest::factory()->create(['status' => 'new']);
 
         $data = $this->dashboardService()->stats($user);
 
-        $this->assertSame(4, $data['counts']['products']);
-        $this->assertArrayNotHasKey('services', $data['counts'], 'A user without the services permission must not receive services counts.');
+        $this->assertSame(3, $data['counts']['services']);
         $this->assertArrayNotHasKey('contact_requests', $data['counts']);
         $this->assertArrayNotHasKey('recent_contact_requests', $data);
     }

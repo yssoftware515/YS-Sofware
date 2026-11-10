@@ -67,34 +67,99 @@ This contract is implemented by `ys-web/lib/csrf.ts` and covered end-to-end by `
 | frontend-build | ✅ real |
 | security-scan | ✅ real (npm audit `\|\| true`, Trivy HIGH/CRITICAL → SARIF) |
 
-## 5. Release pipeline (`.github/workflows/release.yml`, ✅ verified)
+## 5. Vercel deployment (approved production platform)
 
-1. `docker-build` — buildx, GHCR login, build/push `frontend` (with `NEXT_PUBLIC_API_URL` + `NEXT_PUBLIC_APP_URL` build args from repo vars; default localhost/prod-domain fallbacks) and `backend`, tagged `<version>` + `latest`. When `NEXT_PUBLIC_TURNSTILE_SITE_KEY` is set it is inlined as a build arg for the Turnstile login gate.
-2. `deploy` — SSH to `DEPLOY_HOST`, `cd /opt/ys-platform`, `docker compose pull`, `docker compose run --rm backend php artisan migrate --force` (**before** `up`, on the new image), `docker compose up -d --remove-orphans`, `prune`.
-3. `verify` — requires ingress to actually answer, and requires the ingress to be reachable over HTTPS:
-   - `curl https://…/health/live` (frontend) must return 200.
-   - `curl https://…/api/v1/health` (backend through nginx — real readiness gate) must return 200.
-   - `curl https://…/api/v1/admin/products` must return 401/419 (auth layer reachable, not 502/404).
-   - Plain-HTTP probes of the same endpoints may return **{403, 301, 308}** (TLS gate or redirect) — the HTTPS probes are authoritative; a 403/301/308 on HTTP is not a failure.
-4. `rollback-ready` — `if: failure()`; prints a warning only (⚠️ **not automatic rollback**).
+Vercel is the only approved production hosting platform. Render, Railway, VPS, and other providers are **not** used. `render.yaml` has been deleted.
 
-⚠️ Deploy requires `DEPLOY_SSH_KEY`, `DEPLOY_HOST`, `DEPLOY_URL` secrets. **`DEPLOY_KNOWN_HOSTS` is also required** — the workflow pins the deploy host's SSH key fingerprint for a fail-closed connection (no `StrictHostKeyChecking=no` anywhere); without it the deploy step fails closed. `DEPLOY_URL` must be reachable over HTTPS and must not include trailing path. Also set repo variable `NEXT_PUBLIC_API_URL` to the public API base, e.g. `https://example.com/api/v1` — otherwise the browser will call `localhost:8000/api/v1` (build-time default) and break in production. Set `NEXT_PUBLIC_APP_URL` to the site's canonical origin (defaults to `https://ys-systems.com`).
+### 5.1 Architecture
 
-## 6. Environments
-
-| Environment | Profile | Notes |
+| Component | Platform | Notes |
 |---|---|---|
-| development | `docker compose --profile development up -d` | + mailhog |
-| staging | `docker compose --profile staging up -d` | + mailhog |
-| production | `docker compose --profile production up -d` | + grafana (requires `GRAFANA_PASSWORD` set) |
+| Frontend | Vercel (Next.js 16, native) | `ys-web/` directory, auto-detected by Vercel |
+| Backend | Vercel Functions (Container Runtime, Beta) | `ys-api/Dockerfile.vercel` (FrankenPHP + Caddy) |
+| Database | External PostgreSQL (Neon or any provider) | Connected via `DB_*` env vars, `sslmode=prefer` |
+| Queue | Vercel Daemons + database jobs table | `php artisan queue:work` as a daemon; `QUEUE_CONNECTION=database` |
+| Scheduler | Vercel Cron → authenticated HTTP endpoint | `php artisan schedule:run` via cron-triggered route |
+| Storage | Ephemeral container FS | Uploads use external object store (Vercel Blob / S3) |
+| TLS | Vercel-managed | `SESSION_SECURE_COOKIE=true`, `REQUIRE_TLS=true` |
 
-Actual deploy targets exist only as GitHub environments (`staging`/`production`); real host paths come from secrets (`DEPLOY_HOST`, `DEPLOY_URL`).
+### 5.2 Project structure for Vercel
 
-### Operator note — compose profiles & backup scheduling
+```
+vercel.json              # Service definitions + rewrites (project root)
+ys-api/Dockerfile.vercel # Backend container (FrankenPHP + Caddy)
+ys-api/Caddyfile         # Caddy config: listens on $PORT, PHP server
+ys-web/                  # Next.js 16 (Vercel-native, no Dockerfile needed)
+```
 
-- The stack is **profile-driven**: `mailhog` (development/staging), `monitoring`/Grafana (production) and the **backup service** (development/staging/production) only exist when the matching profile is active. Services without an active profile cannot be started — that is why the production backup run must pass the profile explicitly:
-  `docker compose --profile production run --rm backup` (and `--profile staging`/`--profile development` on those hosts).
-- Backup **scheduling is intentionally host-side** (crontab on the server, see backup-and-recovery.md §4). Do **not** create a Laravel scheduler task for backups.
+### 5.3 Routing (`vercel.json`)
+
+| Path | Destination |
+|---|---|
+| `/api/:path*` | Backend service (container) |
+| `/sanctum/:path*` | Backend service (container) |
+| `/(.*)` | Frontend service (Next.js) |
+
+### 5.4 Backend container (`Dockerfile.vercel`)
+
+Based on the official [Vercel Laravel with Docker guide](https://vercel.com/kb/guide/laravel-php-with-docker):
+
+- **Runtime:** `dunglas/frankenphp:1-php8.4-bookworm` (PHP + Caddy)
+- **Extensions:** `pdo_pgsql`, `zip`, `opcache`, `mbstring`
+- **Port:** Listens on `$PORT` (Vercel injects, defaults to 80)
+- **No startup migrations:** Migrations run as a separate CI/release step (multiple instances must not run migrations concurrently)
+- **No build-time config caching:** `APP_KEY`, `DB_*` etc. are resolved at runtime from Vercel env vars
+- **Logs:** `LOG_CHANNEL=stderr` (Vercel captures stdout/stderr)
+- **User:** `www-data` (non-root)
+- **File system:** Ephemeral — uploads must go to external object storage
+
+### 5.5 Queue & Scheduler
+
+**Queue:** Laravel's database queue driver (`QUEUE_CONNECTION=database`) writes jobs to the `jobs` table in PostgreSQL. A **Vercel Daemon** runs `php artisan queue:work` continuously as a container-backed background process. Daemons run in production only (Beta; not in preview deployments).
+
+**Scheduler:** No persistent scheduler process on Vercel Functions. Use **Vercel Cron** to call an authenticated HTTP endpoint (e.g. `POST /api/v1/schedule/run`) which executes `php artisan schedule:run`. The endpoint must be protected by auth middleware.
+
+### 5.6 Environment variables (Vercel dashboard)
+
+Set these in the Vercel project settings → Environment Variables:
+
+**Backend (all environments):**
+- `APP_KEY` — `php artisan key:generate --show` output (stable per environment)
+- `APP_ENV=production`, `APP_DEBUG=false`
+- `DB_CONNECTION=pgsql`, `DB_HOST`, `DB_PORT=5432`, `DB_DATABASE`, `DB_USERNAME`, `DB_PASSWORD`
+- `DB_SSLMODE=require` (Neon requires SSL)
+- `LOG_CHANNEL=stderr`
+- `TRUSTED_PROXIES` — Vercel proxy CIDRs
+- `SANCTUM_STATEFUL_DOMAINS` — frontend domain(s), comma-separated
+- `SESSION_SECURE_COOKIE=true`, `REQUIRE_TLS=true`
+- `MAIL_*` — SMTP credentials
+
+**Frontend (build-time):**
+- `NEXT_PUBLIC_API_URL` — `https://<backend-domain>.vercel.app/api/v1`
+- `NEXT_PUBLIC_APP_URL` — `https://<frontend-domain>.vercel.app`
+- `NEXT_PUBLIC_TURNSTILE_SITE_KEY` — Cloudflare Turnstile site key
+
+### 5.7 Known limitations
+
+| Limitation | Impact | Mitigation |
+|---|---|---|
+| Container FS is ephemeral | Uploads lost on instance recycle | External object store (Vercel Blob / S3) |
+| Cache/session are file-based | Not shared across instances | Use database/Redis for shared state if needed |
+| Daemons: production only | No background workers in preview | Accept preview limitation; test queue via HTTP |
+| No `schedule:work` process | Scheduled tasks need Cron + HTTP endpoint | Vercel Cron → authenticated route |
+| Neon SSL required | `DB_SSLMODE=require` | Already supported by `config/database.php` |
+
+### 5.8 Deployment steps
+
+1. Push code to GitHub
+2. Import repository in Vercel dashboard
+3. Vercel detects `vercel.json` with services → deploys frontend (Next.js) + backend (container)
+4. Set environment variables in Vercel project settings
+5. Run `php artisan migrate --force` via a one-off deployment step or CI
+6. Configure Vercel Daemon for queue worker
+7. Configure Vercel Cron for scheduler
+8. Verify `/api/v1/health` and `/health/live` respond
+
 - **K-34 stays deferred:** no Laravel scheduled commands exist (`routes/console.php` absent, no `schedule()` calls), so the `scheduler` container is idle by design; `php artisan schedule:work` is wired for when real schedules are added.
 
 ## 7. Deploy flow caveats ⚠️
@@ -123,15 +188,13 @@ No Docker engine is available in this workspace, so the container path was revie
 - Symlink `public/storage -> /app/storage/app/public` created at image build; volume replaces `/app/storage` contents at runtime, symlink still resolves.
 covered by visitors; served via `/storage/` with the 1y cache headers). The default disk stays private (`local`, serve=false); any non-site upload keeps the cryptotext/opt-in posture (S-21). `/storage/{path}` routes are NOT registered (confirmed by clearing stale cache).
 
-## 10. Future deployment topology: Vercel + Neon (consideration, NOT current architecture)
+## 10. Deployment topology notes (provider-agnostic)
 
-The platform is designed around the **Docker Compose topology above** — that is what is implemented and verified (Sprint 12 Phase C). A future split (frontend → Vercel, database → Neon/managed Postgres) is recorded **as a deployment consideration only**; no part of this section is implemented or provisioned, and no domain, provider, credential or exact production URL is invented or implied:
+The platform is designed around the **Docker Compose topology above** (§1) — that is what is implemented and verified (Sprint 12 Phase C). **No external database provider, hosting platform, or Neon linkage is provisioned, configured, or implied anywhere in this repository.** The backend connects to PostgreSQL via the generic Laravel `pgsql` driver (`config/database.php`, `DATABASE_URL`/`sslmode=prefer` supported); the host `.env` / compose `envVars` supply `DB_HOST`, `DB_PORT`, `DB_DATABASE`, `DB_USERNAME`, `DB_PASSWORD` at deploy time.
 
-- **Frontend on Vercel calls the API over a real HTTPS backend URL.** TLS must terminate on the external gateway in front of the edge nginx (the edge nginx itself never terminates TLS — no 443 vhost exists).
-- `APP_URL` (root `.env`) must point to the real application URL — it feeds backend absolute URLs (emails, storage) **and** is inlined into the frontend build as `NEXT_PUBLIC_APP_URL` (single variable, phase C-1).
-- `FRONTEND_URL` must point to the real Vercel frontend origin — the CORS allowlist (`config/cors.php`) and the Sanctum stateful-domain source (`config/sanctum.php`) are derived from it.
-- `SANCTUM_STATEFUL_DOMAINS` must match the actual frontend domain per the current cookie/SameSite rules: cookie auth only crosses **same-site** requests today (`SameSite=strict`, host-only cookie). A Vercel frontend on a **different registrable domain** than the API would need `SameSite=None` + Secure (plus `SESSION_DOMAIN` only when both share one host) — see the `config/session.php` header comment.
-- **Database-backed queue/cache must remain supported on Neon:** the queue default is the **database** driver (`jobs` table); cache/session defaults are file-backed. A hosted Postgres (permissions to create `jobs`/`cache` tables) is sufficient. No Redis is used or required by the shipped deployment (Phase 4A, P1-01).
-- **Public media storage** is currently the backend `public/storage` (Docker `backend_storage` volume, served with 1y cache headers through nginx). Moving the backend off the Docker volume topology requires object storage or static hosting for `public/storage` content. AWS/S3 wiring exists in `config/filesystems.php` but is **not provisioned and no provider is chosen here**.
-- Set `SESSION_SECURE_COOKIE=true` in any HTTPS topology — the external gateway does not rewrite cookies.
-- **Nothing in this section was implemented in Phase C** — it is a readiness record so a future split is deliberate, not accidental.
+- **Database:** any PostgreSQL 16+ instance (self-hosted Docker `postgres:16-alpine` in compose, or a managed PostgreSQL from any provider) works — the connection parameters are environment-injected. No provider-specific settings (Neon, PgBouncer, SSL enforcement beyond `sslmode=prefer`, etc.) are hard-coded.
+- **Cache/queue:** default drivers are `file` (cache) and `database` (queue, `jobs` table). No Redis is used or required (Phase 4A, P1-01; `predis/predis` was removed from `composer.json` in Group H).
+- **Frontend:** build-time args `NEXT_PUBLIC_API_URL` / `NEXT_PUBLIC_APP_URL` are inlined at `next build`; no frontend hosting provider is chosen or provisioned here.
+- **Media storage:** `public/storage` via the Docker `backend_storage` volume, served through the backend nginx with 1y cache headers. `config/filesystems.php` retains AWS/S3 wiring but **no provider is provisioned**.
+- **TLS:** terminated by an external gateway in front of the edge nginx (`X-Forwarded-Proto` is passed). The edge nginx itself never terminates TLS (no 443 vhost). Set `SESSION_SECURE_COOKIE=true` when TLS terminates externally.
+- **Nothing in this section references a live production environment** — real host paths, secrets (`DEPLOY_HOST`, `DEPLOY_URL`, `APP_KEY`, `DB_PASSWORD`, …) come from GitHub environment secrets and are not present in the repository.

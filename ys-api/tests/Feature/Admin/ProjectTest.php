@@ -4,8 +4,8 @@ namespace Tests\Feature\Admin;
 
 use App\Domains\Auth\Models\Role;
 use App\Domains\Auth\Models\User;
-use App\Domains\Billing\Models\Customer;
 use App\Domains\Operations\Models\ContactRequest;
+use App\Domains\Operations\Models\Customer;
 use App\Domains\Operations\Models\Project;
 use App\Domains\Services\Models\Service;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -37,7 +37,7 @@ class ProjectTest extends TestCase
 
     public function test_admin_without_projects_permission_is_denied(): void
     {
-        $this->actingAsScoped(['manage_products']);
+        $this->actingAsScoped(['manage_settings']);
 
         $this->getJson('/api/v1/admin/projects')->assertStatus(403);
         $this->postJson('/api/v1/admin/projects', ['name' => 'X'])->assertStatus(403);

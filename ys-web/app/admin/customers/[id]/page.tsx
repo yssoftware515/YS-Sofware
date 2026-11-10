@@ -123,7 +123,6 @@ export default function CustomerDetailPage() {
         )}
 
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4" style={{ marginTop: '1.25rem' }}>
-          <Stat label="Subscriptions" value={String(customer.subscriptions_count ?? 0)} />
           <Stat label="Projects" value={String(customer.projects_count ?? 0)} />
           <Stat label="Phone" value={customer.phone ?? '—'} />
           <Stat label="WhatsApp" value={customer.whatsapp ?? '—'} />

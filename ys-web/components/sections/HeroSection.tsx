@@ -5,11 +5,9 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { motion, useScroll, useTransform, useMotionValue, useSpring } from 'framer-motion'
 import { ArrowRight, ArrowLeft, Box, Globe, Layers, Zap, Palette, Bot } from 'lucide-react'
-import type { PublicSettings, HomepageSection } from '@/types'
+import type { PublicSettings } from '@/types'
 import { cn } from '@/lib/utils/cn'
 import { buttonVariants } from '@/components/ui/Button'
-import { heroContentSchema } from '@/lib/cms/schemas'
-import { validateCmsContent, validateUrl } from '@/lib/cms/validate'
 
 /* Any icon component we can render in cards/bar (Lucide or custom SVG). */
 type IconComponentType = React.ComponentType<{
@@ -36,8 +34,6 @@ function ShieldLineIcon({ size = 16, style, className, 'aria-hidden': ariaHidden
 interface HeroSectionProps {
   locale: string
   settings?: PublicSettings
-  cmsSection?: HomepageSection
-  whyChooseSection?: HomepageSection
 }
 
 const fallback = {
@@ -406,7 +402,7 @@ function WhyChooseBar({ locale }: { locale: string }) {
 // • Connector loops stop at card tops — no tails below
 // • Section locked to the viewport → hero + bar above the fold, no scroll
 // ═══════════════════════════════════════════════════════════════════════════════
-export function HeroSection({ locale, settings, cmsSection, whyChooseSection }: HeroSectionProps) {
+export function HeroSection({ locale, settings }: HeroSectionProps) {
   const isAr = locale === 'ar'
   const f = fallback[locale as keyof typeof fallback] ?? fallback.en
   const services = fallbackHeroServices
@@ -427,23 +423,16 @@ export function HeroSection({ locale, settings, cmsSection, whyChooseSection }: 
     mouseX.set((e.clientX - rect.left) / rect.width)
     mouseY.set((e.clientY - rect.top) / rect.height)
   }
-  const cmsContent = validateCmsContent(cmsSection, heroContentSchema)
-  const badge = isAr
-    ? (cmsContent?.badge_ar || f.badge)
-    : (cmsContent?.badge_en || f.badge)
+  const badge = f.badge
   const headline_en = settings?.content?.hero_headline_en
   const headline_ar = settings?.content?.hero_headline_ar
   const subline = isAr
     ? (settings?.content?.hero_subline_ar || f.subline)
     : (settings?.content?.hero_subline_en || f.subline)
-  const ctaPrimaryText = isAr
-    ? (cmsContent?.cta_primary_ar || f.cta_primary)
-    : (cmsContent?.cta_primary_en || f.cta_primary)
-  const ctaSecondaryText = isAr
-    ? (cmsContent?.cta_secondary_ar || f.cta_secondary)
-    : (cmsContent?.cta_secondary_en || f.cta_secondary)
-  const ctaPrimaryUrl = validateUrl(cmsContent?.cta_primary_url, `/${locale}/contact`)
-  const ctaSecondaryUrl = validateUrl(cmsContent?.cta_secondary_url, `/${locale}/services`)
+  const ctaPrimaryText = f.cta_primary
+  const ctaSecondaryText = f.cta_secondary
+  const ctaPrimaryUrl = `/${locale}/contact`
+  const ctaSecondaryUrl = `/${locale}/services`
   const ArrowIcon = isAr ? ArrowLeft : ArrowRight
 
   return (

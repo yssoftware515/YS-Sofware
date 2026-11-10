@@ -18,14 +18,14 @@ Every item below was confirmed by reading code (no speculation).
 | K-04 | `/admin/notifications` page | `GET /admin/notifications`, `POST /admin/notifications/read-all` | ❌ no routes | Page shows error/empty | + RESOLVED (dead page removed — no caller remains) |
 | K-05 | Dashboard widget `faq` | `GET /admin/faq` | ❌ route is `/admin/faqs` | Widget count always 0 (silent 404) | + fixed (apiPath) |
 | K-06 | Dashboard widget `homepage` | `GET /admin/homepage` | ❌ route is `/admin/homepage-sections` | Widget count always 0 (silent 404) | + fixed (apiPath) |
-| K-07 | Widget permission `manage_releases` | `modules/core/widgets.ts` | ❌ not in `Permission` enum (releases use `manage_products`) | Release widget invisible for roles that have manage_products but the fake string doesn't match → widget gated incorrectly | + fixed (widget+nav use `manage_products`) |
+| K-07 | Widget permission `manage_releases` | `modules/core/widgets.ts` | ❌ not in `Permission` enum (releases domain removed; widget now uses `manage_services`) | Release widget invisible for roles that had manage_products but the fake string doesn't match → widget gated incorrectly | + fixed (widget+nav use `manage_services`) |
 
 ## 2. Permission inconsistencies (✅ verified)
 
 | # | Issue | Detail |
 |---|---|---|
-| K-08 | `manage_admins` unused in seeded roles; `view_admin_activity` **removed** (had zero enforcement); `view_financials` **wired** (dashboard, customer value-by-currency, project payload) | ✅ grep + tests |
-| K-09 | `view_products` gate exists but no route uses it (only ProductPolicy viewAny/view) | harmless |
+| K-08 | `manage_admins` unused in seeded roles (only super_admin via `*`); `view_admin_activity` **removed** (had zero enforcement); `view_financials` **wired** (dashboard, customer value-by-currency, project payload) | ✅ grep + tests |
+| K-09 | `view_products` / `manage_products` — deleted with Product domain (Group A/H); no route, gate, or enum value remains | resolved — removed with Product domain |
 | K-10 | Admin `role` read permission | `RoleController@index` requires `manage_users`; create/update/delete require `manage_admins` — frontend nav may mislabel (❓ verify UI) |
 
 ## 3. Documentation vs code mismatches (✅ verified)

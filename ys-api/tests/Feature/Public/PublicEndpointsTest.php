@@ -2,9 +2,6 @@
 
 namespace Tests\Feature\Public;
 
-use App\Domains\Content\Models\Career;
-use App\Domains\Content\Models\RoadmapItem;
-use App\Domains\Content\Models\Update;
 use App\Domains\Operations\Models\ContactRequest;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Queue;
@@ -61,57 +58,6 @@ class PublicEndpointsTest extends TestCase
         ]);
 
         $response->assertStatus(422)->assertJsonValidationErrors(['email']);
-    }
-
-    // ── Roadmap ──────────────────────────────────────────────────────
-
-    public function test_public_roadmap_only_shows_public_items(): void
-    {
-        RoadmapItem::factory()->create(['is_public' => true,  'title_en' => 'Public Feature']);
-        RoadmapItem::factory()->create(['is_public' => false, 'title_en' => 'Private Feature']);
-
-        $response = $this->getJson('/api/v1/public/roadmap');
-
-        $response->assertStatus(200);
-        $data = $response->json('data');
-        $this->assertCount(1, $data);
-    }
-
-    // ── Updates ──────────────────────────────────────────────────────
-
-    public function test_public_updates_only_shows_published(): void
-    {
-        Update::factory()->create(['published_at' => now()->subDay(), 'title_en' => 'Published']);
-        Update::factory()->create(['published_at' => null, 'title_en' => 'Draft']);
-
-        $response = $this->getJson('/api/v1/public/updates');
-
-        $response->assertStatus(200);
-        $data = $response->json('data');
-        $this->assertCount(1, $data);
-    }
-
-    // ── Careers ──────────────────────────────────────────────────────
-
-    public function test_public_careers_only_shows_open_positions(): void
-    {
-        Career::factory()->create(['status' => 'open',   'title_en' => 'Open Role']);
-        Career::factory()->create(['status' => 'closed', 'title_en' => 'Closed Role']);
-        Career::factory()->create(['status' => 'draft',  'title_en' => 'Draft Role']);
-
-        $response = $this->getJson('/api/v1/public/careers');
-
-        $response->assertStatus(200);
-        $data = $response->json('data');
-        $this->assertCount(1, $data);
-    }
-
-    public function test_closed_career_detail_returns_404(): void
-    {
-        $career = Career::factory()->create(['status' => 'closed']);
-
-        $response = $this->getJson("/api/v1/public/careers/{$career->id}");
-        $response->assertStatus(404);
     }
 
     // ── Admin Contact Requests ────────────────────────────────────────

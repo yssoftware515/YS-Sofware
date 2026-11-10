@@ -4,9 +4,8 @@ namespace Tests\Feature\Admin;
 
 use App\Domains\Auth\Models\Role;
 use App\Domains\Auth\Models\User;
-use App\Domains\Billing\Models\Customer;
-use App\Domains\Content\Models\Update;
 use App\Domains\Operations\Models\ContactRequest;
+use App\Domains\Operations\Models\Customer;
 use App\Domains\Operations\Models\Project;
 use App\Domains\Operations\Models\Task;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -73,20 +72,6 @@ class PaginationLimitTest extends TestCase
         $this->getJson('/api/v1/admin/contact-requests?per_page=5000')
             ->assertOk()
             ->assertJsonPath('meta.per_page', 100);
-    }
-
-    public function test_public_updates_list_caps_oversized_per_page(): void
-    {
-        Update::factory()->count(150)->published()->create();
-
-        $this->getJson('/api/v1/public/updates?per_page=99999')
-            ->assertOk()
-            ->assertJsonCount(100, 'data')
-            ->assertJsonPath('meta.current_page', 1);
-
-        $this->getJson('/api/v1/public/updates?per_page=99999&page=2')
-            ->assertOk()
-            ->assertJsonCount(50, 'data');
     }
 
     public function test_normal_per_page_value_is_preserved(): void

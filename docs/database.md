@@ -1,6 +1,6 @@
 # Database
 
-**Verification:** ✅ all tables/columns verified from `ys-api/database/migrations/` (39 migrations, 2025-01-01 → 2026-08-08).
+**Verification:** ✅ all tables/columns verified from `ys-api/database/migrations/` (52 migrations, 2025-01-01 → 2026-11-10, incl. Group H cleanup).
 
 PostgreSQL 16 (docker) · UUID primary keys everywhere · jsonb for flexible data · timestamps standard.
 
@@ -14,11 +14,11 @@ PostgreSQL 16 (docker) · UUID primary keys everywhere · jsonb for flexible dat
 | 000004 | `create_personal_access_tokens_table` | `personal_access_tokens` (uuidMorphs) |
 | 000005 | `create_settings_table` | `settings` |
 | 000006 | `create_media_table` | `media` |
-| 000007 | `create_products_table` | `products` |
-| 000008 | `create_product_releases_table` | `product_releases` |
-| 000009 | `create_content_tables` | `roadmap_items`, `updates`, `documentation_categories`, `documentation_articles`, `contact_requests`, `careers`, `timeline_entries` |
-| 000010 | `create_feature_flags_table` | `feature_flags` |
-| 000011 | `add_search_vectors` | +`search_vector_en/ar` generated columns & GIN indexes on products, documentation_articles, careers, updates |
+| 000007 | `create_products_table` | `products` — **DROPPED** by Group H (2026_11_10_000001) |
+| 000008 | `create_product_releases_table` | `product_releases` — **DROPPED** by Group H |
+| 000009 | `create_content_tables` | `roadmap_items`, `updates`, `documentation_categories`, `documentation_articles`, `contact_requests`, `careers`, `timeline_entries` — `careers`, `timeline_entries`, `documentation_*`, `roadmap_items`, `updates` **DROPPED** by Group H (`contact_requests` retained) |
+| 000010 | `create_feature_flags_table` | `feature_flags` — **DROPPED** by Group H |
+| 000011 | `add_search_vectors` | +`search_vector_en/ar` on retired tables (vectors dropped with their tables by Group H) |
 | 000012 | `audit_logs_row_level_security` | RLS enabled+forced on `audit_logs`; UPDATE/DELETE revoked |
 | 000013 | `create_static_pages_table` | `static_pages` |
 | 000014 | `create_faqs_table` | `faqs` |
@@ -27,12 +27,14 @@ PostgreSQL 16 (docker) · UUID primary keys everywhere · jsonb for flexible dat
 | 2026_06_27 | `create_jobs_table` | `jobs` (Laravel queue) |
 | 2026_08_08 | `create_failed_jobs_table` | `failed_jobs` (queue dead-letter records, uuid) |
 | 2026_07_26 | `add_icon_key_and_brand_color_to_products` | +`products.icon_key`, `products.brand_color` |
-| 2026_07_31_000001 | `create_admin_product_access_table` | `admin_product_access` (pivot) |
-| 2026_07_31_000002 | `create_customers_table` | `customers` |
-| 2026_07_31_000003 | `create_subscriptions_table` | `subscriptions` |
-| 2026_07_31_000004 | `backfill_admin_product_access` | Data migration: all users × all products (500-row chunks); no-op `down()` |
+| 2026_07_31_000001 | `create_admin_product_access_table` | `admin_product_access` — **DROPPED** by Group H |
+| 2026_07_31_000002 | `create_customers_table` | `customers` (retained; `product_id` column dropped by Group H) |
+| 2026_07_31_000003 | `create_subscriptions_table` | `subscriptions` — **DROPPED** by Group H |
+| 2026_07_31_000004 | `backfill_admin_product_access` | Data migration (historical; no-op `down()`); its target tables dropped by Group H |
+| 2026_11_10_000001 | `drop_retired_domain_tables` | Drops the 14 retired domain tables (products, subscriptions, content, feature flags) — irreversible |
+| 2026_11_10_000002 | `drop_product_id_columns` | Drops `customers.product_id` and `audit_logs.product_id` — irreversible |
 
-Total tables: **25** (23 app tables + `personal_access_tokens` + `jobs`).
+Total tables: **14 app tables** + `personal_access_tokens`, `jobs`, `cache`, `sessions`, `failed_jobs`, `job_batches` (system).
 
 ## Table Details
 
@@ -54,35 +56,8 @@ Total tables: **25** (23 app tables + `personal_access_tokens` + `jobs`).
 ### media
 `id` uuid PK · `disk` default `local` · `path` · `filename` · `original_name` · `mime_type` varchar(100) · `size` bigint unsigned · `alt_text_en/ar` nullable · `mediable_type` + `mediable_id` uuid nullable (polymorphic) · `uploaded_by` FK→users nullOnDelete nullable · timestamps + `deleted_at`. Index (`mediable_type`,`mediable_id`)
 
-### products
-`id` uuid PK · `slug` **UNIQUE** · `name_en`/`name_ar` required · `short_desc_en/ar` text nullable · `long_desc_en/ar` longtext nullable · `status` default `planned` (active|beta|planned|archived) · `current_version` nullable (sync by observer) · `cover_image_id` FK→media nullOnDelete nullable · `icon_key` varchar(40) nullable · `brand_color` varchar(7) nullable · `is_featured` bool default false · `sort_order` smallint unsigned default 0 · `seo_meta` jsonb nullable · `created_by` FK→users nullOnDelete nullable · timestamps + `deleted_at`. Indexes: (`status`,`sort_order`), `is_featured`
-
-### product_releases
-`id` uuid PK · `product_id` FK→products **cascade** · `version` · `release_date` date · `type` default `minor` (major|minor|patch|hotfix) · `release_notes_en/ar` nullable · `changelog` jsonb nullable · `is_published` bool default false · `created_by` FK→users nullable · timestamps + `deleted_at`. **UNIQUE (`product_id`,`version`)**; indexes (`product_id`,`release_date`), `is_published`
-
-### roadmap_items
-`id` uuid PK · `product_id` FK→products nullOnDelete nullable · `title_en/ar` · `description_en/ar` nullable · `status` default `planned` · `priority` default `medium` · `target_version`/`target_quarter` nullable · `is_public` bool default true · `sort_order` default 0 · `created_by` FK nullable · timestamps + `deleted_at`. Indexes (`status`,`sort_order`), (`product_id`,`status`)
-
-### updates
-`id` uuid PK · `product_id` FK nullable · `title_en/ar` · `content_en/ar` · `type` default `announcement` · `is_featured` bool default false · `published_at` ts nullable (null = draft) · `author_id` FK→users nullable · timestamps + `deleted_at`. Indexes (`published_at`,`type`), `is_featured`
-
-### documentation_categories
-`id` uuid PK · `product_id` FK nullable · `parent_id` **self-FK** nullable (nullOnDelete) · `slug` **UNIQUE** · `title_en/ar` · `sort_order` default 0 · timestamps (no soft deletes). Indexes (`product_id`,`sort_order`), `parent_id`
-
-### documentation_articles
-`id` uuid PK · `category_id` FK→documentation_categories **cascade** · `slug` **UNIQUE** · `title_en/ar` · `content_en/ar` longtext · `version_tag` nullable · `reading_time_minutes` nullable · `is_published` bool default false · `sort_order` default 0 · `author_id` FK→users nullable · timestamps + `deleted_at`. Indexes (`category_id`,`sort_order`), `is_published`
-
 ### contact_requests
 `id` uuid PK · `name` · `email` · `subject` nullable · `message` text · `type` default `general` · `status` default `new` (new|read|replied|archived) · `ip_address` varchar(45) nullable · `user_agent` text nullable · `spam_score` float default 0.0 · `handled_by` FK→users nullable · `handled_at` ts nullable · timestamps (no soft deletes). Indexes (`status`,`type`), `created_at`
-
-### careers
-`id` uuid PK · `title_en/ar` · `department` · `location` default `Remote` · `type` default `full_time` · `description_en/ar` nullable · `requirements` jsonb nullable · `responsibilities` jsonb nullable · `status` default `draft` (open|closed|draft) · `is_featured` bool default false · `sort_order` default 0 · `created_by` FK nullable · timestamps + `deleted_at`. Index (`status`,`department`)
-
-### timeline_entries
-`id` uuid PK · `title_en/ar` · `description_en/ar` nullable · `event_date` date · `type` default `milestone` · `product_id` FK nullable · `is_public` bool default true · `sort_order` default 0 · timestamps (no soft deletes). Index (`event_date`,`type`)
-
-### feature_flags
-`id` uuid PK · `key` **UNIQUE** · `is_enabled` bool default false · `description` nullable · `product_id` FK nullable · `environment` default `all` (all|production|staging|local) · `enabled_for` jsonb nullable `{users:[],roles:[]}` · `updated_by` FK nullable · timestamps. Indexes (`key`,`is_enabled`), `environment`
 
 ### static_pages
 `id` uuid PK · `slug` **UNIQUE** · `title_en/ar` · `excerpt_en/ar` nullable · `content_en/ar` longtext nullable · `seo_title_en/ar` varchar(70) nullable · `seo_description_en/ar` varchar(160) nullable · `cover_media_id` FK→media nullable · `status` default `draft` (draft|published|archived) · `published_at` nullable · `sort_order` default 0 · `created_by` FK nullable · timestamps + `deleted_at`. Indexes `status`, `slug`
@@ -108,25 +83,15 @@ Standard Laravel queue table (`id` bigint, `queue` indexed, `payload` longtext, 
 ### customers
 `id` uuid PK · `name` · `email` **UNIQUE** (+index) · `company` nullable · `phone` nullable · `notes` nullable · `created_by` FK nullable · timestamps
 
-### subscriptions
-`id` uuid PK · `customer_id` FK→customers **cascade** · `product_id` FK→products **restrict** · `plan_name` · `price` decimal(10,2) · `currency` char(3) default `USD` · `billing_cycle` enum (monthly|quarterly|biannual|yearly) · `starts_at` date · `ends_at` date · `status` enum default `active` (active|expired|cancelled) · `is_manual_entry` bool default true · `created_by` FK nullable · timestamps. Indexes (`product_id`,`status`), (`status`,`ends_at`), `customer_id`
-
 ## Full-Text Search Columns (generated, migration 000011)
 
-| Table | Columns | Configs |
-|---|---|---|
-| products | `search_vector_en`, `search_vector_ar` | A=name, B=short_desc, C=long_desc; english / arabic |
-| documentation_articles | `search_vector_en/ar` | A=title, B=content |
-| careers | `search_vector_en/ar` | A=title(+department en), B=description |
-| updates | `search_vector_en/ar` | A=title, B=content |
-
-All `GENERATED ALWAYS AS … STORED` + GIN indexes (`idx_*_fts_en/ar`).
+The search vectors/GIN indexes lived on the retired tables (`products`, `documentation_articles`, `careers`, `updates`) and were dropped together with those tables by Group H. Active search (`service`, `page`, `faq`) now uses bounded `ILIKE` queries via `PostgresSearchDriver` (see [search-pipeline.md](search-pipeline.md)).
 
 ## Seeds (✅ verified from seeders)
 
 | Seeder | Content |
 |---|---|
-| RoleSeeder | 5 roles: super_admin (`*`), admin, editor, content_manager, support |
+| RoleSeeder | 3 roles: super_admin (`*`), admin (10 permissions), support (3 permissions) |
 | AdminUserSeeder | Bootstrap super admin created from `config/admin.php` (env `ADMIN_NAME`/`ADMIN_EMAIL`/`ADMIN_PASSWORD`). Fails closed on blank `ADMIN_PASSWORD` — no account is created. No credential literal in source |
 | SettingsSeeder | 18 settings: brand(6), social(4), seo(2), contacts(5), system(1: maintenance_mode=false) |
 | CmsSeeder | 5 homepage sections, 6 FAQs, 5 menus + items, 5 static pages (about, privacy, terms, cookie-policy, security) |

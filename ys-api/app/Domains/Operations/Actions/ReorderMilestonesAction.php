@@ -13,9 +13,7 @@ use RuntimeException;
  *
  * The whole list of that project is re-stamped with sequential ranks
  * inside a single transaction — either every sort_order change commits
- * or none do (Phase 4A, P2-05). Scoping is re-asserted here so no
- * future entry point can reorder milestones outside the actor's tenant
- * boundary.
+ * or none do (Phase 4A, P2-05).
  */
 class ReorderMilestonesAction
 {
@@ -30,8 +28,6 @@ class ReorderMilestonesAction
         if ($user === null) {
             throw new RuntimeException('Reordering milestones requires an authenticated actor.');
         }
-
-        abort_unless($milestone->isAccessibleBy($user), 403, 'You do not have access to this product.');
 
         DB::transaction(function () use ($milestone, $direction) {
             $order = Milestone::where('project_id', $milestone->project_id)

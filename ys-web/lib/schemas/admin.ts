@@ -19,26 +19,6 @@ export const adminCreatorSchema = z.object({
 
 export const adminCreatorFieldSchema = adminCreatorSchema.nullable().optional()
 
-// ── FAQ (mirrors App\Http\Resources\Admin\FaqResource) ────────────────────
-export const adminFaqSchema = z.object({
-  id: z.string(),
-  question_en: z.string(),
-  question_ar: z.string(),
-  answer_en: z.string(),
-  answer_ar: z.string(),
-  highlight_en: z.string().nullable(),
-  highlight_ar: z.string().nullable(),
-  category: z.string().nullable(),
-  status: z.enum(['draft', 'published', 'archived']),
-  sort_order: z.number(),
-  creator: adminCreatorFieldSchema,
-  created_at: z.string(),
-  updated_at: z.string().nullable(),
-  deleted_at: z.string().nullable(),
-})
-
-export type AdminFaq = z.infer<typeof adminFaqSchema>
-
 // ── Customer detail (mirrors CustomerResource + CustomerController::show extras) ──
 export const adminCustomerDetailSchema = z.object({
   id: z.string(),
@@ -50,7 +30,6 @@ export const adminCustomerDetailSchema = z.object({
   whatsapp: z.string().nullable(),
   notes: z.string().nullable(),
   status: z.enum(['active', 'archived']),
-  subscriptions_count: z.number().optional(),
   projects_count: z.number().optional(),
   // Permission-gated extras (view_projects / view_financials /
   // manage_contact_requests) — absent when the viewer lacks the gate.

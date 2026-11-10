@@ -31,7 +31,7 @@ class FailedJobObservabilityTest extends TestCase
 
     public function test_operator_without_view_audit_logs_is_forbidden(): void
     {
-        $this->actingAsRoleWith('content_editor', ['manage_products']);
+        $this->actingAsRoleWith('content_editor', ['manage_settings']);
 
         $this->getJson('/api/v1/admin/ops/failed-jobs')->assertStatus(403);
     }

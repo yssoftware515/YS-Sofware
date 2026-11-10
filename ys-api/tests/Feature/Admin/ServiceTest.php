@@ -42,7 +42,7 @@ class ServiceTest extends TestCase
         // restricted role instead.
         $role = Role::factory()->create([
             'slug' => 'content_editor',
-            'permissions' => ['view_products'],
+            'permissions' => ['manage_settings'],
         ]);
         $user = User::factory()->create([
             'role_id' => $role->id,

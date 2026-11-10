@@ -230,10 +230,9 @@ function CreateRoleModal({ permissionGroups, onClose, onCreated }: {
     }
   }
 
-  // De-duplicated permission set — several groups (Releases/Products,
-  // Timeline/Settings/Feature Flags) intentionally share one underlying
-  // permission string, and a role's checkbox list should only offer each
-  // real permission once.
+  // De-duplicated permission set — several groups (Settings/Feature Flags)
+  // intentionally share one underlying permission string, and a role's
+  // checkbox list should only offer each real permission once.
   const uniquePerms = Array.from(new Set(permissionGroups.flatMap(pg => pg.permissions)))
 
   return (

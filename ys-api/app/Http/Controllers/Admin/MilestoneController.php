@@ -4,7 +4,6 @@ namespace App\Http\Controllers\Admin;
 
 use App\Domains\Operations\Actions\ReorderMilestonesAction;
 use App\Domains\Operations\Models\Milestone;
-use App\Domains\Operations\Models\Project;
 use App\Domains\Operations\Services\LifecycleService;
 use App\Domains\System\Services\AuditService;
 use App\Http\Controllers\Controller;
@@ -51,7 +50,6 @@ class MilestoneController extends Controller
         $this->authorize('manage_projects');
 
         $validated = $this->validatedPayload($request);
-        $this->assertProjectAccessible($validated['project_id']);
         LifecycleService::reconcileCompletion($validated, completedStatus: Milestone::STATUS_COMPLETED);
 
         if (! array_key_exists('sort_order', $validated)) {
@@ -73,8 +71,6 @@ class MilestoneController extends Controller
     {
         $this->authorize('view_projects');
 
-        $this->assertMilestoneAccessible($milestone);
-
         return response()->json(['success' => true, 'data' => $this->payload($milestone->load('creator:id,name'))]);
     }
 
@@ -82,10 +78,7 @@ class MilestoneController extends Controller
     {
         $this->authorize('manage_projects');
 
-        $this->assertMilestoneAccessible($milestone);
-
         $validated = $this->validatedPayload($request);
-        $this->assertProjectAccessible($validated['project_id']);
         LifecycleService::reconcileCompletion($validated, $milestone->status, Milestone::STATUS_COMPLETED);
 
         $milestone->update($validated);
@@ -102,8 +95,6 @@ class MilestoneController extends Controller
     public function updateStatus(Request $request, Milestone $milestone): JsonResponse
     {
         $this->authorize('manage_projects');
-
-        $this->assertMilestoneAccessible($milestone);
 
         $validated = $request->validate([
             'status' => ['required', Rule::in(Milestone::STATUSES)],
@@ -137,8 +128,6 @@ class MilestoneController extends Controller
     {
         $this->authorize('manage_projects');
 
-        $this->assertMilestoneAccessible($milestone);
-
         $validated = $request->validate([
             'direction' => ['required', Rule::in(['up', 'down'])],
         ]);
@@ -170,23 +159,10 @@ class MilestoneController extends Controller
     {
         $this->authorize('manage_projects');
 
-        $this->assertMilestoneAccessible($milestone);
-
         $this->auditService->logModelChange('milestone.deleted', $milestone);
         $milestone->delete();
 
         return response()->json(['success' => true, 'message' => 'Milestone deleted successfully.']);
-    }
-
-    private function assertProjectAccessible(string $projectId): void
-    {
-        $project = Project::findOrFail($projectId);
-        abort_unless($project->isAccessibleBy(Auth::user()), 403, 'You do not have access to this product.');
-    }
-
-    private function assertMilestoneAccessible(Milestone $milestone): void
-    {
-        abort_unless($milestone->isAccessibleBy(Auth::user()), 403, 'You do not have access to this product.');
     }
 
     private function validatedPayload(Request $request): array

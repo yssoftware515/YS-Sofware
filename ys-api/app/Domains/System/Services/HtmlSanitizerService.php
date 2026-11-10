@@ -6,7 +6,7 @@ use Mews\Purifier\Facades\Purifier;
 
 /**
  * HtmlSanitizerService — the single boundary where admin-authored rich-text
- * HTML (product long_desc, documentation article content, etc.) gets
+ * HTML (service descriptions, static page content, etc.) gets
  * cleaned before it ever touches the database.
  *
  * WHY THIS EXISTS:
@@ -16,7 +16,7 @@ use Mews\Purifier\Facades\Purifier;
  * place in the entire system where untrusted/attacker-controlled markup
  * (a compromised or malicious admin account, a copy-pasted snippet with a
  * hidden payload, etc.) can be neutralized before it reaches every visitor
- * of a product or docs page. Sanitizing on write (here) instead of on read
+ * of a service or page. Sanitizing on write (here) instead of on read
  * (in the frontend) means every current AND future consumer of this data
  * — the public site, a future mobile app, a future partner API — inherits
  * the protection automatically, with nothing to remember to do on their end.
@@ -65,9 +65,9 @@ class HtmlSanitizerService
 
     /**
      * Recursively sanitize HTML-looking string values inside a nested
-     * structure (homepage section content JSON, career requirements,
-     * release changelog, ...). Scalars and nested arrays pass through;
-     * only tag-bearing strings are cleaned, so plain text is untouched.
+     * structure (service content blocks, settings values, ...). Scalars
+     * and nested arrays pass through; only tag-bearing strings are
+     * cleaned, so plain text is untouched.
      */
     public function sanitizeNestedHtml(?array $data): ?array
     {

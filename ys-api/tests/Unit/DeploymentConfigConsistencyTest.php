@@ -13,7 +13,7 @@ use PHPUnit\Framework\TestCase;
  * production-safe to copy.
  *
  * If a future phase deliberately reintroduces Redis, this test must
- * be updated consciously (and FeatureFlagService's fallback revisited).
+ * be updated consciously.
  */
 class DeploymentConfigConsistencyTest extends TestCase
 {

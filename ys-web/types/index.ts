@@ -129,62 +129,13 @@ export interface PublicSettings {
   }
 }
 
-// ── CMS — Static Page ─────────────────────────────────────────────────
-export type PageStatus = 'draft' | 'published' | 'archived'
-
-export interface StaticPage {
-  id: string
-  slug: string
-  title: string
-  excerpt: string | null
-  content: string | null
-  published_at: string | null
-  cover_image: { url: string; alt: string } | null
-}
-
-// ── CMS — FAQ ──────────────────────────────────────────────────────────
+// ── FAQ ────────────────────────────────────────────────────────────────
 export interface FaqItem {
   id: string
   question: string
   answer: string
   highlight: string | null
   category: string | null
-}
-
-// ── CMS — Menu ─────────────────────────────────────────────────────────
-export interface MenuItem {
-  id: string
-  title: string
-  url: string
-  icon: string | null
-  target: string
-  children: MenuItem[]
-}
-
-export interface Menu {
-  id: string
-  location: string
-  items: MenuItem[]
-}
-
-// ── CMS — Homepage Section ────────────────────────────────────────────
-export interface HomepageSection {
-  id: string
-  type: string
-  title: string | null
-  subtitle: string | null
-  content: Record<string, unknown> | null
-  sort_order: number
-}
-
-// ── Timeline ──────────────────────────────────────────────────────────
-export interface TimelineEntry {
-  id: string
-  title: string
-  description: string | null
-  event_date: string
-  type: string
-  product: { slug: string; name: string } | null
 }
 
 // ── Search ────────────────────────────────────────────────────────────

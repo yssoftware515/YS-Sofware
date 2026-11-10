@@ -1,9 +1,8 @@
 import {
-  LayoutDashboard, FileText,
-  Image, Users, Settings, ScrollText,
-  ToggleLeft, History, BookOpen, HelpCircle, Menu,
-  Home, UserCog,
-  Wrench, Mail, FolderKanban, Briefcase,
+  LayoutDashboard,
+  Users, Settings, ScrollText,
+  UserCog,
+  Wrench, Mail, FolderKanban,
 } from 'lucide-react'
 import type { NavGroup } from '@/lib/platform/registries/NavigationRegistry'
 
@@ -26,20 +25,6 @@ export const coreNavGroups: NavGroup[] = [
     order: 1,
     items: [
       { href: '/admin/services',  labelEn: 'Services',  labelAr: 'الخدمات',   icon: Wrench,    permission: 'manage_services',  moduleId: 'core' },
-      { href: '/admin/timeline',  labelEn: 'Timeline',  labelAr: 'الجدول الزمني', icon: History, permission: 'manage_timeline', moduleId: 'core' },
-    ],
-  },
-  {
-    id: 'content',
-    labelEn: 'Content',
-    labelAr: 'المحتوى',
-    moduleId: 'core',
-    order: 2,
-    items: [
-      { href: '/admin/static-pages', labelEn: 'Static Pages', labelAr: 'الصفحات الثابتة', icon: BookOpen,   permission: 'manage_static_pages', moduleId: 'core' },
-      { href: '/admin/faq',          labelEn: 'FAQ',          labelAr: 'الأسئلة الشائعة', icon: HelpCircle, permission: 'manage_faqs',        moduleId: 'core' },
-      { href: '/admin/menus',        labelEn: 'Menus',        labelAr: 'القوائم',         icon: Menu,       permission: 'manage_menus',       moduleId: 'core' },
-      { href: '/admin/homepage',     labelEn: 'Homepage',     labelAr: 'الصفحة الرئيسية', icon: Home,       permission: 'manage_homepage',    moduleId: 'core' },
     ],
   },
   {
@@ -53,16 +38,6 @@ export const coreNavGroups: NavGroup[] = [
     ],
   },
   {
-    id: 'media',
-    labelEn: 'Media',
-    labelAr: 'الوسائط',
-    moduleId: 'core',
-    order: 4,
-    items: [
-      { href: '/admin/media', labelEn: 'Media Library', labelAr: 'مكتبة الوسائط', icon: Image, permission: 'manage_media', moduleId: 'core' },
-    ],
-  },
-  {
     id: 'system',
     labelEn: 'System',
     labelAr: 'النظام',
@@ -72,7 +47,6 @@ export const coreNavGroups: NavGroup[] = [
       { href: '/admin/users',         labelEn: 'Users',          labelAr: 'المستخدمون',       icon: Users,       permission: 'manage_users', moduleId: 'core' },
       { href: '/admin/roles',         labelEn: 'Roles & Permissions', labelAr: 'الأدوار والصلاحيات', icon: UserCog, permission: 'manage_users', moduleId: 'core' },
       { href: '/admin/settings',      labelEn: 'Settings',       labelAr: 'الإعدادات',        icon: Settings,    permission: 'manage_settings', moduleId: 'core' },
-      { href: '/admin/feature-flags', labelEn: 'Feature Flags',  labelAr: 'مفاتيح الميزات',    icon: ToggleLeft, permission: 'manage_feature_flags',  moduleId: 'core' },
     ],
   },
   {
@@ -94,16 +68,6 @@ export const coreNavGroups: NavGroup[] = [
     items: [
       { href: '/admin/customers', labelEn: 'Customers', labelAr: 'العملاء', icon: Users, permission: 'view_customers', moduleId: 'core' },
       { href: '/admin/projects',  labelEn: 'Projects',  labelAr: 'المشاريع', icon: FolderKanban, permission: 'view_projects', moduleId: 'core' },
-    ],
-  },
-  {
-    id: 'billing',
-    labelEn: 'Billing',
-    labelAr: 'الفواتير والاشتراكات',
-    moduleId: 'core',
-    order: 8,
-    items: [
-      { href: '/admin/subscriptions', labelEn: 'Subscriptions', labelAr: 'الاشتراكات', icon: Briefcase, permission: 'manage_subscriptions', moduleId: 'core' },
     ],
   },
 ]

@@ -15,8 +15,8 @@ import {
   MessageCircle,
   type LucideIcon,
 } from "lucide-react"
-import type { PublicSettings, Menu } from "@/types"
-import { validateSocialUrl } from "@/lib/cms/validate"
+import type { PublicSettings } from "@/types"
+import { validateSocialUrl } from "@/lib/utils/social"
 import {
   buildWhatsAppHref,
   WHATSAPP_DISPLAY_DEFAULT,
@@ -27,7 +27,6 @@ import {
 interface FooterProps {
   locale: string
   settings?: PublicSettings
-  menus?: Record<string, Menu>
 }
 
 const content = {
@@ -60,22 +59,10 @@ const content = {
   },
 }
 
-function menuLinks(
-  menu: Menu | undefined,
-  _locale: string,
-  fallbackLinks: { href: string; label: string }[]
-) {
-  if (!menu?.items?.length) return fallbackLinks
-  return menu.items.map((item) => ({
-    href: item.url ?? "#",
-    label: item.title,
-  }))
-}
-
 // ═══════════════════════════════════════════════════════════════════════════════
 // FOOTER — premium multi-tier design matching the platform's strength
 // ═══════════════════════════════════════════════════════════════════════════════
-export function Footer({ locale, settings, menus }: FooterProps) {
+export function Footer({ locale, settings }: FooterProps) {
   const isAr = locale === "ar"
   const t = content[locale as keyof typeof content] ?? content.en
   const companyName =
@@ -100,7 +87,7 @@ export function Footer({ locale, settings, menus }: FooterProps) {
       : "Hi, I'd like to inquire about YS Systems services.",
   )
 
-  const companyLinks = menuLinks(menus?.footer_company, locale, [
+  const companyLinks = [
     {
       href: "/about",
       label: locale === "ar" ? "عن الشركة" : "About",
@@ -109,9 +96,9 @@ export function Footer({ locale, settings, menus }: FooterProps) {
       href: "/contact",
       label: locale === "ar" ? "تواصل معنا" : "Contact",
     },
-  ])
+  ]
 
-  const servicesLinks = menuLinks(menus?.footer_products, locale, [
+  const servicesLinks = [
     {
       href: "/services",
       label: locale === "ar" ? "جميع الخدمات" : "All Services",
@@ -128,9 +115,9 @@ export function Footer({ locale, settings, menus }: FooterProps) {
       href: "/services",
       label: locale === "ar" ? "أتمتة AI وأنظمة ERP" : "AI Automation & ERP",
     },
-  ])
+  ]
 
-  const resourcesLinks = menuLinks(menus?.footer_resources, locale, [
+  const resourcesLinks = [
     {
       href: "/faq",
       label: locale === "ar" ? "الأسئلة الشائعة" : "FAQ",
@@ -143,7 +130,7 @@ export function Footer({ locale, settings, menus }: FooterProps) {
       href: "/about",
       label: locale === "ar" ? "من نحن" : "About Us",
     },
-  ])
+  ]
 
   const legalLinks = [
     { href: "/privacy", label: t.privacy },

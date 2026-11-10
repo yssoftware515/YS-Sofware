@@ -2,16 +2,11 @@
 
 namespace Tests\Feature\Admin;
 
-use App\Domains\Auth\Models\Role;
-use App\Domains\Auth\Models\User;
-use App\Domains\Billing\Models\Customer;
 use App\Domains\Operations\Models\ContactRequest;
-use App\Domains\Operations\Models\Project;
+use App\Domains\Operations\Models\Customer;
 use App\Domains\Operations\Services\ProjectService;
-use App\Domains\Product\Models\Product;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Validation\ValidationException;
-use Laravel\Sanctum\Sanctum;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 use Tests\TestCase;
 
@@ -27,18 +22,6 @@ class ProjectServiceTest extends TestCase
     private function projectService(): ProjectService
     {
         return app(ProjectService::class);
-    }
-
-    private function actingAsScoped(array $permissions): User
-    {
-        $role = Role::factory()->create([
-            'slug' => 'scoped_'.uniqid(),
-            'permissions' => $permissions,
-        ]);
-        $user = User::factory()->create(['role_id' => $role->id, 'is_active' => true]);
-        Sanctum::actingAs($user, ['admin']);
-
-        return $user;
     }
 
     // ── validate() ────────────────────────────────────────────────────
@@ -107,55 +90,6 @@ class ProjectServiceTest extends TestCase
         $this->actingAsSuperAdmin();
 
         $this->projectService()->assertRequestMatchesCustomer([], null);
-        $this->assertTrue(true);
-    }
-
-    // ── assertCustomerAccessible / assertProjectAccessible ────────────
-
-    public function test_scoped_admin_cannot_attach_project_to_out_of_scope_customer(): void
-    {
-        $this->actingAsScoped(['manage_projects']);
-        $product = Product::factory()->create();
-        $customer = Customer::factory()->create(['product_id' => $product->id]);
-
-        try {
-            $this->projectService()->assertCustomerAccessible($customer->id);
-            $this->fail('Expected a 403 for a customer outside the scoped admin\'s products.');
-        } catch (HttpException $e) {
-            $this->assertSame(403, $e->getStatusCode());
-        }
-    }
-
-    public function test_global_customer_is_always_accessible(): void
-    {
-        $this->actingAsScoped(['manage_projects']);
-        Customer::factory()->create(['product_id' => null]);
-
-        $this->projectService()->assertCustomerAccessible(null);
-        $this->assertTrue(true);
-    }
-
-    public function test_scoped_admin_cannot_read_out_of_scope_project(): void
-    {
-        $this->actingAsScoped(['view_projects']);
-        $product = Product::factory()->create();
-        $customer = Customer::factory()->create(['product_id' => $product->id]);
-        $project = Project::factory()->create(['customer_id' => $customer->id]);
-
-        try {
-            $this->projectService()->assertProjectAccessible($project);
-            $this->fail('Expected a 403 for a project outside the scoped admin\'s products.');
-        } catch (HttpException $e) {
-            $this->assertSame(403, $e->getStatusCode());
-        }
-    }
-
-    public function test_super_admin_can_access_any_project(): void
-    {
-        $this->actingAsSuperAdmin();
-        $project = Project::factory()->create();
-
-        $this->projectService()->assertProjectAccessible($project);
         $this->assertTrue(true);
     }
 }

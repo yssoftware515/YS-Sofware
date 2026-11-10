@@ -127,7 +127,7 @@ class TaskTest extends TestCase
 
         $this->getJson('/api/v1/admin/tasks')->assertStatus(401);
 
-        $this->actingAsScoped(['manage_products']);
+        $this->actingAsScoped(['manage_settings']);
         $this->getJson('/api/v1/admin/tasks')->assertStatus(403);
         $this->postJson('/api/v1/admin/tasks', [
             'project_id' => $project->id,

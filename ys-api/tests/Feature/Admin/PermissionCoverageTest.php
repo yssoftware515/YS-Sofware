@@ -4,18 +4,16 @@ namespace Tests\Feature\Admin;
 
 use App\Domains\Auth\Models\Role;
 use App\Domains\Auth\Models\User;
-use App\Domains\Billing\Models\Customer;
+use App\Domains\Operations\Models\Customer;
 use App\Domains\Operations\Models\Project;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Laravel\Sanctum\Sanctum;
 use Tests\TestCase;
 
 /**
- * VULN-10: dedicated permissions (manage_timeline, manage_feature_flags,
- * view_financials) existed in the enum and Gate definitions but had zero
- * call sites — timeline/feature-flags were silently gated by
- * manage_settings, and quoted-value sums leaked to every view_projects
- * holder. These tests pin the intended wiring.
+ * VULN-10: the dedicated `view_financials` permission existed in the enum
+ * and Gate definitions but had zero call sites — quoted-value sums leaked
+ * to every view_projects holder. These tests pin the intended wiring.
  */
 class PermissionCoverageTest extends TestCase
 {
@@ -36,24 +34,6 @@ class PermissionCoverageTest extends TestCase
         Sanctum::actingAs($user, ['admin']);
 
         return $user;
-    }
-
-    public function test_timeline_requires_manage_timeline_not_manage_settings(): void
-    {
-        $settingsAdmin = $this->authAs($this->userWithPermissions(['manage_settings']));
-        $this->getJson('/api/v1/admin/timeline')->assertStatus(403);
-
-        $timelineAdmin = $this->authAs($this->userWithPermissions(['manage_timeline']));
-        $this->getJson('/api/v1/admin/timeline')->assertOk();
-    }
-
-    public function test_feature_flags_require_manage_feature_flags_not_manage_settings(): void
-    {
-        $settingsAdmin = $this->authAs($this->userWithPermissions(['manage_settings']));
-        $this->getJson('/api/v1/admin/feature-flags')->assertStatus(403);
-
-        $flagsAdmin = $this->authAs($this->userWithPermissions(['manage_feature_flags']));
-        $this->getJson('/api/v1/admin/feature-flags')->assertOk();
     }
 
     public function test_dashboard_financials_require_view_financials(): void

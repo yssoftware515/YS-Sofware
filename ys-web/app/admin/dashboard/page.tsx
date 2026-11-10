@@ -22,10 +22,6 @@ const COUNT_KEYS: Record<string, string> = {
   customers:     'customers',
   projects:      'projects',
   'audit-logs':  'audit_logs',
-  'static-pages': 'static_pages',
-  faq:           'faqs',
-  menus:         'menus',
-  homepage:      'homepage_sections',
 }
 
 type CurrencyMap = Record<string, string>
@@ -72,10 +68,6 @@ interface StatsData {
 
 const quickLinks = [
   { label: 'Add Service', href: '/admin/services', icon: FileText, permission: 'manage_services' },
-  { label: 'Static Pages', href: '/admin/static-pages', icon: FileText, permission: 'manage_static_pages' },
-  { label: 'FAQ',          href: '/admin/faq',       icon: FileText, permission: 'manage_faqs' },
-  { label: 'Menus',        href: '/admin/menus',     icon: FileText, permission: 'manage_menus' },
-  { label: 'Homepage',     href: '/admin/homepage',  icon: FileText, permission: 'manage_homepage' },
   { label: 'View Settings',href: '/admin/settings',  icon: FileText },
 ]
 

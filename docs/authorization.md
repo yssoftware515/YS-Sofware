@@ -1,12 +1,12 @@
 # Authorization
 
-**Verification:** ✅ code-verified · ⚠️ inferred · ❓ unknown
+**Verification:** ✅ code-verified from `Permission.php`, `AuthServiceProvider.php`, `routes/api.php` and every controller `authorize()` call (2026-11-10).
 
 ---
 
 ## 1. Model
 
-Role-based access control (RBAC) with a **wildcard super-admin bypass** and an additional **product-level scoping** layer for product-bound resources. (No ABAC, no teams, no tenants.)
+Role-based access control (RBAC) with a **wildcard super-admin bypass**. No ABAC, no teams, no tenants, no product-level scoping (removed with the Product domain in Group A; the leftover columns were dropped in Group H).
 
 ## 2. Layers (✅ verified)
 
@@ -17,18 +17,12 @@ Role-based access control (RBAC) with a **wildcard super-admin bypass** and an a
 
 ### Layer 2 — Gates (`AuthServiceProvider`, ✅ verified)
 - `Gate::before`: super admin (`hasPermission('*')`) bypasses **all** gates.
-- Explicit gates defined for **every** `Permission` enum value — `manage_products`, `manage_documentation`, `manage_roadmap`, `manage_updates`, `manage_careers`, `manage_contact_requests`, `manage_media`, `manage_users`, `manage_settings`, `manage_timeline`, `manage_feature_flags`, `manage_faqs`, `manage_menus`, `manage_homepage`, `manage_static_pages`, `manage_admins`, `manage_subscriptions`, `view_audit_logs`, `view_financials`, `view_services`, `manage_services`, `view_customers`, `manage_customers`, `view_projects`, `manage_projects`, `view_products` — with view-variants via `hasAnyPermission`. ✅ Verified 2026-08-18: every enum value has a registered gate.
-- Controllers call `$this->authorize('<permission>')` on every admin route where the permission string matches a `Permission` enum value. ✅ Verified.
+- Every one of the 12 `Permission` enum values has a matching gate:
+  `manage_contact_requests`, `manage_settings`, `view_audit_logs`, `manage_users`, `manage_admins`, `view_financials`, `view_services`, `manage_services`, `view_customers`, `manage_customers`, `view_projects`, `manage_projects`.
+- `view_*` gates accept their `manage_*` counterpart via `hasAnyPermission` (e.g. `view_projects` is satisfied by `view_projects` or `manage_projects`).
+- Controllers call `$this->authorize('<permission>')`; the `Permission` enum is the closed list validated by `Rule::in(Permission::values())` in role requests.
 
-### Layer 3 — Product-scoped access (✅ verified, fail-closed)
-- Pivot `admin_product_access` (user_id ↔ product_id), backfilled for all users×products by migration 2026_07_31_000004.
-- `User::canAccessProduct(Product|string)` — super admin → true; otherwise row must exist in pivot → **zero rows = zero access**.
-- Enforced in: `ProductController` (index/show/update/destroy), `ReleaseController`, `DocumentationController` (categories + articles) — `abort_unless(..., 403, 'You do not have access to this product.')`.
-
-### Layer 4 — Policies
-- `ProductPolicy` — maps `manage_products`/`viewAny`/`view`/`create`/`update`/`delete`; registered in `AuthServiceProvider::$policies`.
-
-### Layer 5 — Active-user gate
+### Layer 3 — Active-user gate
 - `EnsureUserIsActive` middleware on all admin routes (see [authentication.md](authentication.md)).
 
 ## 3. Admin routes summary (✅ verified from `routes/api.php`)
@@ -37,44 +31,34 @@ All `/admin/*` routes require `auth:sanctum` + `active`. Permission per controll
 
 | Permission | Routes |
 |---|---|
-| `manage_products` | products, releases |
-| `manage_documentation` | docs categories + articles |
-| `manage_roadmap` | roadmap |
-| `manage_updates` | updates + publish/unpublish |
-| `manage_careers` | careers |
-| `manage_settings` | settings |
-| `manage_timeline` | timeline |
-| `manage_feature_flags` | feature-flags |
-| `manage_contact_requests` | contact-requests |
-| `manage_media` | media |
+| `manage_services` | services CRUD (read gated by `view_services`) |
+| `manage_contact_requests` | contact-requests (list/show/status/link/convert) |
+| `view_customers` / `manage_customers` | customers read / customers mutations + status |
+| `view_projects` / `manage_projects` | projects, tasks and milestones (read / mutations + status + move) |
 | `manage_users` | users CRUD + roles index |
-| `manage_admins` | roles create/update/delete, users/{user}/products (syncProducts) |
-| `manage_faqs` | faqs |
-| `manage_menus` | menus + menu-items |
-| `manage_homepage` | homepage-sections |
-| `manage_static_pages` | static-pages |
-| `manage_subscriptions` | customers, subscriptions |
-| `view_audit_logs` | audit-logs |
+| `manage_admins` | roles create/update/delete |
+| `manage_settings` | settings |
+| `view_audit_logs` | audit-logs, ops/failed-jobs |
+| `view_financials` | dashboard/customer/project money fields (omitted without it) |
 
 ## 4. Frontend permission model (✅ verified)
 
-- `modules/core/permissions.ts` — permission groups (verified against backend `Permission.php`).
+- `modules/core/permissions.ts` — permission groups verified against backend `Permission.php` (8 groups, 12 permissions).
 - `PermissionGate` + `useAuth().hasPermission` — UI-level gating (nav, buttons, routes).
-- **Security note:** frontend checks are UX-only; the backend is the authority. ❓ The one exception: `middleware.ts` guards admin pages by cookie *presence* only — a user without permission who has *any* valid cookie can load the page shell, but API calls still 401/403.
+- **Security note:** frontend checks are UX-only; the backend is the authority. `middleware.ts` guards admin pages by cookie *presence* only — a user without permission who has *any* valid cookie can load the page shell, but API calls still 401/403.
 
-## 5. Known authorization gaps / notes
+## 5. Known authorization notes
 
 | Item | Status | Detail |
 |---|---|---|
-| `view_financials` permission | ✅ used | dashboard value-by-currency, customer value-by-currency, and project quoted_value/currency (`ProjectController` payload) — **VULN-10 fixed**: the keys are omitted entirely unless the caller holds `view_financials` (or super-admin bypass) |
-| `manage_admins` | ✅ used | roles CRUD + product sync |
-| `view_admin_activity` | ✅ removed | was defined but unused; removed from enum, gate and frontend picker — no capability ever relied on it |
-| `view_products` | ✅ used | gate + ProductPolicy viewAny/view (allows read-only product access) |
-| Role self-edit protection | ❓ unverified | `RoleController` — see known-issues (super_admin role mutation not guarded in code read) |
+| `view_financials` | ✅ used | dashboard value-by-currency, customer value-by-currency, and project `quoted_value`/`currency` — omitted entirely unless the caller holds `view_financials` (or super-admin bypass) |
+| `manage_admins` | ✅ used | roles create/update/delete |
+| `view_products`, `manage_products`, `manage_subscriptions`, `manage_media`, `manage_faqs`, `manage_menus`, `manage_homepage`, `manage_static_pages`, `manage_documentation`, `manage_roadmap`, `manage_updates`, `manage_careers`, `manage_timeline`, `manage_feature_flags` | ✅ removed | Their domains/controllers were removed; the strings no longer exist in the enum or the UI |
+| Role self-edit protection | ❓ unverified | `RoleController` — super_admin role mutation is not explicitly guarded in code |
 | Deleting the last super admin | ❓ unverified | no guard found in `UserController@destroy` |
 
-## 6. Fail-closed principles (✅ verified from code comments)
+## 6. Fail-closed principles (✅ verified)
 
-- Product access fails closed (empty pivot → denied).
 - Permission checks fail closed (no role → denied).
-- `Permission` enum is the closed list validated by `Rule::in(Permission::values())` in role requests — admins cannot create roles with unknown permission strings.
+- Unknown permission strings cannot be persisted (closed enum).
+- Authorization happens in the controller/gate, never only in the UI.

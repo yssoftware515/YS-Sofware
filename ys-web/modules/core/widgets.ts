@@ -1,4 +1,4 @@
-import { ScrollText, FileText, HelpCircle, Home, Menu, Wrench, Mail, Users, FolderKanban } from 'lucide-react'
+import { ScrollText, Wrench, Mail, Users, FolderKanban } from 'lucide-react'
 import type { WidgetDefinition } from '@/lib/platform/registries/WidgetRegistry'
 
 export const coreWidgets: WidgetDefinition[] = [
@@ -7,8 +7,4 @@ export const coreWidgets: WidgetDefinition[] = [
   { id: 'customers',     moduleId: 'core', title: 'Customers',    icon: Users,        permission: 'view_customers',           order: 2, value: 0, color: '#14B8A6' },
   { id: 'projects',      moduleId: 'core', title: 'Projects',     icon: FolderKanban, permission: 'view_projects',            order: 3, value: 0, color: '#6366F1' },
   { id: 'audit-logs',    moduleId: 'core', title: 'Audit Logs',   icon: ScrollText,   permission: 'view_audit_logs',          order: 4, value: 0, color: '#8B5CF6' },
-  { id: 'static-pages',  moduleId: 'core', title: 'Static Pages', icon: FileText,     permission: 'manage_static_pages',      order: 5, value: 0, color: '#3B82F6' },
-  { id: 'faq',           moduleId: 'core', title: 'FAQ',          icon: HelpCircle,   permission: 'manage_faqs',             order: 6, value: 0, color: '#EC4899' },
-  { id: 'menus',         moduleId: 'core', title: 'Menus',        icon: Menu,         permission: 'manage_menus',            order: 7, value: 0, color: '#14B8A6' },
-  { id: 'homepage',      moduleId: 'core', title: 'Homepage',     icon: Home,         permission: 'manage_homepage',         order: 8, value: 0, color: '#F97316' },
 ]

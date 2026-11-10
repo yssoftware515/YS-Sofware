@@ -3,13 +3,11 @@
 namespace App\Domains\System\Services;
 
 use App\Domains\Auth\Models\User;
-use App\Domains\Billing\Models\Customer;
 use App\Domains\Operations\Models\ContactRequest;
+use App\Domains\Operations\Models\Customer;
 use App\Domains\Operations\Models\Milestone;
 use App\Domains\Operations\Models\Project;
 use App\Domains\Operations\Models\Task;
-use App\Domains\Product\Models\Product;
-use App\Domains\Product\Models\ProductRelease;
 use App\Domains\System\Models\AuditLog;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Cache;
@@ -47,44 +45,15 @@ final class DashboardService
         $counts = [];
         $attention = [];
 
-        // ── 1. Product counts (2 queries — scoping prevents collapse) ────
-        if ($user->hasAnyPermission(['view_products', 'manage_products'])) {
-            if ($user->isSuperAdmin()) {
-                $counts['products'] = Product::count();
-                $counts['releases'] = ProductRelease::count();
-            } else {
-                $productIds = $user->products()->pluck('products.id');
-                $counts['products'] = $productIds->count();
-                $counts['releases'] = ProductRelease::whereIn('product_id', $productIds)->count();
-            }
-        }
-
-        // ── 2. Simple module counts — 6 tables in 1 query (scalar subqueries) ──
+        // ── 2. Simple module counts — scalar subqueries in 1 query ──
         $simpleParts = [];
         if ($user->hasAnyPermission(['view_services', 'manage_services'])) {
             $simpleParts[] = '(SELECT COUNT(*)::bigint FROM services WHERE deleted_at IS NULL) AS "services"';
         }
-        if ($user->hasPermission('manage_careers')) {
-            $simpleParts[] = '(SELECT COUNT(*)::bigint FROM careers WHERE deleted_at IS NULL) AS "careers"';
-        }
-        if ($user->hasPermission('manage_static_pages')) {
-            $simpleParts[] = '(SELECT COUNT(*)::bigint FROM static_pages WHERE deleted_at IS NULL) AS "static_pages"';
-        }
-        if ($user->hasPermission('manage_faqs')) {
-            $simpleParts[] = '(SELECT COUNT(*)::bigint FROM faqs WHERE deleted_at IS NULL) AS "faqs"';
-        }
-        if ($user->hasPermission('manage_menus')) {
-            $simpleParts[] = '(SELECT COUNT(*)::bigint FROM menus) AS "menus"';
-        }
-        if ($user->hasPermission('manage_homepage')) {
-            $simpleParts[] = '(SELECT COUNT(*)::bigint FROM homepage_sections) AS "homepage_sections"';
-        }
         if ($simpleParts !== []) {
             $row = DB::select('SELECT '.implode(', ', $simpleParts))[0];
-            foreach (['services', 'careers', 'static_pages', 'faqs', 'menus', 'homepage_sections'] as $key) {
-                if (isset($row->$key)) {
-                    $counts[$key] = (int) $row->$key;
-                }
+            if (isset($row->services)) {
+                $counts['services'] = (int) $row->services;
             }
         }
 

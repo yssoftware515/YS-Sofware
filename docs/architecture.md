@@ -44,17 +44,16 @@ The application code lives under `app/Domains/{Domain}/` with a layered structur
 
 | Layer | Examples | ✅ verified |
 |---|---|---|
-| `Models/` | Eloquent models (22 total) | ✅ |
-| `Actions/` | `LoginAction`, `CreateProductAction`, … (31) | ✅ |
-| `DTOs/` | `LoginDTO`, `CreateProductDTO` (readonly) | ✅ |
-| `Enums/` | `Permission`, `ProductIcon` | ✅ |
-| `Services/` | `AuditService`, `FeatureFlagService`, `MediaUploadService`, `HtmlSanitizerService` | ✅ |
+| `Models/` | Eloquent models | ✅ |
+| `Actions/` | `LoginAction`, `ReorderMilestonesAction`, … | ✅ |
+| `DTOs/` | `LoginDTO`, `SearchResult` (readonly) | ✅ |
+| `Enums/` | `Permission`, `SearchType`, `SearchLocale` | ✅ |
+| `Services/` | `AuditService`, `MediaUploadService`, `HtmlSanitizerService`, `DashboardService` | ✅ |
 | `Repositories/` | `PermissionRepository` | ✅ |
 | `Contracts/` + `Drivers/` | Search driver abstraction | ✅ |
-| `Observers/` | `ProductObserver`, `ProductReleaseObserver` (audit + version sync) | ✅ |
-| `Policies/` | `ProductPolicy` | ✅ |
+| `Observers/` | `ServiceObserver` (audit) | ✅ |
 
-Domains: `Auth`, `Billing`, `Cms`, `Content`, `Operations`, `Product`, `Search`, `System`.
+Domains: `Auth`, `Operations`, `Search`, `Services`, `System`.
 
 ### 2.2 Request lifecycle
 
@@ -81,7 +80,7 @@ HTTP request
 
 ### 2.4 Search architecture
 
-`App\Domains\Search\Contracts\SearchDriver` interface with one implementation `PostgresSearchDriver` (PostgreSQL full-text search with `websearch_to_tsquery`, `ts_rank_cd`, generated `tsvector` columns + GIN indexes on products, documentation_articles, careers, updates). Bound as a singleton in `AppServiceProvider` with a documented swap path to Meilisearch. ✅
+`App\Domains\Search\Contracts\SearchDriver` interface with one implementation `PostgresSearchDriver` (bounded `ILIKE` queries per type over `services`, `static_pages`, `faqs`, with SQL-side `LIMIT`/`COUNT` pushdown and URL-based deterministic ordering). `SearchService` owns locale fallback and limit clamping; `SearchRules` and the `SearchType`/`SearchLocale` enums are the single source of truth. The driver is bound as a singleton in `AppServiceProvider` with a documented swap path to Meilisearch. ✅
 
 ### 2.5 Async work
 
@@ -104,8 +103,8 @@ HTTP request
 
 1. **Public site** — `app/[locale]/(public)/*` — server components; locale segment `en|ar`; CMS-driven content fetched at request time with 60s ISR revalidation on GETs.
 2. **Admin panel** — `app/admin/*` — client-rendered; guarded by `middleware.ts` (cookie presence) + client-side `AuthProvider` permission checks.
-3. **Platform framework** — `lib/platform/` (100 TS files after 2026-08-18 ARCH-006 cleanup: 79 provably-unreachable files removed) — a self-contained, plugin-style framework: `ModuleKernel`, registries (navigation, permissions, widgets, settings, search, SEO, feature flags, scheduler), services (Logger, EventBus, ServiceContainer, SecurityManager, AuditEngine, HealthReporter, PerformanceMonitor, NotificationBus, PlatformConfig), buses (Command/Query), drivers (cache, storage, mail, search), engines (feature flags, dependency graph), health endpoints, secrets, release/recovery/installer/backup/deployments, monitoring, reports, etc.
-4. **Modules** — `modules/core/` — the only registered module; registers admin navigation (7 groups), permission groups, and 8 dashboard widgets into the kernel. ✅
+3. **Platform framework** — `lib/platform/` (12 TS files): `ModuleKernel`, registries (Navigation, Permission, Widget, SEO), services (Logger, EventBus, ServiceContainer, PlatformConfig), and the module bootstrap/provider.
+4. **Modules** — `modules/core/` — the only registered module; registers admin navigation (6 groups), permission groups, and 5 dashboard widgets into the kernel. ✅
 
 ### 3.2 Client–server data flow (public)
 

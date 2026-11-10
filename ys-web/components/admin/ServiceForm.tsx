@@ -3,11 +3,10 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
-import { Save, ArrowLeft, ImagePlus } from 'lucide-react'
+import { Save, ArrowLeft } from 'lucide-react'
 import Link from 'next/link'
 import { Button } from '@/components/ui/Button'
 import { Field, Input, Textarea, Select, Checkbox, FormSection } from '@/components/admin/FormElements'
-import { MediaPickerModal } from '@/components/admin/MediaPickerModal'
 import { useToast } from '@/components/admin/Toast'
 import { adminCreate, adminUpdate } from '@/lib/admin/api'
 
@@ -63,7 +62,6 @@ export function ServiceForm({ serviceId, initialData }: ServiceFormProps) {
 const [form, setForm]       = useState<ServiceFormData>({ ...emptyForm, ...initialData })
   const [errors, setErrors]   = useState<Record<string, string>>({})
   const [slugTouched, setSlugTouched] = useState(isEdit)
-  const [coverOpen, setCoverPicker] = useState(false)
 
   const update = <K extends keyof ServiceFormData>(key: K, value: ServiceFormData[K]) => {
     setForm(prev => ({ ...prev, [key]: value }))
@@ -247,30 +245,7 @@ const [form, setForm]       = useState<ServiceFormData>({ ...emptyForm, ...initi
             </Field>
           </div>
         </FormSection>
-
-{/* Cover Image */}
-        <FormSection title="Cover Image" description="Shown at the top of the service card and detail page">
-          <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', flexWrap: 'wrap' }}>
-            <Button type="button" variant="secondary" size="sm" onClick={() => setCoverPicker(true)}>
-              <ImagePlus size={15} /> {form.cover_image_id ? 'Change Cover Image' : 'Choose Cover Image'}
-            </Button>
-            {form.cover_image_id && (
-              <span style={{ fontSize: '0.8125rem', color: 'var(--color-foreground-muted)' }}>
-                Selected: {form.cover_image_id}
-              </span>
-            )}
-          </div>
-        </FormSection>
       </div>
-
-      <MediaPickerModal
-        open={coverOpen}
-        onClose={() => setCoverPicker(false)}
-        onSelect={(id) => {
-          update('cover_image_id', id)
-          setCoverPicker(false)
-        }}
-      />
     </form>
   )
 }

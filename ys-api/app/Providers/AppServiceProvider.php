@@ -5,7 +5,6 @@ namespace App\Providers;
 use App\Domains\Search\Contracts\SearchDriver;
 use App\Domains\Search\Drivers\PostgresSearchDriver;
 use App\Domains\System\Services\AuditService;
-use App\Domains\System\Services\FeatureFlagService;
 use App\Domains\System\Services\MediaUploadService;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Database\Eloquent\Factories\Factory;
@@ -20,7 +19,6 @@ class AppServiceProvider extends ServiceProvider
     {
         // Singletons — one instance per request lifecycle
         $this->app->singleton(AuditService::class);
-        $this->app->singleton(FeatureFlagService::class);
         $this->app->singleton(MediaUploadService::class);
 
         // Search driver binding — swap PostgresSearchDriver for MeilisearchDriver

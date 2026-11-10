@@ -1,7 +1,6 @@
 <?php
 
 use App\Domains\Auth\Models\User;
-use App\Domains\Product\Models\Product;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
@@ -25,7 +24,11 @@ return new class extends Migration
     public function up(): void
     {
         $userIds = User::query()->pluck('id');
-        $productIds = Product::query()->pluck('id');
+        // Group A removed the Product domain/model, but this historical
+        // migration must still run verbatim on fresh installs. Read the
+        // ids straight from the (untouched) products table instead of
+        // resolving the deleted Eloquent model — identical behavior.
+        $productIds = DB::table('products')->pluck('id');
 
         if ($userIds->isEmpty() || $productIds->isEmpty()) {
             return;

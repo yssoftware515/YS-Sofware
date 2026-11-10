@@ -4,14 +4,11 @@ namespace Tests\Feature\Admin;
 
 use App\Domains\Auth\Models\Role;
 use App\Domains\Auth\Models\User;
-use App\Domains\Billing\Models\Customer;
-use App\Domains\Cms\Models\Faq;
 use App\Domains\Operations\Models\ContactRequest;
+use App\Domains\Operations\Models\Customer;
 use App\Domains\Operations\Models\Milestone;
 use App\Domains\Operations\Models\Project;
 use App\Domains\Operations\Models\Task;
-use App\Domains\Product\Models\Product;
-use App\Domains\Product\Models\ProductRelease;
 use App\Domains\Services\Models\Service;
 use App\Domains\System\Models\AuditLog;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -42,27 +39,24 @@ class DashboardTest extends TestCase
     public function test_super_admin_sees_real_counts_and_health(): void
     {
         $this->actingAsSuperAdmin();
-        Product::factory()->count(3)->create();
         Service::factory()->count(2)->create();
         ContactRequest::factory()->create(['status' => 'new']);
         ContactRequest::factory()->create(['status' => 'read']);
-        Faq::factory()->count(2)->create();
 
         $response = $this->getJson('/api/v1/admin/dashboard/stats');
 
         $response->assertStatus(200)
             ->assertJsonPath('success', true)
-            ->assertJsonPath('data.counts.products', 3)
             ->assertJsonPath('data.counts.services', 2)
             ->assertJsonPath('data.counts.contact_requests', 2)
             ->assertJsonPath('data.counts.new_contact_requests', 1)
-            ->assertJsonPath('data.counts.faqs', 2)
             ->assertJsonStructure([
                 'data' => [
-                    'counts' => ['products', 'releases', 'services', 'careers', 'contact_requests', 'audit_logs', 'static_pages', 'faqs', 'menus', 'homepage_sections'],
+                    'counts' => ['services', 'contact_requests', 'audit_logs'],
                     'health' => ['status', 'checks' => ['database', 'cache']],
                 ],
-            ]);
+            ])
+            ->assertJsonMissingPath('data.counts.careers');
 
         $this->assertNotEmpty($response->json('data.recent_contact_requests'));
     }
@@ -71,8 +65,8 @@ class DashboardTest extends TestCase
     {
         // A role with exactly one permission must only receive that count.
         $role = Role::factory()->create([
-            'slug' => 'products_only',
-            'permissions' => ['manage_products'],
+            'slug' => 'services_only',
+            'permissions' => ['view_services'],
         ]);
         $user = User::factory()->create([
             'role_id' => $role->id,
@@ -80,45 +74,18 @@ class DashboardTest extends TestCase
         ]);
         Sanctum::actingAs($user, ['admin']);
 
-        $products = Product::factory()->count(4)->create();
-        $user->products()->attach($products->pluck('id'));
+        Service::factory()->count(4)->create();
         ContactRequest::factory()->create(['status' => 'new']);
 
         $response = $this->getJson('/api/v1/admin/dashboard/stats');
 
         $response->assertStatus(200)
             ->assertJsonPath('success', true)
-            ->assertJsonPath('data.counts.products', 4)
+            ->assertJsonPath('data.counts.services', 4)
             ->assertJsonMissingPath('data.counts.contact_requests')
-            ->assertJsonMissingPath('data.counts.services')
+            ->assertJsonMissingPath('data.counts.faqs')
             ->assertJsonMissingPath('data.recent_contact_requests')
             ->assertJsonPath('data.health.status', 'ok');
-    }
-
-    public function test_scoped_admin_product_counts_are_limited_to_granted_products(): void
-    {
-        $role = Role::factory()->create([
-            'slug' => 'scoped_products',
-            'permissions' => ['manage_products'],
-        ]);
-        $user = User::factory()->create([
-            'role_id' => $role->id,
-            'is_active' => true,
-        ]);
-        Sanctum::actingAs($user, ['admin']);
-
-        $granted = Product::factory()->active()->create();
-        $hidden = Product::factory()->active()->create();
-        ProductRelease::factory()->count(2)->create(['product_id' => $granted->id]);
-        ProductRelease::factory()->count(5)->create(['product_id' => $hidden->id]);
-
-        $user->products()->attach($granted->id);
-
-        $response = $this->getJson('/api/v1/admin/dashboard/stats');
-
-        $response->assertStatus(200)
-            ->assertJsonPath('data.counts.products', 1)
-            ->assertJsonPath('data.counts.releases', 2);
     }
 
     public function test_recent_audit_logs_require_view_audit_logs(): void
@@ -337,20 +304,17 @@ class DashboardTest extends TestCase
         // a user holding ONLY the view_* flag for a module still reads
         // its counts (the same data the screens let them read).
         $role = Role::factory()->create([
-            'slug' => 'viewer_products_services',
-            'permissions' => ['view_products', 'view_services'],
+            'slug' => 'viewer_services',
+            'permissions' => ['view_services'],
         ]);
         $user = User::factory()->create(['role_id' => $role->id, 'is_active' => true]);
         Sanctum::actingAs($user, ['admin']);
 
-        $products = Product::factory()->count(3)->create();
-        $user->products()->attach($products->pluck('id'));
         Service::factory()->count(2)->create();
         ContactRequest::factory()->create(['status' => 'new']);
 
         $this->getJson('/api/v1/admin/dashboard/stats')
             ->assertStatus(200)
-            ->assertJsonPath('data.counts.products', 3)
             ->assertJsonPath('data.counts.services', 2)
             // contact requests have no view_* permission — never leaked
             ->assertJsonMissingPath('data.counts.contact_requests')

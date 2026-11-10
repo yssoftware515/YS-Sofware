@@ -2,10 +2,9 @@
 
 namespace App\Domains\Operations\Services;
 
-use App\Domains\Billing\Models\Customer;
 use App\Domains\Operations\Models\ContactRequest;
+use App\Domains\Operations\Models\Customer;
 use App\Domains\Operations\Models\Project;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
 
@@ -22,11 +21,6 @@ use Illuminate\Validation\Rule;
  *   customer; the sanctioned path is the request detail page
  *   (link-project), and no form may produce a link that violates the
  *   boundary.
- * - assertCustomerAccessible()/assertProjectAccessible(): product
- *   scoping — the project inherits its tenant through the customer (the
- *   customer's product_id is the anchor). A scoped admin may only attach
- *   a project to customers inside their granted set — NULL (no customer
- *   / global customer) is always allowed.
  */
 final class ProjectService
 {
@@ -74,26 +68,5 @@ final class ProjectService
         if (! $request || $request->customer_id === null || $request->customer_id !== $customerId) {
             abort(422, 'The project and its originating request must belong to the same customer. Link the request to the customer first.');
         }
-    }
-
-    /**
-     * Product-scoping: the project inherits its tenant through the
-     * customer (the customer's product_id is the anchor). A scoped admin
-     * may only attach a project to customers inside their granted set —
-     * NULL (no customer / global customer) is always allowed.
-     */
-    public function assertCustomerAccessible(?string $customerId): void
-    {
-        if ($customerId === null) {
-            return;
-        }
-
-        $customer = Customer::find($customerId);
-        abort_unless($customer !== null && Customer::userCanAccess($customer->product_id, Auth::user()), 403, 'You do not have access to this product.');
-    }
-
-    public function assertProjectAccessible(Project $project): void
-    {
-        abort_unless($project->isAccessibleBy(Auth::user()), 403, 'You do not have access to this product.');
     }
 }

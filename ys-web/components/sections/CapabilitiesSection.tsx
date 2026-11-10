@@ -13,16 +13,9 @@ import {
   type LucideIcon,
 } from "lucide-react"
 import { AnimatedBox } from "@/components/shared/AnimatedBox"
-import type { HomepageSection } from "@/types"
-import {
-  capabilitiesContentSchema,
-  type CapabilitiesItemData,
-} from "@/lib/cms/schemas"
-import { validateCmsContent } from "@/lib/cms/validate"
 
 interface CapabilitiesSectionProps {
   locale: string
-  cmsSection?: HomepageSection
 }
 
 interface Capability {
@@ -37,12 +30,6 @@ interface Capability {
   href: string
 }
 
-const iconMap: Record<string, LucideIcon> = {
-  Boxes,
-  Code2,
-  BrainCircuit,
-  Palette,
-}
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // FALLBACK CAPABILITIES — each with its own accent color
@@ -101,32 +88,6 @@ const fallbackCapabilities: Capability[] = [
     href: "/services",
   },
 ]
-
-function parseCmsItems(raw: CapabilitiesItemData[]): Capability[] {
-  const accentPalette = [
-    { accent: "#0A4FE7", accentBg: "rgba(10,79,231,0.12)" },
-    { accent: "#8B5CF6", accentBg: "rgba(139,92,246,0.12)" },
-    { accent: "#10B981", accentBg: "rgba(16,185,129,0.12)" },
-    { accent: "#F59E0B", accentBg: "rgba(245,158,11,0.12)" },
-  ]
-
-  return raw.map((item, i) => {
-    const iconName = item.icon ?? "Boxes"
-    const IconComponent = iconMap[iconName] ?? Boxes
-    const colors = accentPalette[i % accentPalette.length]
-    return {
-      icon: IconComponent,
-      iconLabel: iconName,
-      title_en: item.title_en ?? "",
-      title_ar: item.title_ar ?? "",
-      description_en: item.description_en ?? "",
-      description_ar: item.description_ar ?? "",
-      accent: colors.accent,
-      accentBg: colors.accentBg,
-      href: "/services",
-    }
-  })
-}
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // CAPABILITY CARD — glassmorphism with individual accent color
@@ -221,13 +182,9 @@ function CapabilityCard({
 // ═══════════════════════════════════════════════════════════════════════════════
 export function CapabilitiesSection({
   locale,
-  cmsSection,
 }: CapabilitiesSectionProps) {
   const isAr = locale === "ar"
-  const cmsContent = validateCmsContent(cmsSection, capabilitiesContentSchema)
-  const items: Capability[] = cmsContent?.items?.length
-    ? parseCmsItems(cmsContent.items)
-    : fallbackCapabilities
+  const items: Capability[] = fallbackCapabilities
 
   const sectionRef = useRef<HTMLElement>(null)
   const inView = useInView(sectionRef, { once: true, margin: "-80px" })
