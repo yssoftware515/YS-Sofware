@@ -85,7 +85,23 @@ class EnforceIdleSessionTimeout
                     ], Response::HTTP_UNAUTHORIZED);
                 }
 
-                $token->forceFill(['last_used_at' => now()])->save();
+                // Stamp the activity, but only once a minute. The idle window
+                // is measured in hours (security.session.idle_timeout_hours,
+                // default 2), so a one-minute resolution on the stamp cannot
+                // extend or shorten any session in practice - yet it removes
+                // a write (and a row lock on personal_access_tokens) from
+                // EVERY authenticated request. That write was the most
+                // expensive statement in the admin request chain, and
+                // concurrent admin requests all updated the same row, so
+                // they serialised on it.
+                //
+                // The stamp is still what the idle check reads back, so a
+                // session that stays active keeps its window open.
+                $lastStamped = $token->last_used_at ?? $token->created_at;
+
+                if ($lastStamped === null || $lastStamped->lt(now()->subMinute())) {
+                    $token->forceFill(['last_used_at' => now()])->save();
+                }
             }
         }
 

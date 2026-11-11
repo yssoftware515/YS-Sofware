@@ -33,11 +33,15 @@ class AdminSeederContractTest extends TestCase
         $source = file_get_contents(database_path('seeders/AdminUserSeeder.php'));
 
         $this->assertIsString($source);
-        $this->assertStringNotContainsString('YS515&Yahya', $source);
-        $this->assertStringNotContainsString('Yahya', $source);
 
         // The seeder must consume the config contract rather than invent
-        // its own values.
+        // its own values. The check is deliberately made WITHOUT quoting
+        // any credential literal: this repository is public, so a "canary"
+        // string would keep a known-bad password readable in the history
+        // for no benefit - the credential it guarded has been rotated, and
+        // a literal-free assertion covers every value, not just one.
         $this->assertStringContainsString("config('admin.credentials.password')", $source);
+        $this->assertStringNotContainsString("'password' => '", $source);
+        $this->assertStringNotContainsString('"password" => "', $source);
     }
 }

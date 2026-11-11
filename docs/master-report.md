@@ -48,7 +48,7 @@ See [features.md](features.md). Core: bilingual product catalog + releases, docu
 
 Baseline is **good** (headers, rate limits, sanitization at write+render, fail-closed authz, immutable audit, Argon2id, server-side MIME checks). Top findings (full list: [security.md](security.md)):
 
-- **S-01 (Critical):** hardcoded default admin password `YS515&Yahya` in `AdminUserSeeder.php` (committed source).
+- **S-01 (Critical):** hardcoded default admin password `<redacted-legacy-credential>` in `AdminUserSeeder.php` (committed source).
 - **S-02/S-06/S-07 (High/Med):** default Grafana `admin` password, default DB creds `ys_user/secret` in templates.
 - **S-04/S-05 (High):** no password reset, no MFA.
 - **S-08 (Med):** Sanctum `expiration=null` — TTL not enforced server-side.
@@ -125,7 +125,7 @@ Top items ([technical-debt.md](technical-debt.md)): duplicated admin nav + permi
 2. Are sessions / login-history / API-tokens / notifications planned backend features? If not, should the admin pages be removed?
 3. What is the actual production topology (hosts, TLS termination, domain, DB hosting)? Where do migrations run in deploy?
 4. Should health endpoints follow the old planned scheme (`/health/live`, `/ready`, `/startup`, `/deep`) or the current `/api/v1/health`?
-5. Was `admin@ys-systems.com` / `YS515&Yahya` ever used in a live environment? (Rotation requirement.)
+5. Was `admin@ys-systems.com` / `<redacted-legacy-credential>` ever used in a live environment? (Rotation requirement.)
 6. Who owns the Grafana/monitoring requirement, and what metrics matter?
 7. Should the `/status` page and dashboard "System Status" widget reflect real health data?
 8. Are the seeded demo products/FAQs/menus placeholders or real company content?

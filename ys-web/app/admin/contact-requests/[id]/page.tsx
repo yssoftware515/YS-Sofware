@@ -1,7 +1,7 @@
 'use client'
 
 import { useParams } from 'next/navigation'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import Link from 'next/link'
 import { ArrowLeft, Mail, Phone, Globe, Check, UserPlus, Link2, Unlink, Briefcase } from 'lucide-react'
@@ -131,6 +131,27 @@ export default function ContactRequestDetailPage() {
     queryKey: ['/admin/contact-requests', id],
     queryFn: () => adminGet<AdminContactRequest>(`/admin/contact-requests/${id}`),
   })
+
+  // Opening a request moves it out of the "new" bucket. This used to be a
+  // side effect of the GET endpoint, which meant a prefetch or a link
+  // preview could move a request without a person ever opening it. The
+  // backend now treats the GET as a pure read and the transition happens
+  // here - explicitly, through the status endpoint, once the request is
+  // actually on screen.
+  const markReviewing = useMutation({
+    mutationFn: () =>
+      adminPatch<AdminContactRequest>(`/admin/contact-requests/${id}/status`, { status: 'reviewing' }),
+    onSuccess: (updated) => {
+      queryClient.setQueryData(['/admin/contact-requests', id], updated)
+    },
+  })
+
+  useEffect(() => {
+    if (data?.status === 'new') {
+      markReviewing.mutate()
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [data?.status, id])
 
   const { data: customers = [] } = useAdminList<LinkedCustomer>('/admin/customers', { per_page: '100' })
   const { data: allProjects = [] } = useAdminList<LinkedProject>('/admin/projects', { per_page: '100' })

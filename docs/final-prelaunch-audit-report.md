@@ -31,7 +31,7 @@ and `ys-web` (Next.js 16 App Router, admin panel + public site):
 ## P0 — bootstrap admin credential (S-01 regression)
 
 Regression discovered: `AdminUserSeeder` had the committed plaintext
-credential `YS515&Yahya` back in source.
+credential `<redacted-legacy-credential>` back in source.
 
 **Fix:**
 - `ys-api/database/seeders/AdminUserSeeder.php` — env-driven via

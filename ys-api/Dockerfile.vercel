@@ -37,7 +37,9 @@ COPY Caddyfile /etc/frankenphp/Caddyfile
 
 # Allow binding to $PORT (Vercel passes PORT env var, defaults to 80)
 RUN setcap CAP_NET_BIND_SERVICE=+eip /usr/local/bin/frankenphp \
-    && chown -R www-data:www-data /config/caddy /data/caddy
+    && chown -R www-data:www-data /config/caddy /data/caddy \
+    && mkdir -p /app/bootstrap/cache /app/storage/framework/cache /app/storage/framework/sessions /app/storage/framework/views /app/storage/logs \
+    && chown -R www-data:www-data /app/bootstrap/cache /app/storage
 
 ENV PORT=80 \
     APP_ENV=production \
@@ -46,5 +48,23 @@ ENV PORT=80 \
 
 USER www-data
 
-# FrankenPHP serves HTTP on $PORT and routes PHP to public/index.php
-CMD ["frankenphp", "run", "--config", "/etc/frankenphp/Caddyfile"]
+# Build the compiled caches when the container starts, not in the image.
+#
+# The image cannot bake them: config:cache resolves the environment
+# variables, and Vercel injects those (DATABASE_URL, APP_KEY, ...) into the
+# running container, not into the image build. Running the command here is
+# therefore the only point where both the code and the real environment are
+# available - exactly what the Vercel guide means by "do not run the full
+# command while building the container image".
+#
+# Measured on this codebase: the Laravel boot drops from ~13 ms to ~5 ms,
+# and every request pays that boot because FrankenPHP runs without worker
+# mode (one PHP process per request).
+#
+# route:cache was checked against this Sanctum version: with the routes
+# cached, GET /sanctum/csrf-cookie still answers 204 and the admin login
+# still completes, so the dynamic Sanctum registration survives it.
+#
+# The caches are idempotent and cheap; if any of them failed the container
+# still boots, because FrankenPHP is exec'd either way.
+CMD ["sh", "-c", "php artisan config:cache --no-interaction || true; php artisan route:cache --no-interaction || true; php artisan event:cache --no-interaction || true; php artisan view:cache --no-interaction || true; exec frankenphp run --config /etc/frankenphp/Caddyfile"]

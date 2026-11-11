@@ -49,7 +49,7 @@ Sprint 1 delivered all 12 scoped goals, all code-verified and regression-clean (
 ## Per-fix verification detail
 
 ### A-1 — Erstwhile credentials (CR-01)
-Verified: `ys-api/config/admin.php` reads `ADMIN_NAME/ADMIN_EMAIL/ADMIN_PASSWORD`; `AdminUserSeeder` fails-closed (blank password => no super admin created) and no longer contains the committed plaintext (`YS515&Yahya`). Grep over the repos shows the string only in historical docs (residual references that were the discovery deliverable), not in source. `ys-api/.env.example` documents the vars; root `.env.example` blank. No stale config cache present (`bootstrap/cache/config.php` absent; only events/packages/routes-v7/services cached).
+Verified: `ys-api/config/admin.php` reads `ADMIN_NAME/ADMIN_EMAIL/ADMIN_PASSWORD`; `AdminUserSeeder` fails-closed (blank password => no super admin created) and no longer contains the committed plaintext (`<redacted-legacy-credential>`). Grep over the repos shows the string only in historical docs (residual references that were the discovery deliverable), not in source. `ys-api/.env.example` documents the vars; root `.env.example` blank. No stale config cache present (`bootstrap/cache/config.php` absent; only events/packages/routes-v7/services cached).
 
 ### A-2 — `config/filesystems.php` (S-21 / CR-03)
 Verified: `default` = `local` (env `FILESYSTEM_DISK`, default `local`), `local` root = `storage/app/private`, `serve => false`; `public` disk keeps `serve` opt-in (`FILESYSTEM_SERVE`, default false). `MediaUploadService` reads `config('filesystems.default')` at runtime and `Storage::disk($disk)->putFileAs` — uploads land on the private disk. Storage exposure closed.

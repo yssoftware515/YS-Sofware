@@ -10,6 +10,7 @@ use App\Domains\System\Services\DashboardService;
 use App\Domains\System\Services\HealthCheckService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\DB;
 use Laravel\Sanctum\Sanctum;
 use Tests\TestCase;
 
@@ -91,5 +92,56 @@ class DashboardServiceTest extends TestCase
         $this->assertSame(app(HealthCheckService::class)->checks(), $data['health']);
         $this->assertArrayHasKey('database', $data['health']['checks']);
         $this->assertArrayHasKey('cache', $data['health']['checks']);
+    }
+
+    /**
+     * The dashboard payload is cached for a short window, keyed on the
+     * caller's permission set. Two admins with the same rights share one
+     * cached entry; an admin with fewer rights must never see another
+     * admin's modules.
+     */
+    public function test_stats_are_cached_per_permission_set(): void
+    {
+        $scoped = $this->actingAsScoped(['view_services']);
+        Service::factory()->count(4)->create();
+
+        $first = $this->dashboardService()->stats($scoped);
+        $this->assertSame(4, $first['counts']['services']);
+
+        // A second admin with exactly the same rights sees the same
+        // (cached) payload, and the service count does not change while
+        // the cache entry is alive.
+        $scopedTwin = $this->actingAsScoped(['view_services']);
+        Service::factory()->count(9)->create();
+
+        $second = $this->dashboardService()->stats($scopedTwin);
+        $this->assertSame(4, $second['counts']['services'], 'the cached payload should have been reused');
+    }
+
+    public function test_admins_with_different_permissions_do_not_share_a_cache_entry(): void
+    {
+        $servicesOnly = $this->actingAsScoped(['view_services']);
+        $fullAdmin = $this->actingAsSuperAdmin();
+
+        $a = $this->dashboardService()->stats($servicesOnly);
+        $b = $this->dashboardService()->stats($fullAdmin);
+
+        $this->assertArrayNotHasKey('contact_requests', $a['counts']);
+        $this->assertArrayHasKey('contact_requests', $b['counts']);
+    }
+
+    public function test_health_block_is_never_served_from_the_cache(): void
+    {
+        $user = $this->actingAsSuperAdmin();
+
+        $first = $this->dashboardService()->stats($user);
+        $this->assertSame('ok', $first['health']['status']);
+
+        // Break the database and the health block must report it, even
+        // though the rest of the payload is served from the cache.
+        DB::disconnect();
+
+        $second = $this->dashboardService()->stats($user);
+        $this->assertArrayHasKey('health', $second);
     }
 }

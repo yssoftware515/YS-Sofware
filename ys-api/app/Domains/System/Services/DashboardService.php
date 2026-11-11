@@ -42,6 +42,29 @@ final class DashboardService
 
     public function stats(User $user): array
     {
+        // The dashboard assembled roughly twenty sequential queries. With the
+        // database in another region that was the slowest request in the
+        // admin area by a wide margin.
+        //
+        // The payload is cached for a short window, keyed on the caller's
+        // permission set (see statsCacheKey), so two admins with the same
+        // rights share one entry and no module leaks to someone without its
+        // permission. The health block is deliberately NOT part of the
+        // cached payload: it is a live connectivity probe and must reflect
+        // the current state of the database and the cache store.
+        $cached = Cache::remember(
+            $this->statsCacheKey($user),
+            30,
+            fn () => $this->computeStats($user),
+        );
+
+        $cached['health'] = $this->healthCheck->checks();
+
+        return $cached;
+    }
+
+    private function computeStats(User $user): array
+    {
         $counts = [];
         $attention = [];
 
@@ -149,7 +172,6 @@ final class DashboardService
         $data = [
             'counts' => $counts,
             'attention' => $attention,
-            'health' => $this->healthCheck->checks(),
         ];
 
         if ($user->hasPermission('manage_contact_requests')) {
@@ -161,6 +183,24 @@ final class DashboardService
         }
 
         return $data;
+    }
+
+    /**
+     * Cache key for the dashboard payload.
+     *
+     * The payload is permission-shaped, not user-shaped: every scope used
+     * above (accessibleBy) is a no-op, so what a user sees depends on their
+     * ROLE - the permissions come from the role and nothing else narrows the
+     * result further. Keying on the sorted permission list therefore shares
+     * one entry between admins with identical rights and never leaks a
+     * module to someone who lacks its permission.
+     */
+    private function statsCacheKey(User $user): string
+    {
+        $permissions = $user->role?->permissions ?? [];
+        sort($permissions);
+
+        return 'ys:dashboard:stats:'.sha1(implode('|', $permissions));
     }
 
     private function overdueProjects(User $user): array

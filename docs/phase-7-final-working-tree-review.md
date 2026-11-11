@@ -9,7 +9,7 @@
 The complete working tree was inventoried (223 entries), categorized by phase, scanned for secrets/debug/artifacts, and cross-checked against every phase report's change list. Findings:
 
 - **Every documented Phase 1A–6 change is present** in the working tree. Nothing expected is missing, duplicated, reverted, or accidentally modified.
-- **No secrets, credentials, private keys, debug statements, generated artifacts, or logs** were found in the change set. The historical `YS515&Yahya` credential exists only in a negative-guard test and in committed historical remediation docs (not in the change set).
+- **No secrets, credentials, private keys, debug statements, generated artifacts, or logs** were found in the change set. The historical `<redacted-legacy-credential>` credential exists only in a negative-guard test and in committed historical remediation docs (not in the change set).
 - **All P1/P2 findings from Phases 1–5 are FIXED and VERIFIED** (see §7 matrix). Remaining items are P3/INFO backlog, documented items (G-05), and operator-controlled/BLOCKED deployment checks that are never the reason for the verdict.
 - **Documentation drift found and recorded** (not fixed, per mandate): `docs/authentication.md:74` (stale pre-5B CSRF claim), `docs/api.md` §6 + `docs/frontend.md` §12 (phantom admin pages removed from the tree — double-stale), `docs/configuration.md` (missing `logging.php`, `proxy.trusted_cidrs`, lockout/captcha entries), `docs/known-issues.md` (same phantom-page entries). See §8.
 - **No code re-verification was necessary:** the tree is unchanged since the Phase 6 verification (backend 5×488/1947, vitest 75/75, lint/type-check/build, config-cache, live API sanity — all green, cited in §9).
@@ -176,7 +176,7 @@ Legend: **M** modified · **A** added (staged) · **D** deleted · **N** new (un
 
 | Scan | Result |
 |---|---|
-| `YS515&Yahya` (historic committed credential) | Only in `AdminSeederContractTest.php:36` (negative guard `assertStringNotContainsString`) and committed historical remediation docs — **not** in any source/config/workflow in the change set |
+| `<redacted-legacy-credential>` (historic committed credential) | Only in `AdminSeederContractTest.php:36` (negative guard `assertStringNotContainsString`) and committed historical remediation docs — **not** in any source/config/workflow in the change set |
 | Private keys (`BEGIN RSA/OPENSSH/EC PRIVATE`) | 0 matches |
 | Hardcoded `password/secret/token/key` values in `ys-api/app` | 0 matches |
 | `dd( var_dump( print_r( die( exit(` in `ys-api/app` | 0 matches |

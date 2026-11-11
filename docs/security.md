@@ -17,7 +17,7 @@ The platform has a strong baseline: defense-in-depth headers, rate limiting, san
 
 | ID | Finding | Evidence | Fix direction (report only) |
 |---|---|---|---|
-| S-01 | **Hardcoded admin credentials in source** — `AdminUserSeeder.php` creates `admin@ys-systems.com` with plaintext password `YS515&Yahya` committed to the repo. Any actor with repo access knows the default admin password. README/SETUP.md claim a different password, making detection harder. | ✅ seeder source | Move to env-based seed, rotate immediately, document rotation | + RESOLVED Sprint 1 (`config/admin.php` + `AdminUserSeeder` reads `ADMIN_EMAIL`/`ADMIN_PASSWORD`; fails closed when blank) |
+| S-01 | **Hardcoded admin credentials in source** — `AdminUserSeeder.php` creates `admin@ys-systems.com` with plaintext password `<redacted-legacy-credential>` committed to the repo. Any actor with repo access knows the default admin password. README/SETUP.md claim a different password, making detection harder. | ✅ seeder source | Move to env-based seed, rotate immediately, document rotation | + RESOLVED Sprint 1 (`config/admin.php` + `AdminUserSeeder` reads `ADMIN_EMAIL`/`ADMIN_PASSWORD`; fails closed when blank) |
 | S-02 | **Secrets in `.env` files are git-ignored but `.env` exists with real local values** (4037 bytes, not tracked — ✅ verified `git check-ignore`). Risk is low locally but must never be committed. | ✅ git check-ignore | Keep ignored; verify CI doesn't publish |
 
 ### HIGH

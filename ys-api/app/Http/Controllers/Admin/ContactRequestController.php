@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Domains\Operations\Models\ContactRequest;
 use App\Domains\Operations\Models\Customer;
 use App\Domains\Operations\Models\Project;
+use App\Domains\Search\Support\LikePattern;
 use App\Domains\System\Services\AuditService;
 use App\Http\Controllers\Controller;
 use Illuminate\Database\QueryException;
@@ -30,10 +31,7 @@ class ContactRequestController extends Controller
             ->when($request->query('type'), fn ($q, $t) => $q->ofType($t))
             ->when($request->query('request_type'), fn ($q, $t) => $q->where('request_type', $t))
             ->when($request->query('search'), function ($q, $search) {
-                $q->where(fn ($sub) => $sub->where('name', 'like', "%{$search}%")
-                    ->orWhere('email', 'like', "%{$search}%")
-                    ->orWhere('company_name', 'like', "%{$search}%")
-                    ->orWhere('message', 'like', "%{$search}%"));
+                LikePattern::applyTo($q, ['name', 'email', 'company_name', 'message'], $search);
             })
             ->orderByDesc('created_at')
             ->paginate($this->perPage($request, 20));
@@ -49,12 +47,13 @@ class ContactRequestController extends Controller
     {
         $this->authorize('manage_contact_requests');
 
-        // Auto-mark as reviewing on first open â€” "new" means untouched.
-        if ($contactRequest->isNew()) {
-            $contactRequest->update(['status' => 'reviewing']);
-            $this->auditService->log('contact_request.read', 'ContactRequest', $contactRequest->id);
-        }
-
+        // A GET must not change state. Opening this endpoint used to flip a
+        // 'new' request to 'reviewing' as a side effect, which meant a
+        // prefetch, a link preview or a browser extension could silently
+        // move a request out of the "new" bucket - and skew the dashboard's
+        // new-request counter. The transition is now an explicit PATCH
+        // (updateStatus) that the admin UI issues when a person opens the
+        // request, so the state change always follows a deliberate action.
         return response()->json(['success' => true, 'data' => $contactRequest->load('customer:id,name,email,company', 'projects:'.$this->projectFields())]);
     }
 

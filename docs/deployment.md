@@ -131,13 +131,26 @@ Set these in the Vercel project settings → Environment Variables:
 - `TRUSTED_PROXIES=REMOTE_ADDR` — **required on Vercel**. `private_ranges` only trusts RFC 1918/4193 addresses, and Vercel's edge is on a *public* IP, so that value trusts nobody: `X-Forwarded-Proto` is ignored, `$request->secure()` is false, and the VULN-09 TLS gate answers **every** API request with `403 TLS_REQUIRED`. The frontend swallows that error and renders empty pages. `REMOTE_ADDR` trusts exactly the peer that opened the connection — on Vercel that is always Vercel's own proxy, because the container is not reachable from the internet directly — and Vercel documents that it overwrites `X-Forwarded-For` with the real client IP, so trusting the peer opens no spoofing hole.
 - `SANCTUM_STATEFUL_DOMAINS` — frontend domain(s), comma-separated
 - `SESSION_SECURE_COOKIE=true`, `REQUIRE_TLS=true`
-- `CACHE_STORE=database`, `SESSION_DRIVER=database` — **required on Vercel**. The container filesystem is ephemeral and Vercel runs several instances, so a file-backed cache/session lives on one instance's disk and dies with it: the CSRF handshake breaks (the XSRF token is derived from the session) and a cached response can differ per instance. The `cache`, `cache_locks` and `sessions` tables already exist in the schema, so both stores work against Neon without any extra migration. Docker Compose keeps `file` for both — there the volume persists them and the file store is faster.
+- `CACHE_STORE=database`, `SESSION_DRIVER=cookie`, `SESSION_ENCRYPT=true` — **required on Vercel**. The container filesystem is ephemeral and Vercel runs several instances, so a file-backed cache/session lives on one instance's disk and dies with it: the CSRF handshake breaks (the XSRF token is derived from the session) and a cached response can differ per instance. The cache uses the `cache` / `cache_locks` tables, which already exist in the schema. The session uses the cookie driver: it travels with the request, so it costs **zero** database round trips — with the database in another region that is worth more than the single query the `database` driver would spend. `SESSION_ENCRYPT=true` keeps the payload encrypted in the client's cookie. Docker Compose keeps `file` for both — there the volume persists them and the file store is faster.
 - `MAIL_*` — SMTP credentials
 
 **Frontend (build-time):**
 - `NEXT_PUBLIC_API_URL` — `https://<backend-domain>.vercel.app/api/v1`
 - `NEXT_PUBLIC_APP_URL` — `https://<frontend-domain>.vercel.app`
 - `NEXT_PUBLIC_TURNSTILE_SITE_KEY` — Cloudflare Turnstile site key
+
+### 5.6.1 Region: the functions run next to the database
+
+`vercel.json` pins `"regions": ["fra1"]` — the same region as the Neon compute (`aws-eu-central-1`). This is the single largest performance lever in this deployment: measured from Egypt, a query against the Frankfurt endpoint costs ~360 ms round trip, while the same query from inside `fra1` is a fraction of that. Every admin request runs a chain of queries, so the distance is multiplied by their number.
+
+The frontend and the backend service both inherit the project-level region. Changing it later means editing `vercel.json` and redeploying.
+
+### 5.6.2 What the request chain costs, and what was removed
+
+- **The token stamp was a write on every request.** `EnforceIdleSessionTimeout` stamped `last_used_at` on the `personal_access_tokens` row for every authenticated request — a write plus a row lock on a row that concurrent admin requests all updated, so they serialised behind it. The stamp now happens at most once a minute; the idle window is measured in hours, so a one-minute resolution cannot change any session's lifetime.
+- **The dashboard ran ~20 sequential queries.** `DashboardService::stats()` now caches its payload for 30 seconds, keyed on the caller's permission set (every scope it uses is a no-op, so the result depends on the role, not on the individual). Two admins with the same rights share one entry; an admin with fewer rights can never read another admin's entry. The health block is deliberately **not** cached — it is a live connectivity probe.
+- **Every request re-booted Laravel.** FrankenPHP runs without worker mode (one PHP process per request), so the boot cost is paid per request. The container now builds the compiled caches (`config:cache`, `route:cache`, `event:cache`, `view:cache`) at start rather than in the image — they cannot be baked into the image because `config:cache` resolves the environment variables, and Vercel injects those into the running container. Measured on this codebase: the boot drops from ~13 ms to ~5 ms.
+- **Worker mode was deliberately not enabled.** FrankenPHP's worker mode keeps the PHP process (and therefore the Laravel container) alive between requests, which would also keep the authenticated user and the resolved guards alive — a state leak between requests unless Laravel Octane resets them. That trade was not taken.
 
 ### 5.7 Known limitations
 
@@ -173,6 +186,8 @@ Neon is the production database: project `ys-software` (`twilight-firefly-295287
 | Database / role | `neondb` / `neondb_owner` |
 | SSL | `sslmode=require`, `channel_binding=require` |
 | Compute | 0.25–2 CU, autoscaling; `max_connections = 901` |
+
+> ⚠ **The repository is public.** The Neon hostnames above are not secrets on their own — a hostname cannot authenticate anything — but the database PASSWORD is, and it must never reach a tracked file. The historical admin credential that used to be quoted in several `docs/*.md` files has been removed from the working tree; the password itself was rotated and every issued token revoked. If this repository stays public, treat every credential as compromised the moment it is written down, and rotate instead of documenting.
 
 **⚠ The pooled (`-pooler`) endpoint must NOT be used by this application.** It was measured directly: any transaction containing two or more statements fails with `SQLSTATE 25P02 — current transaction is aborted` (0 of 15 multi-statement transactions succeeded on the pooled endpoint versus 15 of 15 on the direct endpoint). Two things in the app depend on multi-statement transactions:
 

@@ -32,7 +32,7 @@ Every item below was confirmed by reading code (no speculation).
 
 | # | Doc (old) | Reality |
 |---|---|---|
-| K-11 | README/SETUP admin password `Change-This-Password-Immediately!` | Seeder uses `YS515&Yahya` | + RESOLVED: `AdminUserSeeder` is env-driven via `config/admin.php` and fails closed on a blank `ADMIN_PASSWORD`; no credential literal remains in source (pinned by `tests/Unit/AdminSeederContractTest.php` + `tests/Feature/Admin/AdminUserSeederTest.php`) |
+| K-11 | README/SETUP admin password `Change-This-Password-Immediately!` | Seeder uses `<redacted-legacy-credential>` | + RESOLVED: `AdminUserSeeder` is env-driven via `config/admin.php` and fails closed on a blank `ADMIN_PASSWORD`; no credential literal remains in source (pinned by `tests/Unit/AdminSeederContractTest.php` + `tests/Feature/Admin/AdminUserSeederTest.php`) |
 | K-12 | README "12 migrations" | 22 migrations |
 | K-13 | SETUP health response shows `checks: {database, redis}` | Actual: `{database, cache}` |
 | K-14 | docs claim `/health/live`, `/health/ready`, `/health/startup`, `/health/deep` | Only `/api/v1/health` + `/up` exist |

@@ -48,7 +48,7 @@ The **gap is not architecture - it is operational hardening**: one critical cred
 
 | # | Priority | Why | Blocked by |
 |---|---|---|---|
-| 1 | Move admin credentials out of source (env-based seed) | S-01 Critical: `YS515&Yahya` committed | None |
+| 1 | Move admin credentials out of source (env-based seed) | S-01 Critical: `<redacted-legacy-credential>` committed | None |
 | 2 | Fix deploy health verification + add migrate step | K-19/K-22: every deploy fails verification; schema drift risk | None |
 | 3 | Secure storage: publish filesystems config, decide media privacy | S-21: "private" disk is publicly served; PUT surface | None |
 | 4 | Enforce product-scope on roadmap/updates/timeline | S-22 access-control gap | None |
@@ -69,7 +69,7 @@ Must be solved before any feature development that touches these areas - and all
 
 | ID | Blocker | Evidence | Impact |
 |---|---|---|---|
-| CR-01 | **Hardcoded admin password in committed seeder** (`YS515&Yahya`) | S-01 (seeder source); README/SETUP even claim a different password | Total admin compromise of any deployment seeded from repo |
+| CR-01 | **Hardcoded admin password in committed seeder** (`<redacted-legacy-credential>`) | S-01 (seeder source); README/SETUP even claim a different password | Total admin compromise of any deployment seeded from repo |
 | CR-02 | **Deploy pipeline false-fails** (health verify vs `/health/live|ready` which don't exist) and **no migration step** in deploy | K-19, K-22 (release.yml) | Deploys reported failed after success; DB schema drift risk on fresh hosts |
 | CR-03 | **Storage disk "private" is publicly readable** (Laravel default `local` disk, `serve=true`) | S-21 (route:list + framework config) | Unauthenticated read of anything on default disk; signed-PUT write surface if APP_KEY leaks |
 

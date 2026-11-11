@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Domains\Operations\Models\Project;
 use App\Domains\Operations\Models\Task;
 use App\Domains\Operations\Services\LifecycleService;
+use App\Domains\Search\Support\LikePattern;
 use App\Domains\System\Services\AuditService;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\JsonResponse;
@@ -35,8 +36,7 @@ class TaskController extends Controller
             ->when($request->query('status'), fn ($q, $s) => $q->where('status', $s))
             ->when($request->query('priority'), fn ($q, $p) => $q->where('priority', $p))
             ->when($request->query('search'), function ($q, $search) {
-                $q->where(fn ($sub) => $sub->where('title', 'ilike', "%{$search}%")
-                    ->orWhere('description', 'ilike', "%{$search}%"));
+                LikePattern::applyTo($q, ['title', 'description'], $search);
             })
             ->orderByDesc('created_at')
             ->paginate($this->perPage($request, 50));

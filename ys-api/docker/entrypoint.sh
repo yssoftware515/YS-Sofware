@@ -22,9 +22,16 @@ sed -i "s/listen 8000/listen ${HTTP_PORT}/" /etc/nginx/nginx.conf
 # ── Startup migrations (idempotent, safe to repeat) ────────────
 # Migrations must run at every startup so schema changes are applied
 # on each deploy. Seeders are intentionally excluded — they must be
-# run manually on first deployment via Render Shell:
+# run manually on first deployment:
 #   php artisan db:seed --force
-php artisan migrate --force 2>/dev/null || true
+#
+# A failed migration is NOT swallowed. The old form ended in "|| true",
+# which let the container start and serve traffic against a schema that
+# did not match the code - the failure then surfaced much later as a
+# confusing SQL error (or not at all). If the migration fails the boot
+# stops here, loudly, and the deployment is rolled back instead of
+# serving a broken application.
+php artisan migrate --force
 
 # ── Production caches ──────────────────────────────────────────
 php artisan config:cache --quiet 2>/dev/null || true

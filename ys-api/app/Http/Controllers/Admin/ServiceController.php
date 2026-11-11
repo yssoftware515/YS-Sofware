@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Domains\Search\Support\LikePattern;
 use App\Domains\Services\Models\Service;
 use App\Domains\System\Services\HtmlSanitizerService;
 use App\Http\Controllers\Controller;
@@ -27,12 +28,7 @@ class ServiceController extends Controller
             ->when($request->query('status'), fn ($q, $status) => $q->where('status', $status))
             ->when($request->query('category'), fn ($q, $category) => $q->where('category', $category))
             ->when($request->query('service_class'), fn ($q, $class) => $q->where('service_class', $class))
-            ->when($request->query('search'), fn ($q, $search) => $q->where(fn ($sub) => $sub
-                ->where('name_en', 'ilike', "%{$search}%")
-                ->orWhere('name_ar', 'ilike', "%{$search}%")
-                ->orWhere('slug', 'ilike', "%{$search}%")
-            )
-            )
+            ->when($request->query('search'), fn ($q, $search) => LikePattern::applyTo($q, ['name_en', 'name_ar', 'slug'], $search))
             ->ordered()
             ->paginate($this->perPage($request, 15));
 

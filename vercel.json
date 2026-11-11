@@ -1,5 +1,6 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
+  "regions": ["fra1"],
   "services": {
     "frontend": {
       "root": "ys-web",
@@ -15,5 +16,13 @@
     { "source": "/api/:path*", "destination": { "service": "backend" } },
     { "source": "/sanctum/:path*", "destination": { "service": "backend" } },
     { "source": "/(.*)", "destination": { "service": "frontend" } }
-  ]
+  ],
+  "images": {
+    "localPatterns": [
+      { "pathname": "/branding/**", "search": "" }
+    ],
+    "qualities": [75],
+    "formats": ["image/webp"],
+    "minimumCacheTTL": 604800
+  }
 }
