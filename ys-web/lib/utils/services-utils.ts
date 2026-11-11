@@ -1,4 +1,10 @@
-"use client"
+// Pure utility functions — no hooks, no browser APIs. Deliberately NOT a
+// "use client" module: ServicesSection and the service detail page are
+// Server Components that call getCategoryLabel()/formatPrice() during SSR,
+// and a "use client" file cannot be invoked from the server (React error
+// #441: "Attempted to call getCategoryLabel() from the server but it is on
+// the client"). Client components (ServiceCard, ServiceFilter) import the
+// same functions, which is fine — pure functions are shared, not gated.
 
 import type { BudgetRange, Service } from "@/types"
 
